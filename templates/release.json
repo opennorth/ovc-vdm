@@ -1,0 +1,67 @@
+{
+        "ocid": null,
+        "releaseID": null,
+        "releaseDate": null,
+        "releaseTag": "awardNotice",
+        "language": "fr",
+        "buyer": {
+            "id": {
+                "name": null,
+                "uid": null,
+                "uri": null
+            },
+            "address": {
+                "country-name": "Canada"
+            }
+        },
+        "formation": {
+            "tenderID": null,
+            "notice": {
+                "id": null,
+                "uri": null,
+                "publishedDate": null
+            },
+            "itemsToBeProcured": [{
+                "description": null,
+                "classificationScheme": null,
+                "classificationID": null,
+                "classificationDescription": null
+            }],
+            "totalValue": {
+                "amount": null,
+                "currency": "CAD"
+            },
+            "numberOfBids": null,
+            "procuringEntity": {
+                "id": {
+                    "uid": null, 
+                    "scheme": null, 
+                    "name": null, 
+                    "uri": null
+                }
+            } 
+        },
+        "awards": [{
+            "awardID": null,
+            "awardDate": null,
+            "awardValue": {
+                "amount": null,
+                "currency": "CAD"
+            },
+            "suppliers": [{
+                "id": {
+                    "name": null,
+                    "uri": null
+                },
+                "address": {}
+            }],
+            "itemsAwarded": [{
+                "description": null,
+                "classificationScheme": null,
+                "classificationID": null,
+                "classificationDescription": null
+            }]
+        }]
+    }
+
+

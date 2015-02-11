@@ -1,0 +1,10 @@
+Flask==0.10.1
+Flask-RESTful==0.3.1
+Jinja2==2.7.3
+MarkupSafe==0.23
+Werkzeug==0.9.6
+aniso8601==0.92
+itsdangerous==0.24
+python-dateutil==2.4.0
+pytz==2014.10
+wsgiref==0.1.2
