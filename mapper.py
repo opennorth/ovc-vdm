@@ -10,7 +10,10 @@ class Mapper():
     def __init__(self, url, options=None):
  
         fieldnames = ("provider","id","date","description", "service", "activity", "amount")
-        self.cr = csv.reader(urllib2.urlopen(url), fieldnames)
+        if re.match("^http", url) == None:
+            self.cr = csv.reader(open(url), fieldnames)
+        else:
+            self.cr = csv.reader(urllib2.urlopen(url), fieldnames)
         self.output = {}
         self.release_list= []
         #self.json_release_template = json.load(open('templates/release.json'))
