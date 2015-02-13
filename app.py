@@ -10,12 +10,13 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-#from flask.ext.restful.representations.json import output_json
-#output_json.func_globals['settings'] = {'ensure_ascii': False, 'encoding': 'utf8'}
 
 app = Flask(__name__)
 api = Api(app)
-app.config.from_object('config.DevelopmentConfig')
+
+#use env variable to get what type of environment we have
+app.config.from_object(os.environ['APP_SETTINGS'])
+
 db = SQLAlchemy(app)
 
 from models import *
