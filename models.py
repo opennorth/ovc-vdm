@@ -20,7 +20,7 @@ class Buyer(db.Model):
 
     def __init__(self, json_data):
         self.json = json_data
-        self.buyer_uid= json_data["id"]["uid"]
+        #self.buyer_uid= json_data["id"]["uid"]
         self.buyer_name = json_data["id"]["name"]
 
     def __repr__(self):
@@ -35,7 +35,7 @@ class Release(db.Model):
     json =  db.Column(JSON)
     description = db.Column(db.String())
     value = db.Column(db.Float())
-    awards = relationship("Award", backref="releases")
+    #awards = relationship("Award", backref="releases", cascade="all, delete, delete-orphan")
 
     buyer_id = Column(db.Integer, ForeignKey('buyers.buyer_uid'))
 
@@ -43,15 +43,16 @@ class Release(db.Model):
         self.json = json_data
         self.ocid = json_data["ocid"]
         self.language = json_data["language"]
+        self.value = json_data["awards"][0]["awardValue"]["amount"]
+
         the_description = json_data["awards"][0]["suppliers"][0]["id"]["name"]
         the_description += " " + json_data["buyer"]["id"]["name"]
         the_description += " " + json_data["formation"]["itemsToBeProcured"][0]["classificationDescription"]
         the_description += " " + json_data["formation"]["itemsToBeProcured"][0]["description"]
         self.description = the_description 
-        self.value = json_data["awards"][0]["awardValue"]["amount"]
     def __repr__(self):
         return '<ocid {}>'.format(self.ocid)
-
+'''
 class Award(db.Model):
     __tablename__ = 'awards'
 
@@ -70,3 +71,4 @@ class Award(db.Model):
     def __repr__(self):
         return '<awardid {}>'.format(self.awardid)
 
+'''

@@ -41,8 +41,9 @@ class Root(Resource):
         output["buyer"] = buyer_dict 
  
         return output
-
 api.add_resource(Root, '/')
+
+
 
 class ListReleases(Resource):
     def get(self):
