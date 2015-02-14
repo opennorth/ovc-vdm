@@ -5,8 +5,7 @@ python:
 install: "pip install -r requirements.txt"
 # command to run tests
 script: nosetests
-env: DATABASE_URL="postgresql://postgres@localhost/ovc_test"
-env: APP_SETTINGS="config.DevelopmentConfig"
+env: DATABASE_URL="postgresql://postgres@localhost/ovc_test" APP_SETTINGS="config.DevelopmentConfig"
 addons:
   postgresql: "9.3"
 before_script:
