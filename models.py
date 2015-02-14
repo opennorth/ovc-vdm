@@ -4,11 +4,10 @@ from sqlalchemy import Table, Column, Integer, ForeignKey
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 
-Base = declarative_base()
 
 import json
 
-
+#db.Model works like a declarative_base
 class Buyer(db.Model):
     __tablename__ = 'buyers'
 

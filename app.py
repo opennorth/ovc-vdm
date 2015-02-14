@@ -21,6 +21,7 @@ db = SQLAlchemy(app)
 
 from models import *
 
+
 class Root(Resource):
     def get(self):
         releases = db.session.query(Release).count()
