@@ -1,9 +1,14 @@
-from flask import Flask
+from flask import Flask, render_template
+from flask import request
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.restful import reqparse, abort, Api, Resource
 from sqlalchemy.orm.exc import *
 from sqlalchemy.sql import func
 from sqlalchemy import select,cast
+from werkzeug.exceptions import NotAcceptable
+import ho.pisa as pisa 
+from StringIO import *
+#from pdfs import create_pdf
 import os
 
 import sys
@@ -11,8 +16,30 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 
+class CustomApi(Api):
+    FORMAT_MIMETYPE_MAP = {
+        "csv": "text/csv",
+        "json": "application/json",
+        "pdf": "application/pdf"
+        # Add other mimetypes as desired here
+    }
+
+    def mediatypes(self):
+        """Allow all resources to have their representation
+        overriden by the `format` URL argument"""
+
+        preferred_response_type = []
+        format = request.args.get("format")
+        if format:
+            mimetype = self.FORMAT_MIMETYPE_MAP.get(format)
+            preferred_response_type.append(mimetype)
+            if not mimetype:
+                raise NotAcceptable()
+        return preferred_response_type + super(CustomApi, self).mediatypes()
+
+
 app = Flask(__name__)
-api = Api(app)
+api = CustomApi(app)
 
 #use env variable to get what type of environment we have
 app.config.from_object(os.environ['APP_SETTINGS'])
@@ -22,8 +49,46 @@ db = SQLAlchemy(app)
 from models import *
 
 
+@api.representation('application/pdf')
+def output_csv(data, code, headers=None):
+    html = render_template('pdf_generator.html')
+
+    output_pdf = StringIO()
+    pisa.CreatePDF(html.encode('utf-8'), output_pdf)
+
+    resp = app.make_response(output_pdf.getvalue())
+    return resp
+
+
+@api.representation('text/csv')
+def output_csv(data, code, headers=None):
+    #some CSV serialized data
+    #print(data)
+    rt = "\n"
+    str = ","
+    total = []
+    for release in data["releases"]:
+        laliste = []
+        laliste.append(release["awards"][0]["itemsAwarded"][0]["classificationDescription"])
+        laliste.append(release["awards"][0]["suppliers"][0]["id"]["name"])
+        laliste.append(release["buyer"]["id"]["name"])
+        row = str.join(laliste)
+        total.append(row)
+
+    data = rt.join(total)
+    resp = app.make_response(data)
+    return resp
+
+
 class Root(Resource):
     def get(self):
+        accept_header = request.headers.get('Accept')
+        print(accept_header)
+        request.headers.get('Accept')
+
+
+
+
         releases = db.session.query(Release).count()
         releases_sum = db.session.query(func.sum(Release.value).label('sum')).scalar()
         buyers = db.session.query(Buyer).count()
