@@ -8,7 +8,6 @@ from sqlalchemy import select,cast
 from werkzeug.exceptions import NotAcceptable
 import ho.pisa as pisa 
 from StringIO import *
-#from pdfs import create_pdf
 import os
 
 import sys

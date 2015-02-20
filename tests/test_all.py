@@ -14,7 +14,7 @@ def setup_module(module):
     print ("setup module")
     db.drop_all()
     db.create_all()
-    load_source('fixtures/contracts.csv')
+    load_source('fixtures/contracts.csv', 'field_mapper_fonc')
 
 
 
@@ -27,4 +27,4 @@ def test_api_root():
   eq_(rv.status_code,200)
   resp = json.loads(rv.data)
 
-  eq_(resp["releases"]["count"],10)
+  eq_(resp["releases"]["count"],9)

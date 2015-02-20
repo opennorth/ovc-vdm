@@ -8,6 +8,25 @@ from sqlalchemy.ext.declarative import declarative_base
 import json
 
 #db.Model works like a declarative_base
+class Source(db.Model):
+    __tablename__ = 'sources'
+    id = db.Column(Integer, primary_key=True)
+    name = db.Column(db.String())
+    mapper = db.Column(db.String())
+    url =  db.Column(db.String())
+    last_update = db.Column(db.DateTime(), default='2000-01-01 00:00:00')
+
+    releases = relationship("Release", cascade="all,delete", backref="sources")
+
+    def __init__(self, data):
+        self.name = data["name"]
+        self.mapper = data["mapper"]
+        self.url = data["url"]
+
+    def __repr__(self):
+        return '<name {}>'.format(self.name)
+
+
 class Buyer(db.Model):
     __tablename__ = 'buyers'
 
@@ -28,8 +47,8 @@ class Buyer(db.Model):
 
 class Release(db.Model):
     __tablename__ = 'releases'
-
-    ocid = db.Column(db.String(), primary_key=True)
+    id = db.Column(Integer, primary_key=True)
+    ocid = db.Column(db.String())
     language = db.Column(db.String())
     json =  db.Column(JSON)
     description = db.Column(db.String())
@@ -37,6 +56,7 @@ class Release(db.Model):
     #awards = relationship("Award", backref="releases", cascade="all, delete, delete-orphan")
 
     buyer_id = Column(db.Integer, ForeignKey('buyers.buyer_uid'))
+    source_id = Column(db.Integer, ForeignKey('sources.id'))
 
     def __init__(self, json_data):
         self.json = json_data
@@ -51,23 +71,3 @@ class Release(db.Model):
         self.description = the_description 
     def __repr__(self):
         return '<ocid {}>'.format(self.ocid)
-'''
-class Award(db.Model):
-    __tablename__ = 'awards'
-
-    awardID = db.Column(db.String(), primary_key=True)
-    awardDate = db.Column(db.Date())
-    awardValue = db.Column(db.Integer)
-    json =  db.Column(JSON)
-    release_id = Column(db.String(), ForeignKey('releases.ocid'))
-
-
-    def __init__(self, json_data):
-        self.json = json_data
-        self.awardID = json_data["awardID"]
-        self.awardDate = json_data["awardDate"]
-        self.awardValue= json_data["awardValue"]["amount"]
-    def __repr__(self):
-        return '<awardid {}>'.format(self.awardid)
-
-'''
