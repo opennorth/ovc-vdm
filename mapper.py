@@ -5,7 +5,9 @@ import random
 import re
 import urllib2
 import sys
-
+from datetime import datetime
+from app import app
+import pytz
 
 def field_mapper_fonc(row):
     my_release = json.load(open('templates/release.json'))
@@ -34,33 +36,41 @@ def field_mapper_fonc(row):
 
 def field_mapper_pol_mtl(row):
     my_release = json.load(open('templates/release.json'))
+    eastern = pytz.timezone('US/Eastern')
+    contract_date = eastern.localize(datetime.strptime(row[7], "%Y-%m-%d"))
 
     # TODO: USE NO DOSSIER OR NO DECISION? 
-    my_release["ocid"] = row[4]
-    my_release["buyer"]["id"]["name"] = row[2]
-    my_release["formation"]["notice"]["id"] = row[6]
-    my_release["formation"]["itemsToBeProcured"][0]["description"] = row[5]
+    my_release["ocid"] =  app.config["OCID_PREFIX"] + row[4]
+    my_release["id"] =  row[4]
 
-    #TODO Using the direction, but ideally it would be the category
-    my_release["formation"]["itemsToBeProcured"][0]["classificationDescription"] = row[3]
-    
-    
+    #TODO: IL FAUT SUREMENT AJOUTER UN TIMEZONE
+    my_release["date"] = contract_date.isoformat()
+    my_release["buyer"]["name"] = row[2]
 
-    my_release["formation"]["totalValue"] = float(row[8].replace(',','.'))
+    my_release["tender"]["id"] = row[6]
 
-    #TODO : Pass the procuring entity as a paramter of the mapper?
-    my_release["formation"]["procuringEntity"]["id"]["name"] = 'Conseil municipal'
-    my_release["awards"][0]["awardID"] = row[4]
-    my_release["awards"][0]["awardDate"] = row[7]
+    #TODO: FAIT MAPPING SERVICE  => ACTIVITE
+    my_release["tender"]["title"] = "Activite,AutreActivite"
+    my_release["tender"]["description"] = row[5]
+    my_release["tender"]["items"][0]["description"] = row[3] + ". " + row[1]
+    my_release["tender"]["items"][0]["id"] = row[6]
 
 
-
-    my_release["awards"][0]["awardValue"]["amount"] = float(row[8].replace(',','.'))
-    my_release["awards"][0]["suppliers"][0]["id"]["name"] = row[0]
-    my_release["awards"][0]["itemsAwarded"][0]["description"] = row[5]
+    my_release["tender"]["value"] = float(row[8].replace(',','.'))
 
     #TODO : Pass the procuring entity as a paramter of the mapper?
-    my_release["awards"][0]["itemsAwarded"][0]["classificationDescription"] = row[3]
+    my_release["tender"]["procuringEntity"]["name"] = 'Conseil municipal'
+
+
+    my_release["awards"][0]["id"] = row[4]
+    my_release["awards"][0]["date"] = contract_date.isoformat()
+
+    my_release["awards"][0]["value"]["amount"] = float(row[8].replace(',','.'))
+    my_release["awards"][0]["suppliers"][0]["name"] = row[0]
+    my_release["awards"][0]["items"][0]["id"] = row[6]
+
+    #TODO : Pass the procuring entity as a paramter of the mapper?
+    my_release["awards"][0]["items"][0]["description"] = row[5]
 
     return my_release
 

@@ -33,20 +33,23 @@ def flush_releases():
 @manager.command
 def update_sources():
     #TODO : Delete sources that have been removed from config
+    start = datetime.datetime.now() 
     try:
         for config_source in  app.config["DATA_SOURCES"]:
             db_source =  db.session.query(Source).filter(Source.url == config_source["url"]).scalar()
             if db_source == None:
                 db_source = Source(config_source) 
-                db.session.add(db_source)            
-    except TypeError as e:
-       print "Typer error: %s" %  repr(e)
+                db.session.add(db_source) 
+            db_source.last_update =  start.strftime("%Y-%m-%d %H:%M:%S")
+            db.session.commit()
+
+        db.session.query(Source).filter(Source.last_update < start - datetime.timedelta(minutes=15)).delete()
+        db.session.commit()
+
+
     except exc.FlushError as e:  
-       db.session.rollback()
-       print "sqlalchemy error: %s" %  repr(e)
-
-
-    db.session.commit()
+        db.session.rollback()
+        print "sqlalchemy error: %s" %  repr(e)
 
 
 @manager.command
@@ -55,7 +58,6 @@ def update_releases():
     sources =  db.session.query(Source).all()
 
     for source in sources:
-        print source.url
         r = requests.get(source.url)
 
         #If Last-Modified not avaiable, we always process
@@ -63,19 +65,21 @@ def update_releases():
         source_update = now
         if 'Last-Modified' in r.headers:
             source_update = datetime.datetime(*eut.parsedate(r.headers['Last-Modified'])[:6])
-
-        if source_update >= source.last_update:
-            load_source(source.url, source.mapper)
+            
+        if source_update >= source.last_retrieve:
+            load_source(source)
        
 
 @manager.command
-def load_source(path, mapper_type):
-    mapper = Mapper(path, mapper_type)
+def load_source(source, action='load'):
+    mapper = Mapper(source.url, source.mapper)
     output = mapper.to_ocds()
-    load_ocds(output, type='dict')
+
+    load_ocds(output, type='dict', source=source)
+        
 
 @manager.command
-def load_ocds(ocds, type='path'):
+def load_ocds(ocds, type='path', source=None):
     data = {}
     if type == 'path':
         data = json.load(open(ocds))
@@ -83,20 +87,25 @@ def load_ocds(ocds, type='path'):
         data = ocds
 
     try:
+
+        if source != None:
+            db.session.query(Release).filter(Release.source_id == source.id).delete() 
         for release in data["releases"]:
         
             the_release= Release(release)
 
-            the_buyer =  db.session.query(Buyer).filter(Buyer.buyer_name== release["buyer"]["id"]["name"]).scalar()
+            the_buyer =  db.session.query(Buyer).filter(Buyer.buyer_name== release["buyer"]["name"]).scalar()
             if the_buyer == None:
                 the_buyer = Buyer(release["buyer"]) 
                 db.session.add(the_buyer)
         
             the_buyer.releases.append(the_release)
 
-	    #for award in release["awards"]:
-        #        the_release.awards.append(Award(award))
             db.session.add(the_release)
+
+        source.last_retrieve = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        db.session.commit()
+
     except TypeError as e:
         db.session.rollback()
         print "Typer error: %s" %  repr(e)
@@ -105,7 +114,6 @@ def load_ocds(ocds, type='path'):
         print "sqlalchemy error: %s" %  repr(e)
 
 
-    db.session.commit()
 
 if __name__ == '__main__':
     manager.run()

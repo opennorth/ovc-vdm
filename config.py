@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 
 class Config(object):
@@ -5,6 +6,18 @@ class Config(object):
     TESTING = False
     CSRF_ENABLED = True
     SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
+    URL_ROOT = 'http//localhost'
+    LICENSE = 'https://creativecommons.org/licenses/by/4.0/'
+    PUBLICATION_POLICY = 'http://donnees.ville.montreal.qc.ca/licence-2014/'
+    PUBLISHER_ID_SCHEME = 'CA-CRA_ACR'
+    PUBLISHER_ID = 'MTL'
+    PUBLISHER_LEGAL_NAME = 'Ville de Montréal'
+    PUBLISHER_NAME = 'Ville de Montréal'
+    PUBLISHER_ADDRESS = ['275 Rue Notre-Dame Est, Montréal', 'Montréal', 'QC', 'H2Y 1C6', 'Canada']
+    PUBLISHER_CONTACT = ['Bureau de la Ville Intelligente', 'villeintelligente@ville.montreal.qc.ca', '', '', 'http://ville.montreal.qc.ca/']
+
+    OCID_PREFIX = 'ocds-a1234567-mt-'
+
     DATA_SOURCES = [
         {
             'name': 'Conseil Muncipal',
@@ -23,6 +36,7 @@ class ProductionConfig(Config):
     DEBUG = False
 
 class StagingConfig(Config):
+    URL_ROOT = 'https://ovc-stage.herokuapp.com'
     DEVELOPMENT = True
     DEBUG = True
 

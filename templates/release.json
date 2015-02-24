@@ -1,65 +1,59 @@
 {
         "ocid": null,
-        "releaseID": null,
-        "releaseDate": null,
-        "releaseTag": "awardNotice",
+        "id": null,
+        "date": null,
+        "tag": "award",
         "language": "fr",
+
         "buyer": {
-            "id": {
-                "name": null,
-                "uid": null,
-                "uri": null
-            },
+            "name": null,
             "address": {
-                "country-name": "Canada"
+                "countryName": "Canada",
+                "locality": "Montréal",
+                "postalCode": "H2Y 1C6",
+                "region": "QC",
+                "streetAddress": "275 Rue Notre-Dame Est, Montréal"
             }
         },
-        "formation": {
-            "tenderID": null,
-            "notice": {
+        "tender": {
+            "id": null,
+            "description": null,
+            "status": "complete",
+            "items": [{
                 "id": null,
-                "uri": null,
-                "publishedDate": null
-            },
-            "itemsToBeProcured": [{
                 "description": null,
-                "classificationScheme": null,
-                "classificationID": null,
-                "classificationDescription": null
+                "quantity": 1
             }],
-            "totalValue": {
+            "value": {
                 "amount": null,
                 "currency": "CAD"
             },
-            "numberOfBids": null,
             "procuringEntity": {
-                "id": {
-                    "uid": null, 
-                    "scheme": null, 
-                    "name": null, 
-                    "uri": null
+                "name": null,
+                "address": {
+                    "countryName": "Canada",
+                    "locality": "Montréal",
+                    "postalCode": "H2Y 1C6",
+                    "region": "QC",
+                    "streetAddress": "275 Rue Notre-Dame Est, Montréal"
                 }
             } 
         },
         "awards": [{
-            "awardID": null,
-            "awardDate": null,
-            "awardValue": {
+            "id": null,
+            "date": null,
+            "value": {
                 "amount": null,
                 "currency": "CAD"
             },
             "suppliers": [{
-                "id": {
-                    "name": null,
-                    "uri": null
-                },
+                "name": null,
                 "address": {}
             }],
-            "itemsAwarded": [{
+            "items": [{
+                "id": null,
                 "description": null,
-                "classificationScheme": null,
-                "classificationID": null,
-                "classificationDescription": null
+                "quantity": 1
             }]
         }]
     }

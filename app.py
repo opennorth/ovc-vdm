@@ -10,6 +10,7 @@ import ho.pisa as pisa
 from StringIO import *
 import os
 from sqlalchemy.sql.functions import ReturnTypeFromArgs
+from datetime import datetime
 
 
 import sys
@@ -25,7 +26,8 @@ class CustomApi(Api):
     FORMAT_MIMETYPE_MAP = {
         "csv": "text/csv",
         "json": "application/json",
-        "pdf": "application/pdf"
+        "pdf": "application/pdf",
+        "ocds": "application/json"
         # Add other mimetypes as desired here
     }
 
@@ -126,7 +128,7 @@ class ListReleases(Resource):
         parser.add_argument('value_gt', type=int, location='args')
         parser.add_argument('value_lt', type=int, location='args')
         args = parser.parse_args()
-        print(args)
+        #print(args)
         releases = db.session.query(Release)
         releases_sum = db.session.query(func.sum(Release.value).label('sum'))
 
@@ -156,12 +158,48 @@ class ListReleases(Resource):
         pagination = {}
         pagination["offset"] = offset
         pagination["limit"] = limit
-         
+
         output = {}
-        output["meta"] = {}
-        output["meta"]["count"] = release_count
-        output["meta"]["total_value"] = releases_sum.scalar()
-        output["meta"]["pagination"] = pagination
+        
+        if request.args.get("format") != 'ocds':
+            
+            output["meta"] = {}
+            output["meta"]["count"] = release_count
+            output["meta"]["total_value"] = releases_sum.scalar()
+            output["meta"]["pagination"] = pagination
+
+        output["uri"] = request.url
+
+        #TODO: Ideally it would be the date of the last contract added
+        output["publishedDate"] = datetime.now().isoformat()
+ 
+        #TODO: MOVE THAT ELSE WHERE... IT'S STATIC STUFF       
+        output["license"] = app.config["LICENSE"]
+        output["publicationPolicy"] = app.config["PUBLICATION_POLICY"]
+
+        #publisher section 
+        output["publisher"] = {}
+        output["publisher"]["identifier"] = {
+                "legalName" :  app.config["PUBLISHER_LEGAL_NAME"]}
+
+        output["publisher"]["name"] =  app.config["PUBLISHER_NAME"]
+
+        output["publisher"]["address"] = {
+                "streetAddress" : app.config["PUBLISHER_ADDRESS"][0],
+                "locality" : app.config["PUBLISHER_ADDRESS"][1],
+                "region" : app.config["PUBLISHER_ADDRESS"][2],
+                "postalCode" : app.config["PUBLISHER_ADDRESS"][3],
+                "countryName" : app.config["PUBLISHER_ADDRESS"][4]
+        }
+
+        output["publisher"]["contactPoint"] = {
+                "name" : app.config["PUBLISHER_CONTACT"][0],
+                "email" : app.config["PUBLISHER_CONTACT"][1],
+                "telephone" : app.config["PUBLISHER_CONTACT"][2],
+                "faxNumber" : app.config["PUBLISHER_CONTACT"][3],
+                "url" : app.config["PUBLISHER_CONTACT"][4]
+        }
+
         output["releases"] = [] 
         for release in releases:
             output["releases"].append(release.json)
