@@ -9,10 +9,16 @@ from werkzeug.exceptions import NotAcceptable
 import ho.pisa as pisa 
 from StringIO import *
 import os
+from sqlalchemy.sql.functions import ReturnTypeFromArgs
+
 
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
+
+
+class unaccent(ReturnTypeFromArgs):
+    pass
 
 
 class CustomApi(Api):
@@ -125,7 +131,7 @@ class ListReleases(Resource):
         releases_sum = db.session.query(func.sum(Release.value).label('sum'))
 
         if args['q'] != None:
-            select_stmt = select([Release]).where(func.to_tsvector('english', Release.description).match(args['q'].replace(" ", "&"), postgresql_regconfig='english'))
+            select_stmt = select([Release]).where(func.to_tsvector('fr', unaccent(Release.description)).match(args['q'].replace(" ", "&"), postgresql_regconfig='fr'))
             releases = releases.select_entity_from(select_stmt)
             releases_sum = releases_sum.select_entity_from(select_stmt)
 
