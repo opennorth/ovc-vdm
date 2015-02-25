@@ -4,7 +4,7 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.restful import reqparse, abort, Api, Resource
 from sqlalchemy.orm.exc import *
 from sqlalchemy.sql import func
-from sqlalchemy import select,cast
+from sqlalchemy import select,cast, desc, asc
 from werkzeug.exceptions import NotAcceptable
 import ho.pisa as pisa 
 from StringIO import *
@@ -114,8 +114,12 @@ class Root(Resource):
         output["buyer"] = buyer_dict 
  
         return output
-api.add_resource(Root, '/')
+api.add_resource(Root, '/api/')
 
+#should move this in an utils
+def date_time_arg (value):
+    #TODO SEE how to reject if not format YYYY-MM-DD
+    return datetime.strptime(value, "%Y-%m-%d") 
 
 
 class ListReleases(Resource):
@@ -127,11 +131,19 @@ class ListReleases(Resource):
         parser.add_argument('limit', type=int, location='args')
         parser.add_argument('value_gt', type=int, location='args')
         parser.add_argument('value_lt', type=int, location='args')
+        parser.add_argument('date_gt', type=date_time_arg, location='args')
+        parser.add_argument('date_lt', type=date_time_arg, location='args')        
+        parser.add_argument('buyer', type=str, location='args')
+        parser.add_argument('activity', type=str, location='args')
+        parser.add_argument('supplier', type=str, location='args')
+        parser.add_argument('order_by', type=str, location='args')
+        parser.add_argument('order_dir', type=str, location='args')                         
         args = parser.parse_args()
         #print(args)
         releases = db.session.query(Release)
         releases_sum = db.session.query(func.sum(Release.value).label('sum'))
 
+        #TODO: REFACTOR process of filtering parameters
         if args['q'] != None:
             select_stmt = select([Release]).where(func.to_tsvector('fr', unaccent(Release.description)).match(args['q'].replace(" ", "&"), postgresql_regconfig='fr'))
             releases = releases.select_entity_from(select_stmt)
@@ -141,12 +153,44 @@ class ListReleases(Resource):
             releases = releases.filter(Release.value >= args['value_gt'])
             releases_sum = releases_sum.filter(Release.value >= args['value_gt'])
 
+
         if args['value_lt'] != None:
             releases = releases.filter(Release.value <= args['value_lt'])
             releases_sum = releases_sum.filter(Release.value <= args['value_lt'])
 
+        if args['date_gt'] != None:
+            releases = releases.filter(Release.date >= args['date_gt'])
+            releases_sum = releases_sum.filter(Release.date >= args['date_gt'])
+
+
+        if args['date_lt'] != None:
+            releases = releases.filter(Release.date <= args['date_lt'])
+            releases_sum = releases_sum.filter(Release.date <= args['date_lt'])
+
+        if args['buyer'] != None:
+            releases = releases.join(Buyer).filter(Buyer.slug == args['buyer'])
+            releases_sum = releases_sum.join(Buyer).filter(Buyer.slug == args['buyer'])
+
+        if args['activity'] != None:
+            select_stmt = select([Release]).where(Release.activities.any(args['activity']))
+            releases = releases.select_entity_from(select_stmt)
+            releases_sum = releases_sum.select_entity_from(select_stmt)
+
+        if args['supplier'] != None:
+            releases = releases.filter(Release.supplier_slug == args['supplier'])
+            releases_sum = releases_sum.filter(Release.supplier_slug == args['supplier'])            
+
+        #TODO: Catch if order_by et order_dir n'ont pas les bonnes valeurs
+        if (args['order_by'] != None):
+            sort_attr = getattr(Release, args['order_by'])
+
+            sorter = sort_attr.asc()
+            if ('order_dir' in args and args['order_dir'] == 'desc'):
+                sorter = sort_attr.desc()
+
+            releases = releases.order_by(sorter)
+
         release_count = releases.count()
-        #release_sum = releases.query(func.sum(Release.value).label('sum'))
 
         (offset,limit) = (0,50)
         if args['offset'] != None:
@@ -155,9 +199,7 @@ class ListReleases(Resource):
             limit = args['limit']
         releases = releases[offset:limit]
 
-        pagination = {}
-        pagination["offset"] = offset
-        pagination["limit"] = limit
+        pagination = {"offset" : offset, "limit":  limit}
 
         output = {}
         
@@ -205,7 +247,7 @@ class ListReleases(Resource):
             output["releases"].append(release.json)
         return output 
 
-api.add_resource(ListReleases, '/releases')
+api.add_resource(ListReleases, '/api/releases')
 
 class IndividualRelease(Resource):
     def get(self,ocid):
@@ -215,7 +257,7 @@ class IndividualRelease(Resource):
         except NoResultFound:
             abort(404, message="Release {} does not exist".format(ocid)) 
 
-api.add_resource(IndividualRelease, '/release/<string:ocid>')
+api.add_resource(IndividualRelease, '/api/release/<string:ocid>')
 
 class BuyerList(Resource):
     def get(self):
@@ -223,7 +265,7 @@ class BuyerList(Resource):
         return [row._asdict() for row in buyers] 
         
 
-api.add_resource(BuyerList, '/buyers')
+api.add_resource(BuyerList, '/api/buyers')
 
 if __name__ == '__main__':
     app.run()

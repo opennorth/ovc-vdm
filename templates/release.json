@@ -13,6 +13,9 @@
                 "postalCode": "H2Y 1C6",
                 "region": "QC",
                 "streetAddress": "275 Rue Notre-Dame Est, Montréal"
+            },
+            "identifier": {
+                "id": null
             }
         },
         "tender": {
@@ -48,7 +51,10 @@
             },
             "suppliers": [{
                 "name": null,
-                "address": {}
+                "address": {},
+                "identifier": {
+                    "id": null
+                }
             }],
             "items": [{
                 "id": null,

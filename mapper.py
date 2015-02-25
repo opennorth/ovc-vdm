@@ -8,31 +8,8 @@ import sys
 from datetime import datetime
 from app import app
 import pytz
+from slugify import slugify
 
-def field_mapper_fonc(row):
-    my_release = json.load(open('templates/release.json'))
-
-    my_release["ocid"] = row[1] + str(random.randrange(1, 100000))
-    my_release["buyer"]["id"]["name"] = row[4]
-    my_release["formation"]["notice"]["id"] = row[5]
-    my_release["formation"]["itemsToBeProcured"][0]["description"] = row[3]
-    my_release["formation"]["itemsToBeProcured"][0]["classificationDescription"] = row[5]
-    
-    
-
-    my_release["formation"]["totalValue"] = float(row[6].replace(',','.'))
-    my_release["formation"]["procuringEntity"]["id"]["name"] = 'Fonctionnaires Ville Centrale'
-    my_release["awards"][0]["awardID"] = re.sub("[^0-9]", "",row[1] )+ str(random.randrange(1, 100000))
-    my_release["awards"][0]["awardDate"] = "2014-12-31"
-
-
-
-    my_release["awards"][0]["awardValue"]["amount"] = float(row[6].replace(',','.'))
-    my_release["awards"][0]["suppliers"][0]["id"]["name"] = row[0]
-    my_release["awards"][0]["itemsAwarded"][0]["description"] = row[3]
-    my_release["awards"][0]["itemsAwarded"][0]["classificationDescription"] = row[5]
-
-    return my_release
 
 def field_mapper_pol_mtl(row):
     my_release = json.load(open('templates/release.json'))
@@ -46,11 +23,16 @@ def field_mapper_pol_mtl(row):
     #TODO: IL FAUT SUREMENT AJOUTER UN TIMEZONE
     my_release["date"] = contract_date.isoformat()
     my_release["buyer"]["name"] = row[2]
+    my_release["buyer"]["identifier"]["id"] = slugify(row[2], to_lower=True)
 
     my_release["tender"]["id"] = row[6]
 
     #TODO: FAIT MAPPING SERVICE  => ACTIVITE
-    my_release["tender"]["title"] = "Activite,AutreActivite"
+    my_release["tender"]["title"] = "Autre"
+
+    if (row[2] in app.config["SERVICE_TO_ACTIVITY"]):
+        my_release["tender"]["title"] = app.config["SERVICE_TO_ACTIVITY"][row[2]]
+
     my_release["tender"]["description"] = row[5]
     my_release["tender"]["items"][0]["description"] = row[3] + ". " + row[1]
     my_release["tender"]["items"][0]["id"] = row[6]
@@ -67,6 +49,7 @@ def field_mapper_pol_mtl(row):
 
     my_release["awards"][0]["value"]["amount"] = float(row[8].replace(',','.'))
     my_release["awards"][0]["suppliers"][0]["name"] = row[0]
+    my_release["awards"][0]["suppliers"][0]["identifier"]["id"] = slugify(row[0], to_lower=True)
     my_release["awards"][0]["items"][0]["id"] = row[6]
 
     #TODO : Pass the procuring entity as a paramter of the mapper?

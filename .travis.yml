@@ -10,3 +10,7 @@ addons:
   postgresql: "9.3"
 before_script:
   - psql -c 'create database ovc_test;' -U postgres
+  - psql -c 'create extension unaccent;' -U postgres -d ovc_test
+  - psql -c 'CREATE TEXT SEARCH CONFIGURATION fr ( COPY = french );' -U postgres -d ovc_test
+  - psql -c "ALTER TEXT SEARCH CONFIGURATION fr ALTER MAPPING FOR hword, hword_part, word WITH unaccent, french_stem;" -U postgres -d ovc_test
+  - psql -c "CREATE INDEX idx_fts_fr_concat_releases ON releases USING gin(to_tsvector('fr', concat));" -U postgres -d ovc_test

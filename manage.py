@@ -65,7 +65,7 @@ def update_releases():
         source_update = now
         if 'Last-Modified' in r.headers:
             source_update = datetime.datetime(*eut.parsedate(r.headers['Last-Modified'])[:6])
-            
+
         if source_update >= source.last_retrieve:
             load_source(source)
        
@@ -93,8 +93,9 @@ def load_ocds(ocds, type='path', source=None):
         for release in data["releases"]:
         
             the_release= Release(release)
+            the_release.source_id = source.id
 
-            the_buyer =  db.session.query(Buyer).filter(Buyer.buyer_name== release["buyer"]["name"]).scalar()
+            the_buyer =  db.session.query(Buyer).filter(Buyer.name== release["buyer"]["name"]).scalar()
             if the_buyer == None:
                 the_buyer = Buyer(release["buyer"]) 
                 db.session.add(the_buyer)

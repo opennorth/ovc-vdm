@@ -1,5 +1,5 @@
 from app import db
-from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy.dialects.postgresql import JSON, ARRAY
 from sqlalchemy import Table, Column, Integer, ForeignKey
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
@@ -17,7 +17,7 @@ class Source(db.Model):
     last_update = db.Column(db.DateTime(), default='2000-01-01 00:00:00')
     last_retrieve = db.Column(db.DateTime(), default='2000-01-01 00:00:00')
 
-    releases = relationship("Release", cascade="all,delete", backref="sources")
+    releases = relationship("Release", cascade="delete", backref=backref("sources"))
 
     def __init__(self, data):
         self.name = data["name"]
@@ -31,16 +31,18 @@ class Source(db.Model):
 class Buyer(db.Model):
     __tablename__ = 'buyers'
 
-    buyer_uid = db.Column(db.Integer, primary_key=True)
-    buyer_name = db.Column(db.String())
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String())
+    slug = db.Column(db.String())
     json =  db.Column(JSON)
 
     releases = relationship("Release", backref="buyers")
 
     def __init__(self, json_data):
         self.json = json_data
-        #self.buyer_uid= json_data["id"]["uid"]
-        self.buyer_name = json_data["name"]
+        self.name = json_data["name"]
+        self.slug = slugify(self.name, to_lower=True)
+
 
     def __repr__(self):
         return '<Buyer{ }>'.format(self.buyer_name)
@@ -57,13 +59,14 @@ class Release(db.Model):
     supplier_slug = db.Column(db.String())
     dossier = db.Column(db.String())
     decision = db.Column(db.String())
+    activities =  db.Column(ARRAY(db.String()))
     description = db.Column(db.String())
     concat = db.Column(db.String())
     date = db.Column(db.DateTime())
     value = db.Column(db.Float())
     #awards = relationship("Award", backref="releases", cascade="all, delete, delete-orphan")
 
-    buyer_id = Column(db.Integer, ForeignKey('buyers.buyer_uid'))
+    buyer_id = Column(db.Integer, ForeignKey('buyers.id'))
     source_id = Column(db.Integer, ForeignKey('sources.id'))
 
     def __init__(self, json_data):
@@ -76,6 +79,7 @@ class Release(db.Model):
         self.dossier = json_data["id"]
         self.decision = json_data["tender"]["items"][0]["id"]
         self.description = json_data["tender"]["description"]
+        self.activities = json_data["tender"]["title"].split(";")
         self.date = json_data["date"]
         self.value = json_data["awards"][0]["value"]["amount"]
 
