@@ -9,7 +9,7 @@ env: DATABASE_URL="postgresql://postgres@localhost/ovc_test" APP_SETTINGS="confi
 addons:
   postgresql: "9.3"
 before_script:
-  - psql -c 'create database ovc_test;'
-  - psql -c 'create extension unaccent;'
-  - psql -c 'CREATE TEXT SEARCH CONFIGURATION fr ( COPY = french );'
-  - psql -c 'ALTER TEXT SEARCH CONFIGURATION fr ALTER MAPPING FOR hword, hword_part, word WITH unaccent, french_stem;'
+  - psql -c 'create database ovc_test;' -U postgres
+  - psql -c 'create extension unaccent;' -U postgres
+  - psql -c 'CREATE TEXT SEARCH CONFIGURATION fr ( COPY = french );' -U postgres
+  - psql -c 'ALTER TEXT SEARCH CONFIGURATION fr ALTER MAPPING FOR hword, hword_part, word WITH unaccent, french_stem;' -U postgres
