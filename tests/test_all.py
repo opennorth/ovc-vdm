@@ -5,6 +5,7 @@ import json
 from nose.tools import *
 from manage import update_sources, update_releases
 import subprocess
+import os
 
 #init_db()
 
@@ -16,7 +17,10 @@ def setup_module(module):
     db.drop_all()
     db.create_all()
 
-    subprocess.call(["psql -c \"CREATE INDEX idx_fts_fr_concat_releases ON releases USING gin(to_tsvector('fr', concat));\""], shell=True)
+    dbname =  os.environ['DATABASE_URL'].split()[-1]
+    print dbname
+
+    subprocess.call(["psql -c \"CREATE INDEX idx_fts_fr_concat_releases ON releases USING gin(to_tsvector('fr', concat))\" -d %s ;" % (dbname)], shell=True)
 
     update_sources()
     update_releases()
