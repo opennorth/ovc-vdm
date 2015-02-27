@@ -10,6 +10,7 @@ import requests
 import os
 import json
 from models import *
+import re
 
 from app import app, db
 
@@ -58,16 +59,21 @@ def update_releases():
     sources =  db.session.query(Source).all()
 
     for source in sources:
-        r = requests.get(source.url)
+        if re.match("^http", source.url):
+            #TODO: With the fixture we are not testing this part which is fairly sensitive
+            r = requests.get(source.url)
 
-        #If Last-Modified not avaiable, we always process
-        now = datetime.datetime.now()
-        source_update = now
-        if 'Last-Modified' in r.headers:
-            source_update = datetime.datetime(*eut.parsedate(r.headers['Last-Modified'])[:6])
+            #If Last-Modified not avaiable, we always process
+            now = datetime.datetime.now()
+            source_update = now
+            if 'Last-Modified' in r.headers:
+                source_update = datetime.datetime(*eut.parsedate(r.headers['Last-Modified'])[:6])
 
-        if source_update >= source.last_retrieve:
+            if source_update >= source.last_retrieve:
+                load_source(source)
+        else:
             load_source(source)
+
        
 
 @manager.command

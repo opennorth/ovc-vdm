@@ -58,3 +58,11 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     TESTING = True
+
+    DATA_SOURCES = [
+        {
+            'name': 'Conseil Muncipal',
+            'mapper': 'field_mapper_pol_mtl',
+            'url': 'fixtures/contracts.csv'
+        }
+    ]

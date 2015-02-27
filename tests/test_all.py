@@ -1,9 +1,10 @@
-from flask import Flask
+from flask import Flask, url_for
 from flask.ext.sqlalchemy import SQLAlchemy
 from app import db
 import json
 from nose.tools import *
-from manage import load_source
+from manage import update_sources, update_releases
+import subprocess
 
 #init_db()
 
@@ -14,7 +15,11 @@ def setup_module(module):
     print ("setup module")
     db.drop_all()
     db.create_all()
-    load_source('fixtures/contracts.csv', 'field_mapper_fonc')
+
+    subprocess.call(["psql -c \"CREATE INDEX idx_fts_fr_concat_releases ON releases USING gin(to_tsvector('fr', concat));\""], shell=True)
+
+    update_sources()
+    update_releases()
 
 
 
@@ -23,7 +28,7 @@ def teardown_module(module):
     db.drop_all()
 
 def test_api_root():
-  rv = test_app.get('/')
+  rv = test_app.get('/api/')
   eq_(rv.status_code,200)
   resp = json.loads(rv.data)
 
