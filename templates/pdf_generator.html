@@ -1,21 +1,15 @@
-<html>
+<!DOCTYPE html>
+<html lang="fr">
     <head>
+        <meta charset="UTF-8" />
     </head>
     <body>
-        <h2>Some page title.</h2>
+        <h2>Contrats de la Ville de Montréal</h2>
         <table width="100%" cellpadding="4" cellspacing="0">
             <tbody>
-                <tr>
-                    <td width="100%">Some text.</td>
-                </tr>
-            </tbody>
-            <tbody>
-                <tr style="border: 1px solid #000000;">
-                    <td width="100%">
-                        <h3 style="text-align: center;">Some subtitle</h3>
-                        <div>Meuh meuh meuh</div>
-                    </td>
-                </tr>
+                {% for release in data.releases %}
+                    <tr style="border: 1px solid #000000;"><td>{{ release.id }}</td><td>{{ release.tender.description }}</td></tr>
+                {% endfor %}
             </tbody>
         </table>
         <hr style="margin: 3em 0;"/>

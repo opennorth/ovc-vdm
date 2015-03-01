@@ -1,96 +1,61 @@
-from flask import Flask, render_template
-from flask import request
+import os
+from flask import Flask, render_template, request, abort
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.restful import reqparse, abort, Api, Resource
 from sqlalchemy.orm.exc import *
 from sqlalchemy.sql import func
+
 from sqlalchemy import select,cast, desc, asc
-from werkzeug.exceptions import NotAcceptable
-import ho.pisa as pisa 
-from StringIO import *
-import os
-from sqlalchemy.sql.functions import ReturnTypeFromArgs
 from datetime import datetime
+from utils import date_time_arg,  unaccent
 
+from werkzeug.exceptions import NotAcceptable
+from flask.ext.restful import reqparse, abort, Api
+from serializations import CustomApi, generate_pdf, generate_csv, generate_xlsx
 
+#Initiate the APP
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
 
-class unaccent(ReturnTypeFromArgs):
-    pass
-
-
-class CustomApi(Api):
-    FORMAT_MIMETYPE_MAP = {
-        "csv": "text/csv",
-        "json": "application/json",
-        "pdf": "application/pdf",
-        "ocds": "application/json"
-        # Add other mimetypes as desired here
-    }
-
-    def mediatypes(self):
-        """Allow all resources to have their representation
-        overriden by the `format` URL argument"""
-
-        preferred_response_type = []
-        format = request.args.get("format")
-        if format:
-            mimetype = self.FORMAT_MIMETYPE_MAP.get(format)
-            preferred_response_type.append(mimetype)
-            if not mimetype:
-                raise NotAcceptable()
-        return preferred_response_type + super(CustomApi, self).mediatypes()
 
 
 app = Flask(__name__)
 api = CustomApi(app)
 
-#use env variable to get what type of environment we have
 app.config.from_object(os.environ['APP_SETTINGS'])
 
 db = SQLAlchemy(app)
 
-from models import *
-
-
 @api.representation('application/pdf')
-def output_csv(data, code, headers=None):
-    html = render_template('pdf_generator.html')
-
-    output_pdf = StringIO()
-    pisa.CreatePDF(html.encode('utf-8'), output_pdf)
-
-    resp = app.make_response(output_pdf.getvalue())
+def output_pdf(data, code, headers=None):
+    resp = app.make_response(generate_pdf(data))
     return resp
 
 
 @api.representation('text/csv')
 def output_csv(data, code, headers=None):
-    #some CSV serialized data
-    #print(data)
-    rt = "\n"
-    str = ","
-    total = []
-    for release in data["releases"]:
-        laliste = []
-        laliste.append(release["awards"][0]["itemsAwarded"][0]["classificationDescription"])
-        laliste.append(release["awards"][0]["suppliers"][0]["id"]["name"])
-        laliste.append(release["buyer"]["id"]["name"])
-        row = str.join(laliste)
-        total.append(row)
-
-    data = rt.join(total)
-    resp = app.make_response(data)
+    resp = app.make_response(generate_csv(data))
     return resp
 
+@api.representation('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+def output_xlsx(data, code, headers=None):
+    resp = app.make_response(generate_xlsx(data))
+    return resp
 
-class Root(Resource):
+from models import *
+
+#Define routes for HTML content
+@app.route("/")
+def index():
+    print (app.url_map)
+    return render_template('index.html')
+
+#Define routes for API
+class ApiRoot(Resource):
     def get(self):
         accept_header = request.headers.get('Accept')
-        print(accept_header)
         request.headers.get('Accept')
 
 
@@ -114,12 +79,8 @@ class Root(Resource):
         output["buyer"] = buyer_dict 
  
         return output
-api.add_resource(Root, '/api/')
+api.add_resource(ApiRoot, '/api/')
 
-#should move this in an utils
-def date_time_arg (value):
-    #TODO SEE how to reject if not format YYYY-MM-DD
-    return datetime.strptime(value, "%Y-%m-%d") 
 
 
 class ListReleases(Resource):
@@ -261,7 +222,13 @@ api.add_resource(IndividualRelease, '/api/release/<string:ocid>')
 
 class BuyerList(Resource):
     def get(self):
-        buyers = db.session.query(Buyer.buyer_uid, Buyer.buyer_name).all()
+
+        parser = reqparse.RequestParser()   
+        parser.add_argument('offset', type=int, location='args')
+        parser.add_argument('limit', type=int, location='args')                           
+        args = parser.parse_args(strict=True)
+
+        buyers = db.session.query(Buyer.id, Buyer.name, Buyer.slug).all()
         return [row._asdict() for row in buyers] 
         
 

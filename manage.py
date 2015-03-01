@@ -23,6 +23,15 @@ manager.add_command('db', MigrateCommand)
 
 
 @manager.command
+def test_meta():
+    #TODO: APPLIQUER CASCADE LORS DE LA CREATION DES RELEASES
+    meh = json.dumps(Release.group_by_value_range()) 
+
+    print(meh)
+
+
+
+@manager.command
 def flush_releases():
     #TODO: APPLIQUER CASCADE LORS DE LA CREATION DES RELEASES
     try:

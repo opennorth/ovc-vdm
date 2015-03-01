@@ -11,6 +11,7 @@ Pillow==2.7.0
 SQLAlchemy==0.9.8
 Unidecode==0.04.17
 Werkzeug==0.9.6
+XlsxWriter==0.6.6
 alembic==0.7.4
 aniso8601==0.92
 awesome-slugify==1.6.2

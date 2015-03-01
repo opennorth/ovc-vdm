@@ -1,12 +1,11 @@
 from flask import Flask, url_for
 from flask.ext.sqlalchemy import SQLAlchemy
-from app import db
 import json
 from nose.tools import *
 from manage import update_sources, update_releases
 import subprocess
 import os
-
+from app import db
 #init_db()
 
 import app
