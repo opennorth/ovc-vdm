@@ -1,10 +1,8 @@
 from datetime import datetime
 from sqlalchemy.sql.functions import ReturnTypeFromArgs
-
-def date_time_arg (value):
-
-    #TODO SEE how to reject if not format YYYY-MM-DD (regex dans agg_argument!!)
-    return datetime.strptime(value, "%Y-%m-%d") 
+from flask.ext.restful import reqparse, Resource, inputs
+from sqlalchemy.sql import func
+from flask import Flask, render_template, request, abort
 
 
 class unaccent(ReturnTypeFromArgs):

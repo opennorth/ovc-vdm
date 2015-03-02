@@ -1,17 +1,20 @@
 import os
 from flask import Flask, render_template, request, abort
 from flask.ext.sqlalchemy import SQLAlchemy
-from flask.ext.restful import reqparse, abort, Api, Resource
+from flask.ext.restful import reqparse, abort, Api, Resource, inputs
 from sqlalchemy.orm.exc import *
 from sqlalchemy.sql import func
 
 from sqlalchemy import select,cast, desc, asc
 from datetime import datetime
-from utils import date_time_arg,  unaccent
+from utils import  unaccent
 
 from werkzeug.exceptions import NotAcceptable
 from flask.ext.restful import reqparse, abort, Api
 from serializations import CustomApi, generate_pdf, generate_csv, generate_xlsx
+import re
+
+from constants import OCDS_META
 
 #Initiate the APP
 import sys
@@ -58,9 +61,6 @@ class ApiRoot(Resource):
         accept_header = request.headers.get('Accept')
         request.headers.get('Accept')
 
-
-
-
         releases = db.session.query(Release).count()
         releases_sum = db.session.query(func.sum(Release.value).label('sum')).scalar()
         buyers = db.session.query(Buyer).count()
@@ -84,131 +84,332 @@ api.add_resource(ApiRoot, '/api/')
 
 
 class ListReleases(Resource):
-    def get(self):
 
-        parser = reqparse.RequestParser()
-        parser.add_argument('q', type=str, location='args')
-        parser.add_argument('offset', type=int, location='args')
-        parser.add_argument('limit', type=int, location='args')
-        parser.add_argument('value_gt', type=int, location='args')
-        parser.add_argument('value_lt', type=int, location='args')
-        parser.add_argument('date_gt', type=date_time_arg, location='args')
-        parser.add_argument('date_lt', type=date_time_arg, location='args')        
-        parser.add_argument('buyer', type=str, location='args')
-        parser.add_argument('activity', type=str, location='args')
-        parser.add_argument('supplier', type=str, location='args')
-        parser.add_argument('order_by', type=str, location='args')
-        parser.add_argument('order_dir', type=str, location='args')                         
-        args = parser.parse_args()
-        #print(args)
-        releases = db.session.query(Release)
-        releases_sum = db.session.query(func.sum(Release.value).label('sum'))
+    def __init__(self, *args, **kwargs):
+        super(ListReleases, self).__init__(*args, **kwargs)
 
-        #TODO: REFACTOR process of filtering parameters
+        self.default_limit = 50
+        self.default_order_by = 'value'
+        self.default_order_dir = 'asc'
+
+        self.accepted_parameters = [
+            {"param": 'q', "type": str},
+            {"param": 'offset', "type": inputs.natural},
+            {"param": 'limit', "type": inputs.natural},
+            {"param": 'value_gt', "type": inputs.natural},
+            {"param": 'value_lt', "type": inputs.natural},
+            {"param": 'date_gt', "type": inputs.date},
+            {"param": 'date_lt', "type": inputs.date},
+            {"param": 'buyer', "type": str},
+            {"param": 'activity', "type": str}, 
+            {"param": 'supplier', "type": str},
+            {"param": 'order_by', "type": str}, 
+            {"param": 'order_dir', "type": str},
+            {"param": 'format', "type": str},
+        ]
+
+        self.accepted_order_by = ['value', 'buyer', 'id', 'date', None]
+
+
+    def parse_arg(self):
+        parser = reqparse.RequestParser()        
+        for parameter in self.accepted_parameters:
+            parser.add_argument(parameter["param"], type=parameter["type"], location='args')
+
+        args = parser.parse_args(strict=True)
+
+        if args['order_by'] not in self.accepted_order_by:
+            abort(400, message='Order by value must be %s' % accepted_order_by)
+
+        if args['order_dir'] not in ['asc', 'desc', None]:
+            abort(400, message='order_dir value must be "asc" or "desc"')
+
+        return args
+
+    def sort_request(self, query, args):
+
+        sort_attr = self.default_order_by
+        if (args['order_by'] != None):
+            sort_attr = args['order_by']
+        
+        sorter = self.default_order_dir
+        if ('order_dir' in args and args['order_dir'] == 'desc'):
+            sorter = 'desc'
+
+        return query.order_by("%s %s" % (sort_attr, sorter) )
+
+    def filter_request(self, query, args):
         if args['q'] != None:
             select_stmt = select([Release]).where(func.to_tsvector('fr', unaccent(Release.description)).match(args['q'].replace(" ", "&"), postgresql_regconfig='fr'))
-            releases = releases.select_entity_from(select_stmt)
-            releases_sum = releases_sum.select_entity_from(select_stmt)
-
+            query = query.select_entity_from(select_stmt)
+        
         if args['value_gt'] != None:
-            releases = releases.filter(Release.value >= args['value_gt'])
-            releases_sum = releases_sum.filter(Release.value >= args['value_gt'])
+            query = query.filter(Release.value >= args['value_gt'])
 
 
         if args['value_lt'] != None:
-            releases = releases.filter(Release.value <= args['value_lt'])
-            releases_sum = releases_sum.filter(Release.value <= args['value_lt'])
+            query = query.filter(Release.value <= args['value_lt'])
 
         if args['date_gt'] != None:
-            releases = releases.filter(Release.date >= args['date_gt'])
-            releases_sum = releases_sum.filter(Release.date >= args['date_gt'])
+            query = query.filter(Release.date >= args['date_gt'])
 
 
         if args['date_lt'] != None:
-            releases = releases.filter(Release.date <= args['date_lt'])
-            releases_sum = releases_sum.filter(Release.date <= args['date_lt'])
+            query = query.filter(Release.date <= args['date_lt'])
 
         if args['buyer'] != None:
-            releases = releases.join(Buyer).filter(Buyer.slug == args['buyer'])
-            releases_sum = releases_sum.join(Buyer).filter(Buyer.slug == args['buyer'])
+            query = query.join(Buyer).filter(Buyer.slug == args['buyer'])
 
         if args['activity'] != None:
             select_stmt = select([Release]).where(Release.activities.any(args['activity']))
-            releases = releases.select_entity_from(select_stmt)
-            releases_sum = releases_sum.select_entity_from(select_stmt)
+            query = query.select_entity_from(select_stmt)
 
         if args['supplier'] != None:
-            releases = releases.filter(Release.supplier_slug == args['supplier'])
-            releases_sum = releases_sum.filter(Release.supplier_slug == args['supplier'])            
+            query = query.filter(Release.supplier_slug == args['supplier'])
 
-        #TODO: Catch if order_by et order_dir n'ont pas les bonnes valeurs
-        if (args['order_by'] != None):
-            sort_attr = getattr(Release, args['order_by'])
+        return query          
 
-            sorter = sort_attr.asc()
-            if ('order_dir' in args and args['order_dir'] == 'desc'):
-                sorter = sort_attr.desc()
 
-            releases = releases.order_by(sorter)
+    def offset_limit(self, query, args):
+        (offset,limit) = (0,self.default_limit)
 
-        release_count = releases.count()
-
-        (offset,limit) = (0,50)
         if args['offset'] != None:
             offset = args['offset']
         if args['limit'] != None:
             limit = args['limit']
-        releases = releases[offset:limit]
-
-        pagination = {"offset" : offset, "limit":  limit}
-
-        output = {}
         
-        if request.args.get("format") != 'ocds':
+        return (query[offset:offset+limit], offset, limit)
+
+
+    def get(self):
+        
+        args = self.parse_arg()
+
+
+        releases = db.session.query(Release)
+        releases_sum = db.session.query(func.sum(Release.value).label('total_value'), func.max(Release.value).label('max_value'), func.min(Release.value).label('min_value'))
+      
+        releases = self.filter_request(releases, args)
+        releases_sum = self.filter_request(releases_sum, args)
+
+        #Sort records
+        releases = self.sort_request(releases, args)
+        
+        release_count = releases.count()
+
+        #Limit and offset
+        (releases, offset, limit) = self.offset_limit(releases, args)
+
+        #Generate output structure
+        output = dict()
+
             
-            output["meta"] = {}
-            output["meta"]["count"] = release_count
-            output["meta"]["total_value"] = releases_sum.scalar()
-            output["meta"]["pagination"] = pagination
+        output["meta"] = {
+            "count": release_count,
+            "pagination" : {"offset" : offset, "limit":  limit}
+        }
 
+        output["meta"].update(releases_sum.one()._asdict())
+
+        output.update(OCDS_META)
         output["uri"] = request.url
-
-        #TODO: Ideally it would be the date of the last contract added
         output["publishedDate"] = datetime.now().isoformat()
- 
-        #TODO: MOVE THAT ELSE WHERE... IT'S STATIC STUFF       
-        output["license"] = app.config["LICENSE"]
-        output["publicationPolicy"] = app.config["PUBLICATION_POLICY"]
 
-        #publisher section 
-        output["publisher"] = {}
-        output["publisher"]["identifier"] = {
-                "legalName" :  app.config["PUBLISHER_LEGAL_NAME"]}
+        output["releases"] = [r.json for r in releases] 
 
-        output["publisher"]["name"] =  app.config["PUBLISHER_NAME"]
-
-        output["publisher"]["address"] = {
-                "streetAddress" : app.config["PUBLISHER_ADDRESS"][0],
-                "locality" : app.config["PUBLISHER_ADDRESS"][1],
-                "region" : app.config["PUBLISHER_ADDRESS"][2],
-                "postalCode" : app.config["PUBLISHER_ADDRESS"][3],
-                "countryName" : app.config["PUBLISHER_ADDRESS"][4]
-        }
-
-        output["publisher"]["contactPoint"] = {
-                "name" : app.config["PUBLISHER_CONTACT"][0],
-                "email" : app.config["PUBLISHER_CONTACT"][1],
-                "telephone" : app.config["PUBLISHER_CONTACT"][2],
-                "faxNumber" : app.config["PUBLISHER_CONTACT"][3],
-                "url" : app.config["PUBLISHER_CONTACT"][4]
-        }
-
-        output["releases"] = [] 
-        for release in releases:
-            output["releases"].append(release.json)
         return output 
 
 api.add_resource(ListReleases, '/api/releases')
+
+class ReleasesBySupplier(ListReleases):
+
+    def __init__(self, *args, **kwargs):
+        super(ReleasesBySupplier, self).__init__(*args, **kwargs)
+
+        self.default_limit = 50
+        self.default_order_by = 'total_value'
+        self.default_order_dir = 'desc'
+
+    def get(self):
+        args = self.parse_arg()
+
+        releases = db.session.query(Release.supplier.label('supplier'), func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))      
+        releases = self.filter_request(releases, args)
+        releases = releases.group_by(Release.supplier)
+        releases = self.sort_request(releases, args)
+        
+        release_count = releases.count()
+
+        (releases, offset, limit) = self.offset_limit(releases, args)
+
+        #Generate output structure
+        output = dict()
+            
+        output["meta"] = {
+            "count": release_count,
+            "pagination" : {"offset" : offset, "limit":  limit}
+        }
+
+        output["releases"] = [r._asdict() for r in releases] 
+
+        return output 
+api.add_resource(ReleasesBySupplier, '/api/releases/by_supplier')
+
+
+class ReleasesByBuyer(ListReleases):
+
+    def __init__(self, *args, **kwargs):
+        super(ReleasesByBuyer, self).__init__(*args, **kwargs)
+
+        self.default_limit = 50
+        self.default_order_by = 'total_value'
+        self.default_order_dir = 'desc'
+
+    def get(self):
+        args = self.parse_arg()
+
+        releases = db.session.query(
+            Buyer.name.label('buyer'),
+            func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))
+        releases = self.filter_request(releases, args)
+        releases = releases.filter(Buyer.id == Release.buyer_id)
+        releases = releases.group_by(Buyer.name)
+        releases = self.sort_request(releases, args)
+        
+        release_count = releases.count()
+
+        (releases, offset, limit) = self.offset_limit(releases, args)
+
+        #Generate output structure
+        output = dict()
+            
+        output["meta"] = {
+            "count": release_count,
+            "pagination" : {"offset" : offset, "limit":  limit}
+        }
+
+        output["releases"] = [r._asdict() for r in releases] 
+
+        return output 
+api.add_resource(ReleasesByBuyer, '/api/releases/by_buyer')
+
+
+class ReleasesByValueRange(ListReleases):
+
+    def __init__(self, *args, **kwargs):
+        super(ReleasesByValueRange, self).__init__(*args, **kwargs)
+
+        self.default_limit = 5000
+        self.default_order_by = '1'
+        self.default_order_dir = 'asc'
+
+        self.width_bucket = (0, 10000000, 19)
+
+        self.accepted_parameters.append({"param": 'bucket', "type": str})
+
+    def get(self):
+        args = self.parse_arg()
+
+        if args["bucket"] != None:
+            self.width_bucket = args["bucket"].split(',')
+  
+        releases = db.session.query(
+        width_bucket(Release.value, self.width_bucket[0], self.width_bucket[1], self.width_bucket[2]).label('segment'),
+        func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))
+        releases = self.filter_request(releases, args)
+        releases = releases.group_by('1')
+        releases = self.sort_request(releases, args)
+        
+        release_count = releases.count()
+
+        (releases, offset, limit) = self.offset_limit(releases, args)
+
+        #Generate output structure
+        output = dict()
+            
+        output["meta"] = {
+            "count": release_count,
+            "pagination" : {"offset" : offset, "limit":  limit}
+        }
+
+        output["releases"] = [r._asdict() for r in releases] 
+
+        return output 
+api.add_resource(ReleasesByValueRange, '/api/releases/by_value')
+
+
+class ReleasesByMonth(ListReleases):
+
+    def __init__(self, *args, **kwargs):
+        super(ReleasesByMonth, self).__init__(*args, **kwargs)
+
+        self.default_limit = 50
+        self.default_order_by = '1'
+        self.default_order_dir = 'asc'
+
+
+    def get(self):
+        args = self.parse_arg()
+
+        releases = db.session.query(
+        func.substring(cast(Release.date, db.String), 0,8).label('month'), func.count(Release.value).label('count'), func.sum(Release.value).label('total_value'))
+
+        releases = self.filter_request(releases, args)
+        releases = releases.group_by('1')
+        releases = self.sort_request(releases, args)
+        
+        release_count = releases.count()
+
+        (releases, offset, limit) = self.offset_limit(releases, args)
+
+        #Generate output structure
+        output = dict()
+            
+        output["meta"] = {
+            "count": release_count,
+            "pagination" : {"offset" : offset, "limit":  limit}
+        }
+
+        output["releases"] = [r._asdict() for r in releases] 
+
+        return output 
+api.add_resource(ReleasesByMonth, '/api/releases/by_month')
+
+class ReleasesByActivity(ListReleases):
+
+    def __init__(self, *args, **kwargs):
+        super(ReleasesByActivity, self).__init__(*args, **kwargs)
+
+        self.default_limit = 50
+        self.default_order_by = 'total_value'
+        self.default_order_dir = 'desc'
+
+
+    def get(self):
+        args = self.parse_arg()
+
+        releases = db.session.query(Release.activities[1].label('activity'), func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))      
+        releases = self.filter_request(releases, args)
+        releases = releases.group_by('1')
+        releases = self.sort_request(releases, args)
+
+        
+        release_count = releases.count()
+
+        (releases, offset, limit) = self.offset_limit(releases, args)
+
+        #Generate output structure
+        output = dict()
+            
+        output["meta"] = {
+            "count": release_count,
+            "pagination" : {"offset" : offset, "limit":  limit}
+        }
+
+        output["releases"] = [r._asdict() for r in releases] 
+
+        return output 
+api.add_resource(ReleasesByActivity, '/api/releases/by_activity')
 
 class IndividualRelease(Resource):
     def get(self,ocid):
@@ -219,20 +420,6 @@ class IndividualRelease(Resource):
             abort(404, message="Release {} does not exist".format(ocid)) 
 
 api.add_resource(IndividualRelease, '/api/release/<string:ocid>')
-
-class BuyerList(Resource):
-    def get(self):
-
-        parser = reqparse.RequestParser()   
-        parser.add_argument('offset', type=int, location='args')
-        parser.add_argument('limit', type=int, location='args')                           
-        args = parser.parse_args(strict=True)
-
-        buyers = db.session.query(Buyer.id, Buyer.name, Buyer.slug).all()
-        return [row._asdict() for row in buyers] 
-        
-
-api.add_resource(BuyerList, '/api/buyers')
 
 if __name__ == '__main__':
     app.run()
