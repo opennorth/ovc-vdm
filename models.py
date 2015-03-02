@@ -29,6 +29,7 @@ class Source(db.Model):
     name = db.Column(db.String())
     mapper = db.Column(db.String())
     url =  db.Column(db.String())
+    skip_lines = db.Column(Integer)
     last_update = db.Column(db.DateTime(), default='2000-01-01 00:00:00')
     last_retrieve = db.Column(db.DateTime(), default='2000-01-01 00:00:00')
 
@@ -38,6 +39,9 @@ class Source(db.Model):
         self.name = data["name"]
         self.mapper = data["mapper"]
         self.url = data["url"]
+
+        if 'skip_lines' in data:
+            self.skip_lines = data["skip_lines"]
 
     def __repr__(self):
         return '<name {}>'.format(self.name)

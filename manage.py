@@ -87,7 +87,8 @@ def update_releases():
 
 @manager.command
 def load_source(source, action='load'):
-    mapper = Mapper(source.url, source.mapper)
+    print (source.url)
+    mapper = Mapper(source)
     output = mapper.to_ocds()
 
     load_ocds(output, type='dict', source=source)
@@ -105,6 +106,7 @@ def load_ocds(ocds, type='path', source=None):
 
         if source != None:
             db.session.query(Release).filter(Release.source_id == source.id).delete() 
+            
         for release in data["releases"]:
         
             the_release= Release(release)

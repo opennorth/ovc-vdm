@@ -217,7 +217,7 @@ class ListReleases(Resource):
 
         output["releases"] = [r.json for r in releases] 
 
-        return output 
+        return output, 200, {"Access-Control-Allow-Origin": "*"}
 
 api.add_resource(ListReleases, '/api/releases')
 
