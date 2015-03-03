@@ -1,31 +1,32 @@
-import os
+
 from flask import Flask, render_template, request, abort
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.restful import reqparse, abort, Api, Resource, inputs
-from sqlalchemy.orm.exc import *
+from flask.ext.cache import Cache
+
 from sqlalchemy.sql import func
-
 from sqlalchemy import select,cast, desc, asc
-from datetime import datetime
-from utils import  unaccent
 
-from werkzeug.exceptions import NotAcceptable
-from flask.ext.restful import reqparse, abort, Api
-from serializations import CustomApi, generate_pdf, generate_csv, generate_xlsx
+from datetime import datetime
+#from utils import  unaccent
+from unidecode import unidecode
+
 import re
+import os
+import sys
 
 from constants import OCDS_META
+from serializations import CustomApi, generate_pdf, generate_csv, generate_xlsx
 
 #Initiate the APP
-import sys
+
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
 
-
-
 app = Flask(__name__)
 api = CustomApi(app)
+cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 
 app.config.from_object(os.environ['APP_SETTINGS'])
 
@@ -47,12 +48,19 @@ def output_xlsx(data, code, headers=None):
     resp = app.make_response(generate_xlsx(data))
     return resp
 
+
+def make_cache_key(*args, **kwargs):
+    path = request.path
+    args = str(hash(frozenset(request.args.items())))
+    return (path + args).encode('utf-8')
+
+
 from models import *
+
 
 #Define routes for HTML content
 @app.route("/")
 def index():
-    print (app.url_map)
     return render_template('index.html')
 
 #Define routes for API
@@ -140,8 +148,8 @@ class ListReleases(Resource):
 
     def filter_request(self, query, args):
         if args['q'] != None:
-            select_stmt = select([Release]).where(func.to_tsvector('fr', unaccent(Release.description)).match(args['q'].replace(" ", "&"), postgresql_regconfig='fr'))
-            query = query.select_entity_from(select_stmt)
+            search = unidecode(unicode(args['q'])).replace(" ", "&")
+            query = query.filter(func.to_tsvector('fr', Release.concat).match(search))
         
         if args['value_gt'] != None:
             query = query.filter(Release.value >= args['value_gt'])
@@ -161,8 +169,10 @@ class ListReleases(Resource):
             query = query.join(Buyer).filter(Buyer.slug == args['buyer'])
 
         if args['activity'] != None:
-            select_stmt = select([Release]).where(Release.activities.any(args['activity']))
-            query = query.select_entity_from(select_stmt)
+            #select_stmt = select([Release]).where(Release.activities.any(args['activity']))
+            #query = query.select_entity_from(select_stmt)
+
+            query = query.filter(Release.activities.any(args['activity']))
 
         if args['supplier'] != None:
             query = query.filter(Release.supplier_slug == args['supplier'])
@@ -180,7 +190,7 @@ class ListReleases(Resource):
         
         return (query[offset:offset+limit], offset, limit)
 
-
+    @cache.cached(timeout=5000, key_prefix=make_cache_key)
     def get(self):
         
         args = self.parse_arg()
@@ -194,7 +204,7 @@ class ListReleases(Resource):
 
         #Sort records
         releases = self.sort_request(releases, args)
-        
+
         release_count = releases.count()
 
         #Limit and offset
@@ -230,6 +240,7 @@ class ReleasesBySupplier(ListReleases):
         self.default_order_by = 'total_value'
         self.default_order_dir = 'desc'
 
+    @cache.cached(timeout=5000, key_prefix=make_cache_key)
     def get(self):
         args = self.parse_arg()
 
@@ -265,6 +276,7 @@ class ReleasesByBuyer(ListReleases):
         self.default_order_by = 'total_value'
         self.default_order_dir = 'desc'
 
+    @cache.cached(timeout=5000, key_prefix=make_cache_key)
     def get(self):
         args = self.parse_arg()
 
@@ -307,6 +319,7 @@ class ReleasesByValueRange(ListReleases):
 
         self.accepted_parameters.append({"param": 'bucket', "type": str})
 
+    @cache.cached(timeout=5000, key_prefix=make_cache_key)
     def get(self):
         args = self.parse_arg()
 
@@ -348,6 +361,7 @@ class ReleasesByMonth(ListReleases):
         self.default_order_dir = 'asc'
 
 
+    @cache.cached(timeout=5000, key_prefix=make_cache_key)
     def get(self):
         args = self.parse_arg()
 
@@ -384,7 +398,7 @@ class ReleasesByActivity(ListReleases):
         self.default_order_by = 'total_value'
         self.default_order_dir = 'desc'
 
-
+    @cache.cached(timeout=5000, key_prefix=make_cache_key)
     def get(self):
         args = self.parse_arg()
 
@@ -412,6 +426,7 @@ class ReleasesByActivity(ListReleases):
 api.add_resource(ReleasesByActivity, '/api/releases/by_activity')
 
 class IndividualRelease(Resource):
+    @cache.cached(timeout=5000)
     def get(self,ocid):
         try:
             my_release = Release.query.filter_by(ocid=ocid).one()
