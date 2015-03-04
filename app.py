@@ -6,6 +6,7 @@ from flask.ext.cache import Cache
 
 from sqlalchemy.sql import func
 from sqlalchemy import select,cast, desc, asc
+from sqlalchemy.orm.exc import NoResultFound
 
 from datetime import datetime
 #from utils import  unaccent
