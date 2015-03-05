@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, abort
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.restful import reqparse, abort, Api, Resource, inputs
 from flask.ext.cache import Cache
+from flask.ext.cors import CORS
 
 from sqlalchemy.sql import func
 from sqlalchemy import select,cast, desc, asc
@@ -32,6 +33,7 @@ cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 app.config.from_object(os.environ['APP_SETTINGS'])
 
 db = SQLAlchemy(app)
+cors = CORS(app)
 
 @api.representation('application/pdf')
 def output_pdf(data, code, headers=None):
@@ -228,7 +230,7 @@ class ListReleases(Resource):
 
         output["releases"] = [r.json for r in releases] 
 
-        return output, 200, {"Access-Control-Allow-Origin": "*"}
+        return output
 
 api.add_resource(ListReleases, '/api/releases')
 
