@@ -76,6 +76,7 @@ class Release(db.Model):
     json =  db.Column(JSON)
     supplier = db.Column(db.String())
     supplier_slug = db.Column(db.String())
+    procuring_entity = db.Column(db.String())
     dossier = db.Column(db.String())
     decision = db.Column(db.String())
     activities =  db.Column(ARRAY(db.String()))
@@ -97,10 +98,12 @@ class Release(db.Model):
 
         self.supplier = json_data["awards"][0]["suppliers"][0]["name"]
         self.supplier_slug = slugify(self.supplier, to_lower=True)
-        self.dossier = json_data["id"]
-        self.decision = json_data["tender"]["items"][0]["id"]
-        self.description = json_data["tender"]["description"]
-        self.activities = json_data["tender"]["title"].split(";")
+        self.procuring_entity = json_data["tender"]["procuringEntity"]["name"]
+        self.supplier_slug = slugify(self.supplier, to_lower=True)
+        self.dossier = json_data["awards"][0]["id"]
+        self.decision = json_data["awards"][0]["items"][0]["id"]
+        self.description = json_data["awards"][0]["items"][0]["description"]
+        self.activities = json_data["subject"]
         self.date = json_data["date"]
         self.value = json_data["awards"][0]["value"]["amount"]
 

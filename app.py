@@ -309,6 +309,44 @@ class ReleasesByBuyer(ListReleases):
 api.add_resource(ReleasesByBuyer, '/api/releases/by_buyer')
 
 
+class ReleasesByProcuringEntity(ListReleases):
+
+    def __init__(self, *args, **kwargs):
+        super(ReleasesByProcuringEntity, self).__init__(*args, **kwargs)
+
+        self.default_limit = 50
+        self.default_order_by = 'total_value'
+        self.default_order_dir = 'desc'
+
+    @cache.cached(timeout=5000, key_prefix=make_cache_key)
+    def get(self):
+        args = self.parse_arg()
+
+        releases = db.session.query(
+            Release.procuring_entity.label('procuring_entity'),
+            func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))
+        releases = self.filter_request(releases, args)
+        releases = releases.group_by(Release.procuring_entity)
+        releases = self.sort_request(releases, args)
+        
+        release_count = releases.count()
+
+        (releases, offset, limit) = self.offset_limit(releases, args)
+
+        #Generate output structure
+        output = dict()
+            
+        output["meta"] = {
+            "count": release_count,
+            "pagination" : {"offset" : offset, "limit":  limit}
+        }
+
+        output["releases"] = [r._asdict() for r in releases] 
+
+        return output 
+api.add_resource(ReleasesByProcuringEntity, '/api/releases/by_procuring_entity')
+
+
 class ReleasesByValueRange(ListReleases):
 
     def __init__(self, *args, **kwargs):

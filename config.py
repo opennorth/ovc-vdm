@@ -28,13 +28,13 @@ class Config(object):
     ]
 
     SERVICE_TO_ACTIVITY = {
-        "ARRONDISSEMENT DE MONTRÉAL-NORD": "Arrondissements",
-        "SERVICE DES TECHNOLOGIES DE L'INFORMATION" : "Gestion de l'information",
-        "SERVICE DE LA GESTION ET DE LA PLANIFICATION IMMOBILIÈRE": "Organisation et administration",
-        "ARRONDISSEMENT DE RIVIÈRE-DES-PRAIRIES–POINTE-AUX-TREMBLES": "Arrondissements",
-        "ARRONDISSEMENT DE LASALLE" : "Arrondissements",
-        "SERVICE DE POLICE DE MONTRÉAL": "Sécurité publique",
-        "SERVICE DES INFRASTRUCTURES, DU TRANSPORT ET DE L'ENVIRONNEMENT" : "Transport;Environnement"
+        "ARRONDISSEMENT DE MONTRÉAL-NORD": ["Arrondissements"],
+        "SERVICE DES TECHNOLOGIES DE L'INFORMATION" : ["Gestion de l'information"],
+        "SERVICE DE LA GESTION ET DE LA PLANIFICATION IMMOBILIÈRE": ["Organisation et administration"],
+        "ARRONDISSEMENT DE RIVIÈRE-DES-PRAIRIES–POINTE-AUX-TREMBLES": ["Arrondissements"],
+        "ARRONDISSEMENT DE LASALLE" : ["Arrondissements"],
+        "SERVICE DE POLICE DE MONTRÉAL": ["Sécurité publique"],
+        "SERVICE DES INFRASTRUCTURES, DU TRANSPORT ET DE L'ENVIRONNEMENT" : ["Transport","Environnement"]
     }
 
 

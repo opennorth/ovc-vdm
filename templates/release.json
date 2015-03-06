@@ -4,7 +4,7 @@
         "date": null,
         "tag": "award",
         "language": "fr",
-
+        "subject": [],
         "buyer": {
             "name": null,
             "address": {
@@ -16,35 +16,21 @@
             },
             "identifier": {
                 "id": null
+            },
+            "subOrganisationOf": {
+                "name": null
             }
         },
         "tender": {
-            "id": null,
-            "description": null,
             "status": "complete",
-            "items": [{
-                "id": null,
-                "description": null,
-                "quantity": 1
-            }],
-            "value": {
-                "amount": null,
-                "currency": "CAD"
-            },
             "procuringEntity": {
-                "name": null,
-                "address": {
-                    "countryName": "Canada",
-                    "locality": "Montréal",
-                    "postalCode": "H2Y 1C6",
-                    "region": "QC",
-                    "streetAddress": "275 Rue Notre-Dame Est, Montréal"
-                }
+                "name": null
             } 
         },
         "awards": [{
             "id": null,
             "date": null,
+            "repartition": null,
             "value": {
                 "amount": null,
                 "currency": "CAD"

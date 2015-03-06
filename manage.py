@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from flask.ext.script import Manager
 from flask.ext.migrate import Migrate, MigrateCommand
 from sqlalchemy.sql import exists
@@ -23,15 +24,6 @@ manager.add_command('db', MigrateCommand)
 
 
 @manager.command
-def test_meta():
-    #TODO: APPLIQUER CASCADE LORS DE LA CREATION DES RELEASES
-    meh = json.dumps(Release.group_by_value_range()) 
-
-    print(meh)
-
-
-
-@manager.command
 def flush_releases():
     #TODO: APPLIQUER CASCADE LORS DE LA CREATION DES RELEASES
     try:
@@ -43,6 +35,7 @@ def flush_releases():
 @manager.command
 def update_sources():
     #TODO : Delete sources that have been removed from config
+    #TODO : Mettre un parametre --force pour forcer la mise a jour des données quoiqu'il arrive.
     start = datetime.datetime.now() 
     try:
         for config_source in  app.config["DATA_SOURCES"]:
@@ -87,7 +80,7 @@ def update_releases():
 
 @manager.command
 def load_source(source, action='load'):
-    print (source.url)
+
     mapper = Mapper(source)
     output = mapper.to_ocds()
 
@@ -124,9 +117,6 @@ def load_ocds(ocds, type='path', source=None):
         source.last_retrieve = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         db.session.commit()
 
-    except TypeError as e:
-        db.session.rollback()
-        print "Typer error: %s" %  repr(e)
     except exc.FlushError as e:  
         db.session.rollback()
         print "sqlalchemy error: %s" %  repr(e)
