@@ -536,6 +536,8 @@ class TreeMap(ListReleases):
                 children = children.filter(Buyer.name == item[args['parent']])                
             else:
                 children = children.filter(getattr(Release, args["parent"]) == item[args['parent']])
+
+            children = self.filter_request(children, args)
             children = children.group_by('1')
 
             (children, offset, limit) = self.offset_limit(children, args)
