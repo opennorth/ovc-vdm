@@ -29,12 +29,44 @@ class Config(object):
 
     SERVICE_TO_ACTIVITY = {
         "ARRONDISSEMENT DE MONTRÉAL-NORD": ["Arrondissements"],
-        "SERVICE DES TECHNOLOGIES DE L'INFORMATION" : ["Gestion de l'information"],
-        "SERVICE DE LA GESTION ET DE LA PLANIFICATION IMMOBILIÈRE": ["Organisation et administration"],
         "ARRONDISSEMENT DE RIVIÈRE-DES-PRAIRIES–POINTE-AUX-TREMBLES": ["Arrondissements"],
         "ARRONDISSEMENT DE LASALLE" : ["Arrondissements"],
+        "ARRONDISSEMENT DE PIERREFONDS-ROXBORO" : ["Arrondissements"],
+        "ARRONDISSEMENT DE VERDUN": ["Arrondissements"],
+        "ARRONDISSEMENT DE SAINT-LAURENT": ["Arrondissements"],
+        "ARRONDISSEMENT LE SUD-OUEST": ["Arrondissements"],
+        "ARRONDISSEMENT DE ROSEMONT-LA PETITE-PATRIE": ["Arrondissements"],
+        "ARRONDISSEMENT DE SAINT-LÉONARD": ["Arrondissements"],
+        "ARRONDISSEMENT DE VILLE-MARIE": ["Arrondissements"],
+        "ARRONDISSEMENT DE LACHINE" : ["Arrondissements"],
+        "ARRONDISSEMENT D'AHUNTSIC-CARTIERVILLE" : ["Arrondissements"],
+        "ARRONDISSEMENT DE MERCIER-HOCHELAGA-MAISONNEUVE" : ["Arrondissements"],
+        "ARRONDISSEMENT DE CÔTE-DES-NEIGES-NOTRE-DAME-DE-GRÂCE" : ["Arrondissements"],
+        "ARRONDISSEMENT DE VILLERAY-SAINT-MICHEL-PARC-EXTENSION" : ["Arrondissements"],
+        "SERVICE DES TECHNOLOGIES DE L'INFORMATION" : ["Gestion de l'information"],
+        "SERVICE DE LA GESTION ET DE LA PLANIFICATION IMMOBILIÈRE": ["Organisation et administration"],
         "SERVICE DE POLICE DE MONTRÉAL": ["Sécurité publique"],
-        "SERVICE DES INFRASTRUCTURES, DU TRANSPORT ET DE L'ENVIRONNEMENT" : ["Transport","Environnement"]
+        "SERVICE DES INFRASTRUCTURES, DU TRANSPORT ET DE L'ENVIRONNEMENT" : ["Transport","Environnement"],
+        "SERVICE DE CONCERTATION DES ARRONDISSEMENTS ET DES RESSOURCES MATÉRIELLES": ["Organisation et administration"],
+        "SERVICE DE LA MISE EN VALEUR DU TERRITOIRE": ["Urbanisme et habitation"],
+        "SERVICE DE LA QUALITÉ DE VIE" : ["Sports, loisirs, culture et développement social"],
+        "SERVICE DE L'EAU" : ["Infrastructures"],
+        "SERVICE DES AFFAIRES INSTITUTIONNELLES": ["Organisation et administration"],
+        "SERVICE DES INFRASTRUCTURES, DE LA VOIRIE ET DES TRANSPORTS" : ["Infrastructures"],
+        "DIRECTION GÉNÉRALE" : ["Organisation et administration"],
+        "SERVICE DE L'ESPACE POUR LA VIE": ["Sports, loisirs, culture et développement social"],
+        "SERVICE DE L'APPROVISIONNEMENT": ["Ressources matérielles et services"],
+        "SERVICE DE LA DIVERSITÉ SOCIALE ET DES SPORTS" : ["Sports, loisirs, culture et développement social"],
+        "SERVICE DES GRANDS PARCS, DU VERDISSEMENT ET DU MONT ROYAL": ["Sports, loisirs, culture et développement social"],
+        "SOCIÉTÉ DU PARC JEAN-DRAPEAU": ["Sports, loisirs, culture et développement social"],
+        "SERVICE DE SÉCURITÉ INCENDIE DE MONTRÉAL" : ["Sécurité publique"],
+        "SERVICE DES FINANCES" : ["Ressources financières"],
+        "SERVICE DU CAPITAL HUMAIN ET DES COMMUNICATIONS" : ["Ressources humaines", "Communications et relations publiques"],
+        "SERVICE DES AFFAIRES JURIDIQUES ET DE L’ÉVALUATION FONCIÈRE" : ["Juridique", "Foncier"],
+        "BUREAU DU VÉRIFICATEUR GÉNÉRAL" : ["Organisation et administration"],
+        "SERVICE DU MATÉRIEL ROULANT ET DES ATELIERS" : ["Ressources matérielles et services"],
+        "SERVICE DES RESSOURCES HUMAINES": ["Ressources humaines"]
+
     }
 
 

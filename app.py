@@ -129,10 +129,10 @@ class ListReleases(Resource):
 
         args = parser.parse_args(strict=True)
 
-        if args['order_by'] not in self.accepted_order_by:
+        if 'order_by' in args and args['order_by'] not in self.accepted_order_by:
             abort(400, message='Order by value must be %s' % accepted_order_by)
 
-        if args['order_dir'] not in ['asc', 'desc', None]:
+        if 'order_dir' in args and args['order_dir'] not in ['asc', 'desc', None]:
             abort(400, message='order_dir value must be "asc" or "desc"')
 
         return args
@@ -140,44 +140,44 @@ class ListReleases(Resource):
     def sort_request(self, query, args):
 
         sort_attr = self.default_order_by
-        if (args['order_by'] != None):
+        if ('order_by' in args and args['order_by'] != None):
             sort_attr = args['order_by']
         
         sorter = self.default_order_dir
-        if ('order_dir' in args and args['order_dir'] == 'desc'):
+        if ('order_dir' in args and 'order_dir' in args and args['order_dir'] == 'desc'):
             sorter = 'desc'
 
         return query.order_by("%s %s" % (sort_attr, sorter) )
 
     def filter_request(self, query, args):
-        if args['q'] != None:
+        if 'q' in args and args['q'] != None:
             search = unidecode(unicode(args['q'])).replace(" ", "&")
             query = query.filter(func.to_tsvector('fr', Release.concat).match(search))
         
-        if args['value_gt'] != None:
+        if 'value_gt' in args and args['value_gt'] != None:
             query = query.filter(Release.value >= args['value_gt'])
 
 
-        if args['value_lt'] != None:
+        if 'value_lt' in args and args['value_lt'] != None:
             query = query.filter(Release.value <= args['value_lt'])
 
-        if args['date_gt'] != None:
+        if 'date_gt' in args and args['date_gt'] != None:
             query = query.filter(Release.date >= args['date_gt'])
 
 
-        if args['date_lt'] != None:
+        if 'date_lt' in args and args['date_lt'] != None:
             query = query.filter(Release.date <= args['date_lt'])
 
-        if args['buyer'] != None:
+        if 'buyer' in args and args['buyer'] != None:
             query = query.join(Buyer).filter(Buyer.slug == args['buyer'])
 
-        if args['activity'] != None:
+        if 'activity' in args and args['activity'] != None:
             #select_stmt = select([Release]).where(Release.activities.any(args['activity']))
             #query = query.select_entity_from(select_stmt)
 
             query = query.filter(Release.activities.any(args['activity']))
 
-        if args['supplier'] != None:
+        if 'supplier' in args and args['supplier'] != None:
             query = query.filter(Release.supplier_slug == args['supplier'])
 
         return query          
@@ -186,9 +186,9 @@ class ListReleases(Resource):
     def offset_limit(self, query, args):
         (offset,limit) = (0,self.default_limit)
 
-        if args['offset'] != None:
+        if 'offset' in args and args['offset'] != None:
             offset = args['offset']
-        if args['limit'] != None:
+        if 'limit' in args and args['limit'] != None:
             limit = args['limit']
         
         return (query[offset:offset+limit], offset, limit)
@@ -465,6 +465,87 @@ class ReleasesByActivity(ListReleases):
 
         return output 
 api.add_resource(ReleasesByActivity, '/api/releases/by_activity')
+
+
+class TreeMap(ListReleases):
+
+    def __init__(self, *args, **kwargs):
+        super(TreeMap, self).__init__(*args, **kwargs)
+
+        self.default_limit = 50
+        self.default_order_by = 'total_value'
+        self.default_order_dir = 'desc'
+
+        self.accepted_parameters = [
+            {"param": 'parent', "type": str}, 
+            {"param": 'child', "type": str}, 
+            {"param": 'limit', "type": inputs.natural},
+            {"param": 'date_gt', "type": inputs.date},
+            {"param": 'date_lt', "type": inputs.date},
+            {"param": 'buyer', "type": str},
+            {"param": 'activity', "type": str}, 
+            {"param": 'supplier', "type": str},            
+
+        ]
+
+    @cache.cached(timeout=5000, key_prefix=make_cache_key)
+    def get(self):
+        args = self.parse_arg()
+
+        if args["parent"] == "activity":
+            releases = db.session.query(Release.activities[1].label(args["parent"]), func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))            
+        elif args["parent"] == "buyer":
+            releases = db.session.query(Buyer.name.label('buyer'), func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))
+            releases = releases.filter(Buyer.id == Release.buyer_id)
+
+        else:
+            releases = db.session.query(getattr(Release, args["parent"]).label(args["parent"]), func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))      
+
+        releases = self.filter_request(releases, args)
+        releases = releases.group_by('1')
+        releases = self.sort_request(releases, args)
+
+        
+        release_count = releases.count()
+
+        (releases, offset, limit) = self.offset_limit(releases, args)
+
+
+        #Generate output structure
+        output = dict()
+            
+        output["meta"] = {
+            "count": release_count,
+            "pagination" : {"offset" : offset, "limit":  limit}
+        }
+
+        output["releases"] = [r._asdict() for r in releases] 
+
+
+        for item in output["releases"]:
+            if args["child"] == "buyer":
+                children = db.session.query(Buyer.name.label('buyer'), func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))
+                children = children.filter(Buyer.id == Release.buyer_id)                
+            else:
+                children = db.session.query(getattr(Release, args["child"]).label(args["child"]), func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))
+
+            if args["parent"] == "activity":
+                children = children.filter(Release.activities[1] == item[args['parent']])
+            elif args["parent"] == "buyer":
+                children = children.join(Buyer).filter(Buyer.id == Release.buyer_id)
+                children = children.filter(Buyer.name == item[args['parent']])                
+            else:
+                children = children.filter(getattr(Release, args["parent"]) == item[args['parent']])
+            children = children.group_by('1')
+
+            (children, offset, limit) = self.offset_limit(children, args)
+
+            item["children"] = []
+            for child in children:
+                item["children"].append(child._asdict())
+
+        return output 
+api.add_resource(TreeMap, '/api/treemap')
 
 class IndividualRelease(Resource):
     @cache.cached(timeout=5000)
