@@ -35,4 +35,11 @@ def test_api_root():
   eq_(rv.status_code,200)
   resp = json.loads(rv.data)
 
-  eq_(resp["releases"]["count"],9)
+  eq_(resp["releases"]["count"],18)
+
+def test_releases_subvention():
+  rv = test_app.get('/api/releases?type=subvention')
+  eq_(rv.status_code,200)
+  resp = json.loads(rv.data)
+
+  eq_(resp["meta"]["count"],9)

@@ -93,6 +93,13 @@ class TestingConfig(Config):
         {
             'name': 'Conseil Muncipal',
             'mapper': 'field_mapper_pol_mtl',
-            'url': 'fixtures/contracts.csv'
-        }
+            'url': 'fixtures/contracts.csv',
+            'type': 'contract'
+        },
+         {
+            'name': 'Conseil Muncipal',
+            'mapper': 'field_mapper_subvention_mtl',
+            'url': 'fixtures/subventions.csv',
+            'type': 'subvention'
+        },       
     ]
