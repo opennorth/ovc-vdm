@@ -102,6 +102,7 @@ class ListReleases(Resource):
         self.default_limit = 50
         self.default_order_by = 'value'
         self.default_order_dir = 'asc'
+        self.default_type = 'contract'
 
         self.accepted_parameters = [
             {"param": 'q', "type": str},
@@ -116,10 +117,12 @@ class ListReleases(Resource):
             {"param": 'supplier', "type": str},
             {"param": 'order_by', "type": str}, 
             {"param": 'order_dir', "type": str},
+            {"param": 'type', "type": str},
             {"param": 'format', "type": str},
         ]
 
         self.accepted_order_by = ['value', 'buyer', 'id', 'date', None]
+        self.accepted_type = ['subvention', 'contract', None]
 
 
     def parse_arg(self):
@@ -150,6 +153,11 @@ class ListReleases(Resource):
         return query.order_by("%s %s" % (sort_attr, sorter) )
 
     def filter_request(self, query, args):
+
+
+        con_type = args['type'] if ('type' in args and args['type'] != None) else self.default_type
+        query = query.filter(Release.type == con_type)
+
         if 'q' in args and args['q'] != None:
             search = unidecode(unicode(args['q'])).replace(" ", "&")
             query = query.filter(func.to_tsvector('fr', Release.concat).match(search))
@@ -485,7 +493,7 @@ class TreeMap(ListReleases):
             {"param": 'buyer', "type": str},
             {"param": 'activity', "type": str}, 
             {"param": 'supplier', "type": str},            
-
+            {"param": 'type', "type": str},    
         ]
 
     @cache.cached(timeout=5000, key_prefix=make_cache_key)

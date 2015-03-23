@@ -22,7 +22,7 @@
             }
         },
         "tender": {
-            "procurementMethodRationale": "contrat",
+            "procurementMethodRationale": "contract",
             "status": "complete",
             "procuringEntity": {
                 "name": null

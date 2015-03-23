@@ -30,6 +30,7 @@ class Source(db.Model):
     mapper = db.Column(db.String())
     url =  db.Column(db.String())
     skip_lines = db.Column(Integer)
+    type = db.Column(db.String())
     last_update = db.Column(db.DateTime(), default='2000-01-01 00:00:00')
     last_retrieve = db.Column(db.DateTime(), default='2000-01-01 00:00:00')
 
@@ -39,6 +40,7 @@ class Source(db.Model):
         self.name = data["name"]
         self.mapper = data["mapper"]
         self.url = data["url"]
+        self.type = data["type"]
 
         if 'skip_lines' in data:
             self.skip_lines = data["skip_lines"]
@@ -84,7 +86,7 @@ class Release(db.Model):
     concat = db.Column(db.String())
     date = db.Column(db.DateTime())
     value = db.Column(db.Float())
-    #awards = relationship("Award", backref="releases", cascade="all, delete, delete-orphan")
+    type = db.Column(db.String())
 
     buyer_id = Column(db.Integer, ForeignKey('buyers.id'))
     source_id = Column(db.Integer, ForeignKey('sources.id'))
@@ -106,6 +108,7 @@ class Release(db.Model):
         self.activities = json_data["subject"]
         self.date = json_data["date"]
         self.value = json_data["awards"][0]["value"]["amount"]
+        self.type = json_data["tender"]["procurementMethodRationale"]
 
         self.concat = " ".join([self.supplier, self.dossier, self.decision, self.description, json_data["buyer"]["name"]]) 
 

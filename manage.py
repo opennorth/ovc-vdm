@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from flask.ext.script import Manager
+from flask.ext.script import Manager, Option, Command
 from flask.ext.migrate import Migrate, MigrateCommand
 from sqlalchemy.sql import exists
 from sqlalchemy import or_
@@ -36,6 +36,7 @@ def flush_releases():
 def update_sources():
     #TODO : Delete sources that have been removed from config
     #TODO : Mettre un parametre --force pour forcer la mise a jour des données quoiqu'il arrive.
+
     start = datetime.datetime.now() 
     try:
         for config_source in  app.config["DATA_SOURCES"]:
@@ -43,6 +44,10 @@ def update_sources():
             if db_source == None:
                 db_source = Source(config_source) 
                 db.session.add(db_source) 
+            else:
+                db_source.name = config_source["name"]
+                db_source.mapper = config_source["mapper"]
+                db_source.type = config_source["type"]
             db_source.last_update =  start.strftime("%Y-%m-%d %H:%M:%S")
             db.session.commit()
 
@@ -56,11 +61,12 @@ def update_sources():
 
 
 @manager.command
-def update_releases():
+def update_releases(forced=False):
     '''Uses the sources list in DB to search for contracts'''
     sources =  db.session.query(Source).all()
 
     for source in sources:
+        print source.url
         if re.match("^http", source.url):
             #TODO: With the fixture we are not testing this part which is fairly sensitive
             r = requests.get(source.url)
@@ -71,7 +77,7 @@ def update_releases():
             if 'Last-Modified' in r.headers:
                 source_update = datetime.datetime(*eut.parsedate(r.headers['Last-Modified'])[:6])
 
-            if source_update >= source.last_retrieve:
+            if forced or source_update >= source.last_retrieve :
                 load_source(source)
         else:
             load_source(source)
