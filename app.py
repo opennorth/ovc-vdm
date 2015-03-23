@@ -293,7 +293,9 @@ class ReleasesByBuyer(ListReleases):
 
         releases = db.session.query(
             Buyer.name.label('buyer'),
-            func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))
+            func.min(Release.activities).label('activities'), 
+            func.sum(Release.value).label('total_value'), 
+            func.count(Release.value).label('count'))
         releases = self.filter_request(releases, args)
         releases = releases.filter(Buyer.id == Release.buyer_id)
         releases = releases.group_by(Buyer.name)
