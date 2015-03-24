@@ -60,11 +60,11 @@ def test_generator():
        },        
        {
       # Test parameter q and order by value desc
-      'url': 'api/releases?q=résilier&order_by=value&order_dir=desc', 
+      'url': 'api/releases?q=construction&order_by=value&order_dir=desc', 
        'json_path' : ("releases",0,"awards",0,"value","amount"),
        'response': 200,
-       'count': 1,
-       'value':25394603
+       'count': 2,
+       'value':798556
        }, 
        {
       # Test parameter order by date and offset and limit
