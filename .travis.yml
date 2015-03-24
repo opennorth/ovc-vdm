@@ -11,5 +11,4 @@ addons:
 before_script:
   - psql -c 'create database ovc_test;'
   - psql -c 'create extension unaccent;'
-  - psql -c 'CREATE TEXT SEARCH CONFIGURATION fr ( COPY = french );'
-  - psql -c 'ALTER TEXT SEARCH CONFIGURATION fr ALTER MAPPING FOR hword, hword_part, word WITH unaccent, french_stem;'
+  - psql -c 'ALTER TEXT SEARCH CONFIGURATION french ALTER MAPPING FOR hword, hword_part, word WITH unaccent, french_stem;'

@@ -66,27 +66,6 @@ from models import *
 def index():
     return render_template('index.html')
 
-#Define routes for API
-class ApiRoot(Resource):
-    def get(self):
-        accept_header = request.headers.get('Accept')
-        request.headers.get('Accept')
-
-        releases = db.session.query(Release).count()
-        releases_sum = db.session.query(func.sum(Release.value).label('sum')).scalar()
-        buyers = db.session.query(Buyer).count()
-
-        releases_dict = {}
-        releases_dict["url"] = '/releases'
-        releases_dict["count"] = releases
-        releases_dict["value"] = releases_sum
-
-        output = {}
-        output["releases"] = releases_dict
- 
-        return output
-api.add_resource(ApiRoot, '/api/')
-
 
 
 class ListReleases(Resource):
@@ -155,7 +134,7 @@ class ListReleases(Resource):
 
         if 'q' in args and args['q'] != None:
             search = unidecode(unicode(args['q'])).replace(" ", "&")
-            query = query.filter(func.to_tsvector('fr', Release.concat).match(search))
+            query = query.filter(func.to_tsvector('french', Release.concat).match(search))
         
         if 'value_gt' in args and args['value_gt'] != None:
             query = query.filter(Release.value >= args['value_gt'])
@@ -333,6 +312,7 @@ class ReleasesByProcuringEntity(ListReleases):
         self.default_limit = 50
         self.default_order_by = 'total_value'
         self.default_order_dir = 'desc'
+        self.accepted_order_by = ['total_value', 'count', 'procuring_entity', None]
 
     @cache.cached(timeout=5000, key_prefix=make_cache_key)
     def get(self):
@@ -369,9 +349,9 @@ class ReleasesByValueRange(ListReleases):
         super(ReleasesByValueRange, self).__init__(*args, **kwargs)
 
         self.default_limit = 5000
-        self.default_order_by = '1'
-        self.default_order_dir = 'asc'
-
+        self.default_order_by = 'total_value'
+        self.default_order_dir = 'desc'
+        self.accepted_order_by = ['total_value', 'count', 'segment', None]
         self.width_bucket = (0, 10000000, 19)
 
         self.accepted_parameters.append({"param": 'bucket', "type": str})
@@ -384,8 +364,9 @@ class ReleasesByValueRange(ListReleases):
             self.width_bucket = args["bucket"].split(',')
   
         releases = db.session.query(
-        width_bucket(Release.value, self.width_bucket[0], self.width_bucket[1], self.width_bucket[2]).label('segment'),
-        func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))
+            width_bucket(Release.value, self.width_bucket[0], self.width_bucket[1], self.width_bucket[2]).label('segment'),
+            func.sum(Release.value).label('total_value'),
+            func.count(Release.value).label('count'))
         releases = self.filter_request(releases, args)
         releases = releases.group_by('1')
         releases = self.sort_request(releases, args)
@@ -416,6 +397,7 @@ class ReleasesByMonth(ListReleases):
         self.default_limit = 50
         self.default_order_by = '1'
         self.default_order_dir = 'asc'
+        self.accepted_order_by = ['total_value', 'count', 'month', None]
 
 
     @cache.cached(timeout=5000, key_prefix=make_cache_key)
@@ -423,7 +405,9 @@ class ReleasesByMonth(ListReleases):
         args = self.parse_arg()
 
         releases = db.session.query(
-        func.substring(cast(Release.date, db.String), 0,8).label('month'), func.count(Release.value).label('count'), func.sum(Release.value).label('total_value'))
+            func.substring(cast(Release.date, db.String), 0,8).label('month'), 
+            func.count(Release.value).label('count'), 
+            func.sum(Release.value).label('total_value'))
 
         releases = self.filter_request(releases, args)
         releases = releases.group_by('1')
@@ -454,12 +438,16 @@ class ReleasesByActivity(ListReleases):
         self.default_limit = 50
         self.default_order_by = 'total_value'
         self.default_order_dir = 'desc'
+        self.accepted_order_by = ['total_value', 'count', 'activity', None]
 
     @cache.cached(timeout=5000, key_prefix=make_cache_key)
     def get(self):
         args = self.parse_arg()
 
-        releases = db.session.query(Release.activities[1].label('activity'), func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))      
+        releases = db.session.query(
+            Release.activities[1].label('activity'), 
+            func.sum(Release.value).label('total_value'), 
+            func.count(Release.value).label('count'))      
         releases = self.filter_request(releases, args)
         releases = releases.group_by('1')
         releases = self.sort_request(releases, args)
@@ -516,8 +504,6 @@ class TreeMap(ListReleases):
         elif args["parent"] == "size":
             releases = db.session.query(Supplier.size.label('size'), func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))
             releases = releases.filter(Supplier.id == Release.supplier_id)
-        else:
-            releases = db.session.query(getattr(Release, args["parent"]).label(args["parent"]), func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))      
 
         releases = self.filter_request(releases, args)
         releases = releases.group_by('1')
@@ -553,15 +539,13 @@ class TreeMap(ListReleases):
             if args["parent"] == "activity":
                 children = children.filter(Release.activities[1] == item[args['parent']])
             elif args["parent"] == "buyer":
-                children = children.join(Buyer).filter(Buyer.id == Release.buyer_id)
-                children = children.filter(Buyer.name == item[args['parent']])                
+                children = children.filter(Buyer.name == item[args['parent']]) 
             elif args["parent"] == "size":
                 children = children.filter(Supplier.size == item[args['parent']])  
-            else:
-                children = children.filter(getattr(Release, args["parent"]) == item[args['parent']])
 
             children = self.filter_request(children, args)
             children = children.group_by('1')
+            children = children.order_by('total_value desc')
 
             (children, offset, limit) = self.offset_limit(children, args)
 
@@ -583,7 +567,35 @@ class IndividualRelease(Resource):
 
 api.add_resource(IndividualRelease, '/api/release/<string:ocid>')
 
+
+#Define routes for API
+class ApiRoot(Resource):
+    def get(self):
+        accept_header = request.headers.get('Accept')
+        request.headers.get('Accept')
+
+        releases = db.session.query(Release).count()
+        releases_sum = db.session.query(func.sum(Release.value).label('sum')).scalar()
+        buyers = db.session.query(Buyer).count()
+
+        releases_dict = {}
+        releases_dict["url"] = '/releases'
+        releases_dict["count"] = releases
+        releases_dict["value"] = releases_sum
+
+        '''
+        list_releases = ListReleases()
+        print [item["param"] for item in list_releases.accepted_parameters]
+        releases_dict["params"] = [item["param"] for item in list_releases.accepted_parameters]
+
+        print api.__dict__
+        '''
+
+        output = {}
+        output["releases"] = releases_dict
+ 
+        return output
+api.add_resource(ApiRoot, '/api/')
+
 if __name__ == '__main__':
     app.run()
-
-

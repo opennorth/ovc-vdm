@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from flask import Flask, url_for
 from flask.ext.sqlalchemy import SQLAlchemy
 import json
@@ -6,7 +7,7 @@ from manage import update_sources, update_releases
 import subprocess
 import os
 from app import db
-#init_db()
+
 
 import app
 test_app = app.app.test_client()
@@ -19,7 +20,7 @@ def setup_module(module):
     dbname =  os.environ['DATABASE_URL'].split()[-1]
     print dbname
 
-    subprocess.call(["psql -c \"CREATE INDEX idx_fts_fr_concat_releases ON releases USING gin(to_tsvector('fr', concat))\" -d %s ;" % (dbname)], shell=True)
+    subprocess.call(["psql -c \"CREATE INDEX idx_fts_fr_concat_releases ON releases USING gin(to_tsvector('french', concat))\" -d %s ;" % (dbname)], shell=True)
 
     update_sources()
     update_releases()
@@ -38,6 +39,8 @@ def test_api_root():
   eq_(resp["releases"]["count"],18)
 
 def test_generator():
+
+    #list of conditions and expected outcome to generate tests
     params = [
       {
       # Test parameter order by date and offset and limit
@@ -57,11 +60,11 @@ def test_generator():
        },        
        {
       # Test parameter q and order by value desc
-      'url': 'api/releases?q=construction&order_by=value&order_dir=desc', 
+      'url': 'api/releases?q=résilier&order_by=value&order_dir=desc', 
        'json_path' : ("releases",0,"awards",0,"value","amount"),
        'response': 200,
-       'count': 2,
-       'value':798556
+       'count': 1,
+       'value':25394603
        }, 
        {
       # Test parameter order by date and offset and limit
@@ -141,6 +144,59 @@ def test_generator():
        'count':1,
        'value':33093163
        },  
+       {                  
+      # Group by procuring buckets of value
+      'url': 'api/releases/by_value?bucket=0,1000000,1', 
+       'json_path' : ("releases",0,"total_value"),
+       'response': 200,
+       'count':2,
+       'value':28487362
+       },     
+       {                  
+      # Group by month
+      'url': 'api/releases/by_month', 
+       'json_path' : ("releases",0,"total_value"),
+       'response': 200,
+       'count':1,
+       'value':33093163
+       }, 
+       {                  
+      # Group by activity
+      'url': 'api/releases/by_activity?order_by=total_value&order_dir=desc', 
+       'json_path' : ("releases",0,"total_value"),
+       'response': 200,
+       'count':3,
+       'value':27759569
+       },       
+       {
+      # Treemap activity => buyer
+      'url': 'api/treemap?parent=activity&child=buyer', 
+       'json_path' : ("releases",0,"children",0,"total_value"),
+       'response': 200,
+       'count':3,
+       'value':27759569
+       },  
+       {
+      # Treemap buyer => supplier
+      'url': 'api/treemap?parent=buyer&child=supplier&activity=Transport', 
+       'json_path' : ("releases",0,"children",0,"total_value"),
+       'response': 200,
+       'count':1,
+       'value':1966515
+       },          
+       {
+      # Treemap buyer => supplier
+      'url': 'api/treemap?parent=size&child=supplier', 
+       'json_path' : ("releases",0,"children",0,"total_value"),
+       'response': 200,
+       'count':2,
+       'value':25394603
+       },
+       {
+      # Invalide order by
+      'url': 'api/releases?type=subvention&order_dir=ddejsy', 
+       'response': 400,
+       },         
     ]
 
     for item in params:
@@ -155,9 +211,10 @@ def call_api(item):
     if "count" in item:
       eq_(resp['meta']['count'],item["count"])
 
-    #Get the value in the response located by path
-    result = reduce(lambda d,key: d[key],item["json_path"], resp)
-    eq_(result,item["value"])
+    if 'json_path' in item:
+      #Get the value in the response located by path
+      result = reduce(lambda d,key: d[key],item["json_path"], resp)
+      eq_(result,item["value"])
 
 
 
@@ -167,4 +224,26 @@ def test_releases_pagination_2():
   resp = json.loads(rv.data)
   eq_(len(resp["releases"]),4)
 
+
+def test_individual_release():
+  '''Test parameter limit'''
+  rv1 = test_app.get('api/releases?order_by=value&order_dir=desc')
+  resp1 = json.loads(rv1.data)
+  ocid = resp1["releases"][0]['ocid']
+
+
+  rv2 = test_app.get('api/release/' + ocid)
+  eq_(rv2.status_code,200)
+  resp2 = json.loads(rv2.data)
+  eq_(resp2['awards'][0]['value']['amount'],25394603)
+
+def test_individual_release_error():
+  '''Test parameter limit'''
+  rv1 = test_app.get('api/releases?order_by=value&order_dir=desc')
+  resp1 = json.loads(rv1.data)
+  ocid = resp1["releases"][0]['ocid']
+
+
+  rv2 = test_app.get('api/release/' + ocid + '_')
+  eq_(rv2.status_code,404)
 

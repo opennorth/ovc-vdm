@@ -94,17 +94,15 @@ class Release(db.Model):
     ocid = db.Column(db.String())
     language = db.Column(db.String())
     json =  db.Column(JSON)
-    supplier = db.Column(db.String())
-    supplier_slug = db.Column(db.String())
     procuring_entity = db.Column(db.String())
     dossier = db.Column(db.String())
     decision = db.Column(db.String())
     activities =  db.Column(ARRAY(db.String()))
     description = db.Column(db.String())
     concat = db.Column(db.String())
-    date = db.Column(db.DateTime())
-    value = db.Column(db.Float())
-    type = db.Column(db.String())
+    date = db.Column(db.DateTime(), index=True)
+    value = db.Column(db.Float(), index=True)
+    type = db.Column(db.String(), index=True)
 
     buyer_id = Column(db.Integer, ForeignKey('buyers.id'))
     supplier_id = Column(db.Integer, ForeignKey('suppliers.id'))
@@ -117,10 +115,7 @@ class Release(db.Model):
         self.ocid = json_data["ocid"]
         self.language = json_data["language"]
 
-        self.supplier = json_data["awards"][0]["suppliers"][0]["name"]
-        self.supplier_slug = slugify(self.supplier, to_lower=True)
         self.procuring_entity = json_data["tender"]["procuringEntity"]["name"]
-        self.supplier_slug = slugify(self.supplier, to_lower=True)
         self.dossier = json_data["awards"][0]["id"]
         self.decision = json_data["awards"][0]["items"][0]["id"]
         self.description = json_data["awards"][0]["items"][0]["description"]
@@ -129,7 +124,7 @@ class Release(db.Model):
         self.value = json_data["awards"][0]["value"]["amount"]
         self.type = json_data["tender"]["procurementMethodRationale"]
 
-        self.concat = " ".join([self.supplier, self.dossier, self.decision, self.description, json_data["buyer"]["name"]]) 
+        self.concat = " ".join([slugify(json_data["awards"][0]["suppliers"][0]["name"], to_lower=True), self.dossier, self.decision, self.description, json_data["buyer"]["name"]]) 
 
     def __repr__(self):
         return '<ocid {}>'.format(self.ocid)
