@@ -37,9 +37,134 @@ def test_api_root():
 
   eq_(resp["releases"]["count"],18)
 
-def test_releases_subvention():
-  rv = test_app.get('/api/releases?type=subvention')
-  eq_(rv.status_code,200)
-  resp = json.loads(rv.data)
+def test_generator():
+    params = [
+      {
+      # Test parameter order by date and offset and limit
+      'url': 'api/releases?&order_by=date&order_dir=asc&limit=4&offset=1', 
+       'json_path' : ("releases",0,"awards",0,"value","amount"),
+       'response': 200,
+       'count': 9,
+       'value':546456
+       },
+       {
+      # Test parameter q and order by value asc
+      'url': 'api/releases?q=construction&order_by=value&order_dir=asc', 
+       'json_path' : ('releases',0,"awards",0,"value","amount"),
+       'response': 200,
+       'count': 2,
+       'value':546456
+       },        
+       {
+      # Test parameter q and order by value desc
+      'url': 'api/releases?q=construction&order_by=value&order_dir=desc', 
+       'json_path' : ("releases",0,"awards",0,"value","amount"),
+       'response': 200,
+       'count': 2,
+       'value':798556
+       }, 
+       {
+      # Test parameter order by date and offset and limit
+      'url': 'api/releases?&order_by=date&order_dir=desc&limit=8', 
+       'json_path' : ("releases",7,"awards",0,"value","amount"),
+       'response': 200,
+       'value':546456
+       },  
+       {         
+      # Value greater lower
+      'url': 'api/releases?value_gt=1500000&value_lt=2000000', 
+       'json_path' :("releases",0,"awards",0,"value","amount"),
+       'response': 200,
+       'count': 1,
+       'value':1966515
+       },  
+       {         
+      # date greater lower
+      'url': 'api/releases?date_gt=2012-09-14&date_lt=2012-09-15', 
+       'json_path' :("releases",0,"awards",0,"value","amount"),
+       'response': 200,
+       'count': 1,
+       'value':25394603
+       },
+       {  
+      # buyer
+      'url': 'api/releases?buyer=arrondissement-de-pierrefonds-roxboro', 
+       'json_path' : ("releases",0,"awards",0,"value","amount"),
+       'count': 1,
+       'response': 200,
+       'value':1126244
+       }, 
+       {  
+      # activity
+      'url': 'api/releases?activity=Arrondissements', 
+       'json_path' : ("releases",0,"awards",0,"value","amount"),
+       'count': 1,
+       'response': 200,
+       'value':1126244
+       }, 
+       {  
+      # supplier
+      'url': 'api/releases?supplier=construction-djl-inc', 
+       'json_path' : ("releases",0,"awards",0,"value","amount"),
+       'count': 1,
+       'response': 200,
+       'value':546456
+       },                                     
+       {        
+      # Test subvention filter
+      'url': 'api/releases?type=subvention', 
+       'json_path' : ("meta","count"),
+       'response': 200,
+       'value':9
+       },   
+       {        
+      # Group by supplier
+      'url': 'api/releases/by_supplier?order_by=total_value&order_dir=desc', 
+       'json_path' : ("releases",0,"total_value"),
+       'response': 200,
+       'count':9,
+       'value':25394603
+       },  
+       {        
+      # Group by buyer
+      'url': 'api/releases/by_buyer?order_by=total_value&order_dir=desc', 
+       'json_path' : ("releases",0,"total_value"),
+       'response': 200,
+       'count':3,
+       'value':27759569
+       },  
+       {                  
+      # Group by procuring enttity
+      'url': 'api/releases/by_procuring_entity', 
+       'json_path' : ("releases",0,"total_value"),
+       'response': 200,
+       'count':1,
+       'value':33093163
+       },  
+    ]
 
-  eq_(resp["meta"]["count"],9)
+    for item in params:
+      yield call_api, item
+
+def call_api(item):
+    rv = test_app.get(item["url"])
+    eq_(rv.status_code,item["response"])
+
+    resp = json.loads(rv.data)
+
+    if "count" in item:
+      eq_(resp['meta']['count'],item["count"])
+
+    #Get the value in the response located by path
+    result = reduce(lambda d,key: d[key],item["json_path"], resp)
+    eq_(result,item["value"])
+
+
+
+def test_releases_pagination_2():
+  '''Test parameter limit'''
+  rv = test_app.get('api/releases?&order_by=date&order_dir=asc&limit=4&offset=1')
+  resp = json.loads(rv.data)
+  eq_(len(resp["releases"]),4)
+
+

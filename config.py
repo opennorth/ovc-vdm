@@ -30,6 +30,8 @@ class Config(object):
         }          
     ]
 
+    SUPPLIER_SIZE = [0, 100000, 10000000]
+
     SERVICE_TO_ACTIVITY = {
         "ARRONDISSEMENT DE MONTRÉAL-NORD": ["Arrondissements"],
         "ARRONDISSEMENT DE RIVIÈRE-DES-PRAIRIES–POINTE-AUX-TREMBLES": ["Arrondissements"],

@@ -69,6 +69,24 @@ class Buyer(db.Model):
         return '<Buyer{ }>'.format(self.buyer_name)
 
 
+class Supplier(db.Model):
+    __tablename__ = 'suppliers'
+    id = db.Column(db.Integer, primary_key=True)
+    slug = db.Column(db.String())
+    name = db.Column(db.String())
+    size =  db.Column(db.Integer)
+
+
+    releases = relationship("Release", backref="suppliers")
+
+    def __init__(self, json_data):
+        self.name = json_data["name"]
+        self.slug = slugify(self.name, to_lower=True)
+
+
+    def __repr__(self):
+        return '<Buyer{ }>'.format(self.buyer_name)
+
 
 class Release(db.Model):
     __tablename__ = 'releases'
@@ -89,6 +107,7 @@ class Release(db.Model):
     type = db.Column(db.String())
 
     buyer_id = Column(db.Integer, ForeignKey('buyers.id'))
+    supplier_id = Column(db.Integer, ForeignKey('suppliers.id'))
     source_id = Column(db.Integer, ForeignKey('sources.id'))
 
 

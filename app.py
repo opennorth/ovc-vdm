@@ -81,13 +81,8 @@ class ApiRoot(Resource):
         releases_dict["count"] = releases
         releases_dict["value"] = releases_sum
 
-        buyer_dict = {}
-        buyer_dict["url"] = '/buyers'
-        buyer_dict["count"] = buyers 
-
         output = {}
         output["releases"] = releases_dict
-        output["buyer"] = buyer_dict 
  
         return output
 api.add_resource(ApiRoot, '/api/')
@@ -133,7 +128,7 @@ class ListReleases(Resource):
         args = parser.parse_args(strict=True)
 
         if 'order_by' in args and args['order_by'] not in self.accepted_order_by:
-            abort(400, message='Order by value must be %s' % accepted_order_by)
+            abort(400, message='Order by value must be %s' % self.accepted_order_by)
 
         if 'order_dir' in args and args['order_dir'] not in ['asc', 'desc', None]:
             abort(400, message='order_dir value must be "asc" or "desc"')
@@ -186,7 +181,7 @@ class ListReleases(Resource):
             query = query.filter(Release.activities.any(args['activity']))
 
         if 'supplier' in args and args['supplier'] != None:
-            query = query.filter(Release.supplier_slug == args['supplier'])
+            query = query.join(Supplier).filter(Supplier.slug == args['supplier'])
 
         return query          
 
@@ -250,14 +245,23 @@ class ReleasesBySupplier(ListReleases):
         self.default_limit = 50
         self.default_order_by = 'total_value'
         self.default_order_dir = 'desc'
+        self.accepted_order_by = ['total_value', 'count', 'supplier_size', 'supplier_slug', None]
 
     @cache.cached(timeout=5000, key_prefix=make_cache_key)
     def get(self):
         args = self.parse_arg()
 
-        releases = db.session.query(Release.supplier.label('supplier'), func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))      
+
+
+        releases = db.session.query(
+            Supplier.name.label('supplier'), 
+            func.min(Supplier.slug).label('supplier_slug'),
+            func.min(Supplier.size).label('supplier_size'),
+            func.sum(Release.value).label('total_value'), 
+            func.count(Release.value).label('count'))      
         releases = self.filter_request(releases, args)
-        releases = releases.group_by(Release.supplier)
+        releases = releases.filter(Supplier.id == Release.supplier_id)
+        releases = releases.group_by('1')
         releases = self.sort_request(releases, args)
         
         release_count = releases.count()
@@ -286,6 +290,7 @@ class ReleasesByBuyer(ListReleases):
         self.default_limit = 50
         self.default_order_by = 'total_value'
         self.default_order_dir = 'desc'
+        self.accepted_order_by = ['total_value', 'count', 'buyer_slug', None]
 
     @cache.cached(timeout=5000, key_prefix=make_cache_key)
     def get(self):
@@ -294,6 +299,7 @@ class ReleasesByBuyer(ListReleases):
         releases = db.session.query(
             Buyer.name.label('buyer'),
             func.min(Release.activities).label('activities'), 
+            func.min(Buyer.slug).label('buyer_slug'), 
             func.sum(Release.value).label('total_value'), 
             func.count(Release.value).label('count'))
         releases = self.filter_request(releases, args)
@@ -507,7 +513,9 @@ class TreeMap(ListReleases):
         elif args["parent"] == "buyer":
             releases = db.session.query(Buyer.name.label('buyer'), func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))
             releases = releases.filter(Buyer.id == Release.buyer_id)
-
+        elif args["parent"] == "size":
+            releases = db.session.query(Supplier.size.label('size'), func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))
+            releases = releases.filter(Supplier.id == Release.supplier_id)
         else:
             releases = db.session.query(getattr(Release, args["parent"]).label(args["parent"]), func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))      
 
@@ -536,6 +544,9 @@ class TreeMap(ListReleases):
             if args["child"] == "buyer":
                 children = db.session.query(Buyer.name.label('buyer'), func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))
                 children = children.filter(Buyer.id == Release.buyer_id)                
+            elif args["child"] == "supplier":
+                children = db.session.query(Supplier.name.label('supplier'), func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))
+                children = children.filter(Supplier.id == Release.supplier_id)  
             else:
                 children = db.session.query(getattr(Release, args["child"]).label(args["child"]), func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))
 
@@ -544,6 +555,8 @@ class TreeMap(ListReleases):
             elif args["parent"] == "buyer":
                 children = children.join(Buyer).filter(Buyer.id == Release.buyer_id)
                 children = children.filter(Buyer.name == item[args['parent']])                
+            elif args["parent"] == "size":
+                children = children.filter(Supplier.size == item[args['parent']])  
             else:
                 children = children.filter(getattr(Release, args["parent"]) == item[args['parent']])
 

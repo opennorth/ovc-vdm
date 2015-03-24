@@ -60,6 +60,28 @@ def update_sources():
         print "sqlalchemy error: %s" %  repr(e)
 
 
+def compute_supplier_size():
+    
+    records = db.session.query(Release.supplier_id.label('supplier_id'), func.sum(Release.value).label('total_value'))      
+    records = records.group_by('1')
+
+    for r in records:
+        record = r._asdict()
+        size = 1
+
+        #Assign supplier to the correct bucket
+        for i, val in enumerate(app.config["SUPPLIER_SIZE"]):
+            if record["total_value"] >= val:
+                size = i + 1
+
+        supplier = db.session.query(Supplier).filter(Supplier.id == record["supplier_id"]).one()
+        supplier.size = size
+
+
+    db.session.commit()
+
+
+
 @manager.command
 def update_releases(forced=False):
     '''Uses the sources list in DB to search for contracts'''
@@ -81,6 +103,8 @@ def update_releases(forced=False):
                 load_source(source)
         else:
             load_source(source)
+
+    compute_supplier_size()
 
        
 
@@ -117,6 +141,13 @@ def load_ocds(ocds, type='path', source=None):
                 db.session.add(the_buyer)
         
             the_buyer.releases.append(the_release)
+
+            the_supplier =  db.session.query(Supplier).filter(Supplier.slug == slugify(release["awards"][0]["suppliers"][0]["name"], to_lower=True)).scalar()
+            if the_supplier == None:
+                the_supplier = Supplier(release["awards"][0]["suppliers"][0]) 
+                db.session.add(the_supplier)
+        
+            the_supplier.releases.append(the_release)
 
             db.session.add(the_release)
 
