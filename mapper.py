@@ -124,11 +124,19 @@ class Mapper():
         custom_mapper = getattr(sys.modules[__name__],  self.mapper_type)
 
         i = 0
+        errors = []
         for row in self.cr:
             if i >= self.csv_skip:
-                self.release_list.append(custom_mapper(row, self.source))
+                try:
+                    self.release_list.append(custom_mapper(row, self.source))
+                except (ValueError, IndexError) as e:
+                    errors.append('Ligne #: %s  \tMessage: %s \nContenu de la ligne: %s' % (i+1, repr(e), row))   
     
             i = i+1
+
+        message = ''
+        if len(errors) > 0:
+            app.logger.error("Erreur lors du chargement du fichier %s \n\n%s" %  (self.source.url, '\n'.join(errors)))
 
         self.output["releases"] = self.release_list 
 

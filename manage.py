@@ -20,7 +20,36 @@ app.config.from_object(os.environ['APP_SETTINGS'])
 migrate = Migrate(app, db)
 manager = Manager(app)
 
+
+if app.config['SENDMAIL']:
+    import logging
+    from logging.handlers import SMTPHandler
+    mail_handler = SMTPHandler(
+        app.config['SMTP_SERVER'],
+        app.config['EMAIL_SENDER'],
+        app.config['ADMINS'], 
+        'Outil de visualisation des contrats - Erreur lors de l\'import des contrats', 
+        credentials=app.config['EMAIL_CREDENTIALS']
+    )
+    mail_handler.setLevel(logging.ERROR)
+    mail_handler.setFormatter(logging.Formatter('''
+    Message type:       %(levelname)s
+    Location:           %(pathname)s:%(lineno)d
+    Module:             %(module)s
+    Function:           %(funcName)s
+    Time:               %(asctime)s
+
+    Message:
+
+    %(message)s
+    '''))
+
+    app.logger.addHandler(mail_handler)
+
+
 manager.add_command('db', MigrateCommand)
+
+
 
 
 @manager.command
@@ -29,8 +58,18 @@ def flush_releases():
     try:
         db.session.query(Release).delete() 
         db.session.commit()
-    except sqlalchemy.exc:
+    except exc.SQLAlchemyError:
         db.session.rollback()
+        app.logger.error("SQLAlchemyError error: %s" %  repr(e))
+
+
+@manager.command
+def test_emails():
+
+
+    app.logger.error('This is a test message to check emails will be sent in case of an error')
+
+
 
 @manager.command
 def update_sources():
@@ -55,9 +94,9 @@ def update_sources():
         db.session.commit()
 
 
-    except exc.FlushError as e:  
+    except exc.SQLAlchemyError as e:  
         db.session.rollback()
-        print "sqlalchemy error: %s" %  repr(e)
+        app.logger.error("SQLAlchemyError error: %s" %  repr(e))
 
 
 def compute_supplier_size():
@@ -154,10 +193,10 @@ def load_ocds(ocds, type='path', source=None):
         source.last_retrieve = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         db.session.commit()
 
-    except exc.FlushError as e:  
+    except exc.SQLAlchemyError as e:  
+        #If we have a SQLAlchemy error here, we can assume it's serious so we rollback...
         db.session.rollback()
-        print "sqlalchemy error: %s" %  repr(e)
-
+        app.logger.error("File import cancelled - SQLAlchemyError error: %s" %  repr(e))
 
 
 if __name__ == '__main__':
