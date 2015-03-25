@@ -7,7 +7,10 @@ class Config(object):
     SENDMAIL = False
     CSRF_ENABLED = True
     SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
-    EMAIL_CREDENTIALS = tuple(os.environ['EMAIL_CREDENTIALS'].split('@'))
+
+    if 'EMAIL_CREDENTIALS' in os.environ:
+        EMAIL_CREDENTIALS = tuple(os.environ['EMAIL_CREDENTIALS'].split('@'))
+    
     SMTP_SERVER = 'smtp.sendgrid.net'
     EMAIL_SENDER = 'erreur@opennorth.ca'
     ADMINS = ['stephane@opennorth.ca']
@@ -90,6 +93,7 @@ class Config(object):
 class ProductionConfig(Config):
     DEBUG = False
     SENDMAIL = True
+
     ADMINS = ['stephane@opennorth.ca', 'daniel.drouet@ville.montreal.qc.ca']
 
 class StagingConfig(Config):
