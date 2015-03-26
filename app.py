@@ -92,6 +92,7 @@ class ListReleases(Resource):
             {"param": 'order_by', "type": str}, 
             {"param": 'order_dir', "type": str},
             {"param": 'type', "type": str},
+            {"param": 'supplier_size', "type": str},            
             {"param": 'format', "type": str},
         ]
 
@@ -159,8 +160,14 @@ class ListReleases(Resource):
 
             query = query.filter(Release.activities.any(args['activity']))
 
-        if 'supplier' in args and args['supplier'] != None:
-            query = query.join(Supplier).filter(Supplier.slug == args['supplier'])
+        if ('supplier' in args and args['supplier'] != None) or ('supplier_size' in args and args['supplier_size'] != None):
+            query = query.join(Supplier)
+
+            if ('supplier' in args and args['supplier'] != None):
+                query = query.filter(Supplier.slug == args['supplier'])
+
+            if ('supplier_size' in args and args['supplier_size'] != None):
+                query = query.filter(Supplier.size == args['supplier_size'])
 
         return query          
 
