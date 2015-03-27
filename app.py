@@ -4,6 +4,7 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.restful import reqparse, abort, Api, Resource, inputs
 from flask.ext.cache import Cache
 from flask.ext.cors import CORS
+from flask.ext.compress import Compress
 
 from sqlalchemy.dialects.postgresql import array
 from sqlalchemy.sql import func
@@ -36,6 +37,7 @@ app.config.from_object(os.environ['APP_SETTINGS'])
 
 db = SQLAlchemy(app)
 cors = CORS(app)
+Compress(app)
 
 @api.representation('application/pdf')
 def output_pdf(data, code, headers=None):
@@ -199,8 +201,7 @@ class ListReleases(Resource):
     def get(self):
         
         args = self.parse_arg()
-
-
+        
         releases = db.session.query(Release)
         releases_sum = db.session.query(func.sum(Release.value).label('total_value'), func.max(Release.value).label('max_value'), func.min(Release.value).label('min_value'))
       
