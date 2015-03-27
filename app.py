@@ -7,8 +7,9 @@ from flask.ext.cors import CORS
 
 from sqlalchemy.dialects.postgresql import array
 from sqlalchemy.sql import func
-from sqlalchemy import select,cast, desc, asc
+from sqlalchemy import select,cast, desc, asc, inspect
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.exc import InvalidRequestError
 
 from datetime import datetime
 #from utils import  unaccent
@@ -74,6 +75,9 @@ class ListReleases(Resource):
     def __init__(self, *args, **kwargs):
         super(ListReleases, self).__init__(*args, **kwargs)
 
+        self.supplier_joined = False
+        self.buyer_joined = False
+
         self.default_limit = 50
         self.default_order_by = 'value'
         self.default_order_dir = 'asc'
@@ -131,7 +135,7 @@ class ListReleases(Resource):
 
     def filter_request(self, query, args):
 
-
+        #By default we filter contracts
         con_type = args['type'] if ('type' in args and args['type'] != None) else self.default_type
         query = query.filter(Release.type == con_type)
 
@@ -154,7 +158,10 @@ class ListReleases(Resource):
             query = query.filter(Release.date <= args['date_lt'])
 
         if 'buyer' in args and args['buyer'] != None:
-            query = query.join(Buyer).filter(array(args['buyer'].split(',')).any(Buyer.slug))
+            if self.buyer_joined == False:
+                query = query.join(Buyer)
+
+            query = query.filter(array(args['buyer'].split(',')).any(Buyer.slug))
 
         if 'activity' in args and args['activity'] != None:
             query = query.filter(Release.activities.overlap(args['activity'].split(',')))
@@ -163,7 +170,10 @@ class ListReleases(Resource):
             query = query.filter(array(args['procuring_entity'].split(',')).any(Release.procuring_entity_slug))
 
         if ('supplier' in args and args['supplier'] != None) or ('supplier_size' in args and args['supplier_size'] != None):
-            query = query.join(Supplier)
+        
+            if self.supplier_joined == False:
+                query = query.join(Supplier)
+
 
             if ('supplier' in args and args['supplier'] != None):
                 query = query.filter(array(args['supplier'].split(',')).any(Supplier.slug))
@@ -231,10 +241,12 @@ class ReleasesBySupplier(ListReleases):
     def __init__(self, *args, **kwargs):
         super(ReleasesBySupplier, self).__init__(*args, **kwargs)
 
+        self.supplier_joined = True
         self.default_limit = 50
         self.default_order_by = 'total_value'
         self.default_order_dir = 'desc'
         self.accepted_order_by = ['total_value', 'count', 'supplier_size', 'supplier_slug', None]
+
 
     @cache.cached(timeout=5000, key_prefix=make_cache_key)
     def get(self):
@@ -276,6 +288,7 @@ class ReleasesByBuyer(ListReleases):
     def __init__(self, *args, **kwargs):
         super(ReleasesByBuyer, self).__init__(*args, **kwargs)
 
+        self.buyer_joined = True
         self.default_limit = 50
         self.default_order_by = 'total_value'
         self.default_order_dir = 'desc'
@@ -499,6 +512,8 @@ class TreeMap(ListReleases):
             {"param": 'buyer', "type": str},
             {"param": 'activity', "type": str}, 
             {"param": 'supplier', "type": str},            
+            {"param": 'supplier_size', "type": str},
+            {"param": 'procuring_entity', "type": str},       
             {"param": 'type', "type": str},    
         ]
 
@@ -506,12 +521,17 @@ class TreeMap(ListReleases):
     def get(self):
         args = self.parse_arg()
 
+        self.buyer_joined = False
+        self.supplier_joined = False
+
         if args["parent"] == "activity":
             releases = db.session.query(Release.activities[1].label(args["parent"]), func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))            
         elif args["parent"] == "buyer":
+            self.buyer_joined = True
             releases = db.session.query(Buyer.name.label('buyer'), func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))
             releases = releases.filter(Buyer.id == Release.buyer_id)
         elif args["parent"] == "size":
+            self.supplier_joined = True
             releases = db.session.query(Supplier.size.label('size'), func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))
             releases = releases.filter(Supplier.id == Release.supplier_id)
 
@@ -535,23 +555,46 @@ class TreeMap(ListReleases):
 
         output["releases"] = [r._asdict() for r in releases] 
 
-
         for item in output["releases"]:
+            self.buyer_joined = False
+            self.supplier_joined = False
             if args["child"] == "buyer":
-                children = db.session.query(Buyer.name.label('buyer'), func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))
-                children = children.filter(Buyer.id == Release.buyer_id)                
-            elif args["child"] == "supplier":
-                children = db.session.query(Supplier.name.label('supplier'), func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))
+                if ('supplier_size' in args and args['supplier_size'] != None) or ('supplier' in args and args['supplier'] != None):
+                    abort(400, message='Can\'t filter on supplier when requesting buyer data')
+
+                self.buyer_joined = True
+                children = db.session.query(
+                    Buyer.name.label('buyer'), 
+                    func.min(Buyer.slug).label('buyer_slug'), 
+                    func.sum(Release.value).label('total_value'), 
+                    func.count(Release.value).label('count'))
+                children = children.filter(Buyer.id == Release.buyer_id)   
+
+            elif args["child"] == "supplier":       
+                if ('buyer' in args and args['buyer'] != None) :
+                    abort(400, message='Can\'t filter on Buyer when requesting supplier data')
+
+                self.supplier_joined = True
+                children = db.session.query(
+                    Supplier.name.label('supplier'), 
+                    func.min(Supplier.slug).label('supplier_slug'), 
+                    func.sum(Release.value).label('total_value'), 
+                    func.count(Release.value).label('count'))
                 children = children.filter(Supplier.id == Release.supplier_id)  
             else:
-                children = db.session.query(getattr(Release, args["child"]).label(args["child"]), func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))
+                abort(400, message='Treemap only accepts supplier or buyer as child')
+                #children = db.session.query(getattr(Release, args["child"]).label(args["child"]), func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))
 
             if args["parent"] == "activity":
                 children = children.filter(Release.activities[1] == item[args['parent']])
             elif args["parent"] == "buyer":
+                #self.buyer_joined = True
                 children = children.filter(Buyer.name == item[args['parent']]) 
             elif args["parent"] == "size":
+                #self.supplier_joined = True
                 children = children.filter(Supplier.size == item[args['parent']])  
+            else:
+                abort(400, message='Treemap only accepts activity, buyer or supplier_size as parent')
 
             children = self.filter_request(children, args)
             children = children.group_by('1')

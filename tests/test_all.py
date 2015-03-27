@@ -176,7 +176,15 @@ def test_generator():
        'response': 200,
        'count':9,
        'value':25394603
-       },  
+       }, 
+       {
+      # Group by supplier with self-join
+      'url': 'api/releases/by_supplier?supplier_size=3', 
+       'json_path' : ("releases",0,"total_value"),
+       'response': 200,
+       'count':1,
+       'value':25394603
+       },         
        {        
       # Group by buyer
       'url': 'api/releases/by_buyer?order_by=total_value&order_dir=desc', 
@@ -225,6 +233,14 @@ def test_generator():
        'count':3,
        'value':27759569
        },  
+       {
+      # Treemap activity => buyer with self join
+      'url': 'api/treemap?parent=activity&child=buyer&buyer=arrondissement-de-pierrefonds-roxboro', 
+       'json_path' : ("releases",0,"children",0,"total_value"),
+       'response': 200,
+       'count':1,
+       'value':1126244
+       },         
        {
       # Treemap buyer => supplier
       'url': 'api/treemap?parent=buyer&child=supplier&activity=Transport', 
