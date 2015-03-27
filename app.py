@@ -525,20 +525,35 @@ class TreeMap(ListReleases):
 
         self.buyer_joined = False
         self.supplier_joined = False
+        groupby = ''
 
         if args["parent"] == "activity":
-            releases = db.session.query(Release.activities[1].label(args["parent"]), func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))            
+            releases = db.session.query(
+                Release.activities[1].label(args["parent"]), 
+                func.sum(Release.value).label('total_value'), 
+                func.count(Release.value).label('count'))
+            groupby = args["parent"]
+
         elif args["parent"] == "buyer":
             self.buyer_joined = True
-            releases = db.session.query(Buyer.name.label('buyer'), func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))
+            releases = db.session.query(
+                func.sum(Release.value).label('total_value'), 
+                func.count(Release.value).label('count'),
+                Buyer.name.label('buyer'))
             releases = releases.filter(Buyer.id == Release.buyer_id)
+            groupby = 'buyer'
+
         elif args["parent"] == "size":
             self.supplier_joined = True
-            releases = db.session.query(Supplier.size.label('size'), func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))
+            releases = db.session.query(
+                func.sum(Release.value).label('total_value'), 
+                func.count(Release.value).label('count'),
+                Supplier.size.label('size'))
             releases = releases.filter(Supplier.id == Release.supplier_id)
+            groupby = 'size'
 
         releases = self.filter_request(releases, args)
-        releases = releases.group_by('1')
+        releases = releases.group_by(groupby)
         releases = self.sort_request(releases, args)
 
         
@@ -560,9 +575,8 @@ class TreeMap(ListReleases):
         for item in output["releases"]:
             self.buyer_joined = False
             self.supplier_joined = False
+            groupby = ''
             if args["child"] == "buyer":
-                if ('supplier_size' in args and args['supplier_size'] != None) or ('supplier' in args and args['supplier'] != None):
-                    abort(400, message='Can\'t filter on supplier when requesting buyer data')
 
                 self.buyer_joined = True
                 children = db.session.query(
@@ -570,19 +584,20 @@ class TreeMap(ListReleases):
                     func.min(Buyer.slug).label('buyer_slug'), 
                     func.sum(Release.value).label('total_value'), 
                     func.count(Release.value).label('count'))
-                children = children.filter(Buyer.id == Release.buyer_id)   
+                children = children.filter(Buyer.id == Release.buyer_id)  
+                groupby =  'buyer'
 
             elif args["child"] == "supplier":       
-                if ('buyer' in args and args['buyer'] != None) :
-                    abort(400, message='Can\'t filter on Buyer when requesting supplier data')
 
                 self.supplier_joined = True
                 children = db.session.query(
-                    Supplier.name.label('supplier'), 
-                    func.min(Supplier.slug).label('supplier_slug'), 
                     func.sum(Release.value).label('total_value'), 
-                    func.count(Release.value).label('count'))
+                    func.count(Release.value).label('count'),
+                    Supplier.name.label('supplier'), 
+                    func.min(Supplier.slug).label('supplier_slug')) 
+
                 children = children.filter(Supplier.id == Release.supplier_id)  
+                groupby =  'supplier'
             else:
                 abort(400, message='Treemap only accepts supplier or buyer as child')
                 #children = db.session.query(getattr(Release, args["child"]).label(args["child"]), func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))
@@ -599,7 +614,7 @@ class TreeMap(ListReleases):
                 abort(400, message='Treemap only accepts activity, buyer or supplier_size as parent')
 
             children = self.filter_request(children, args)
-            children = children.group_by('1')
+            children = children.group_by(groupby)
             children = children.order_by('total_value desc')
 
             (children, offset, limit) = self.offset_limit(children, args)
