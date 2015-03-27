@@ -109,16 +109,17 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     TESTING = True
+    SUPPLIER_SIZE = [0, 100000, 10000000]
 
     DATA_SOURCES = [
         {
-            'name': 'Conseil Muncipal',
+            'name': 'Conseil Municipal',
             'mapper': 'field_mapper_pol_mtl',
             'url': 'fixtures/contracts.csv',
             'type': 'contract'
         },
          {
-            'name': 'Conseil Muncipal',
+            'name': 'Conseil Municipal',
             'mapper': 'field_mapper_subvention_mtl',
             'url': 'fixtures/subventions.csv',
             'type': 'subvention'

@@ -95,9 +95,10 @@ class Release(db.Model):
     language = db.Column(db.String())
     json =  db.Column(JSON)
     procuring_entity = db.Column(db.String())
+    procuring_entity_slug = db.Column(db.String())
     dossier = db.Column(db.String())
     decision = db.Column(db.String())
-    activities =  db.Column(ARRAY(db.String()))
+    activities =  db.Column(ARRAY(db.Text()))
     description = db.Column(db.String())
     concat = db.Column(db.String())
     date = db.Column(db.DateTime(), index=True)
@@ -116,6 +117,7 @@ class Release(db.Model):
         self.language = json_data["language"]
 
         self.procuring_entity = json_data["tender"]["procuringEntity"]["name"]
+        self.procuring_entity_slug = json_data["tender"]["procuringEntity"]["identifier"]["id"]
         self.dossier = json_data["awards"][0]["id"]
         self.decision = json_data["awards"][0]["items"][0]["id"]
         self.description = json_data["awards"][0]["items"][0]["description"]

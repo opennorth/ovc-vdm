@@ -5,6 +5,7 @@ from flask.ext.restful import reqparse, abort, Api, Resource, inputs
 from flask.ext.cache import Cache
 from flask.ext.cors import CORS
 
+from sqlalchemy.dialects.postgresql import array
 from sqlalchemy.sql import func
 from sqlalchemy import select,cast, desc, asc
 from sqlalchemy.orm.exc import NoResultFound
@@ -92,7 +93,8 @@ class ListReleases(Resource):
             {"param": 'order_by', "type": str}, 
             {"param": 'order_dir', "type": str},
             {"param": 'type', "type": str},
-            {"param": 'supplier_size', "type": str},            
+            {"param": 'supplier_size', "type": str},
+            {"param": 'procuring_entity', "type": str},                 
             {"param": 'format', "type": str},
         ]
 
@@ -152,22 +154,23 @@ class ListReleases(Resource):
             query = query.filter(Release.date <= args['date_lt'])
 
         if 'buyer' in args and args['buyer'] != None:
-            query = query.join(Buyer).filter(Buyer.slug == args['buyer'])
+            query = query.join(Buyer).filter(array(args['buyer'].split(',')).any(Buyer.slug))
 
         if 'activity' in args and args['activity'] != None:
-            #select_stmt = select([Release]).where(Release.activities.any(args['activity']))
-            #query = query.select_entity_from(select_stmt)
+            query = query.filter(Release.activities.overlap(args['activity'].split(',')))
 
-            query = query.filter(Release.activities.any(args['activity']))
+        if 'procuring_entity' in args and args['procuring_entity'] != None:
+            query = query.filter(array(args['procuring_entity'].split(',')).any(Release.procuring_entity_slug))
 
         if ('supplier' in args and args['supplier'] != None) or ('supplier_size' in args and args['supplier_size'] != None):
             query = query.join(Supplier)
 
             if ('supplier' in args and args['supplier'] != None):
-                query = query.filter(Supplier.slug == args['supplier'])
+                query = query.filter(array(args['supplier'].split(',')).any(Supplier.slug))
 
             if ('supplier_size' in args and args['supplier_size'] != None):
-                query = query.filter(Supplier.size == args['supplier_size'])
+                integered = [ int(item) for item in args['supplier_size'].split(',')]
+                query = query.filter(array(integered).any(Supplier.size))
 
         return query          
 

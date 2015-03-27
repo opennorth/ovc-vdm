@@ -40,6 +40,7 @@ def field_mapper_pol_mtl(row, source):
 
     #TODO : Pass the procuring entity as a paramter of the mapper?
     my_release["tender"]["procuringEntity"]["name"] = source.name
+    my_release["tender"]["procuringEntity"]["identifier"]["id"] = slugify(source.name, to_lower=True)
 
 
     my_release["awards"][0]["id"] = row[4]
@@ -83,6 +84,7 @@ def field_mapper_subvention_mtl(row, source):
 
     #TODO : Pass the procuring entity as a paramter of the mapper?
     my_release["tender"]["procuringEntity"]["name"] = source.name
+    my_release["tender"]["procuringEntity"]["identifier"]["id"] = slugify(source.name, to_lower=True)
 
 
     my_release["awards"][0]["id"] = row[4]

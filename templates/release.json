@@ -25,7 +25,10 @@
             "procurementMethodRationale": "contract",
             "status": "complete",
             "procuringEntity": {
-                "name": null
+                "name": null,
+                "identifier": {
+                    "id": null
+                }
             } 
         },
         "awards": [{

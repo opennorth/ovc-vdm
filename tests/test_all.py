@@ -98,12 +98,36 @@ def test_generator():
        'value':1126244
        }, 
        {  
+      # multiple buyer
+      'url': 'api/releases?buyer=arrondissement-de-pierrefonds-roxboro,service-des-infrastructures-du-transport-et-de-lenvironnement&order_by=value&order_dir=desc', 
+       'json_path' : ("releases",0,"awards",0,"value","amount"),
+       'count': 5,
+       'response': 200,
+       'value':1966515
+       }, 
+       {  
       # activity
       'url': 'api/releases?activity=Arrondissements', 
        'json_path' : ("releases",0,"awards",0,"value","amount"),
        'count': 1,
        'response': 200,
        'value':1126244
+       },
+       {  
+      # Multiple activity
+      'url': 'api/releases?activity=Arrondissements,Environnement&order_by=value&order_dir=desc', 
+       'json_path' : ("releases",0,"awards",0,"value","amount"),
+       'count': 5,
+       'response': 200,
+       'value':1966515
+       },         
+       {
+      # procuring enttity
+      'url': 'api/releases?procuring_entity=conseil-municipal&order_by=value&order_dir=desc', 
+       'json_path' : ("releases",0,"awards",0,"value","amount"),
+       'count': 9,
+       'response': 200,
+       'value':25394603
        }, 
        {  
       # supplier
@@ -112,7 +136,32 @@ def test_generator():
        'count': 1,
        'response': 200,
        'value':546456
-       },                                     
+       },
+       {
+      # multiple supplier
+      'url': 'api/releases?supplier=construction-djl-inc,procova-inc&order_by=value&order_dir=desc', 
+       'json_path' : ("releases",0,"awards",0,"value","amount"),
+       'count': 2,
+       'response': 200,
+       'value':888527
+       },
+       {  
+      # supplier size
+      'url': 'api/releases?supplier_size=3', 
+       'json_path' : ("releases",0,"awards",0,"value","amount"),
+       'count': 1,
+       'response': 200,
+       'value':25394603
+       },   
+       {  
+      # multiple supplier size
+      'url': 'api/releases?supplier_size=3,2', 
+       'json_path' : ("releases",0,"awards",0,"value","amount"),
+       'count': 9,
+       'response': 200,
+       'value':546456
+
+       },                                                     
        {        
       # Test subvention filter
       'url': 'api/releases?type=subvention', 
