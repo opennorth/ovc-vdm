@@ -255,14 +255,15 @@ class ReleasesBySupplier(ListReleases):
 
 
         releases = db.session.query(
+            func.sum(Release.value).label('total_value'), 
+            func.count(Release.value).label('count'),      
             Supplier.name.label('supplier'), 
             func.min(Supplier.slug).label('supplier_slug'),
-            func.min(Supplier.size).label('supplier_size'),
-            func.sum(Release.value).label('total_value'), 
-            func.count(Release.value).label('count'))      
+            func.min(Supplier.size).label('supplier_size'))
+
         releases = self.filter_request(releases, args)
         releases = releases.filter(Supplier.id == Release.supplier_id)
-        releases = releases.group_by('1')
+        releases = releases.group_by(Supplier.name)
         releases = self.sort_request(releases, args)
         
         release_count = releases.count()
@@ -299,11 +300,12 @@ class ReleasesByBuyer(ListReleases):
         args = self.parse_arg()
 
         releases = db.session.query(
-            Buyer.name.label('buyer'),
+            func.count(Release.value).label('count'),
             func.min(Release.activities).label('activities'), 
-            func.min(Buyer.slug).label('buyer_slug'), 
             func.sum(Release.value).label('total_value'), 
-            func.count(Release.value).label('count'))
+            Buyer.name.label('buyer'),            
+            func.min(Buyer.slug).label('buyer_slug'))
+
         releases = self.filter_request(releases, args)
         releases = releases.filter(Buyer.id == Release.buyer_id)
         releases = releases.group_by(Buyer.name)
