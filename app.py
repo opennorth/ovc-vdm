@@ -310,7 +310,7 @@ class ReleasesBySupplier(ListReleases):
         self.accepted_order_by = ['total_value', 'count', 'supplier_size', 'supplier_slug', None]
 
 
-    @cache.cached(timeout=5000, key_prefix=make_cache_key)
+    @cache.cached(timeout=app.config["CACHE_DURATION"], key_prefix=make_cache_key)
     def get(self):
         args = self.parse_arg()
 
@@ -357,7 +357,7 @@ class ReleasesByBuyer(ListReleases):
         self.default_order_dir = 'desc'
         self.accepted_order_by = ['total_value', 'count', 'buyer_slug', None]
 
-    @cache.cached(timeout=5000, key_prefix=make_cache_key)
+    @cache.cached(timeout=app.config["CACHE_DURATION"], key_prefix=make_cache_key)
     def get(self):
         args = self.parse_arg()
 
@@ -401,7 +401,7 @@ class ReleasesByProcuringEntity(ListReleases):
         self.default_order_dir = 'desc'
         self.accepted_order_by = ['total_value', 'count', 'procuring_entity', None]
 
-    @cache.cached(timeout=5000, key_prefix=make_cache_key)
+    @cache.cached(timeout=app.config["CACHE_DURATION"], key_prefix=make_cache_key)
     def get(self):
         args = self.parse_arg()
 
@@ -443,7 +443,7 @@ class ReleasesByValueRange(ListReleases):
 
         self.accepted_parameters.append({"param": 'bucket', "type": str})
 
-    @cache.cached(timeout=5000, key_prefix=make_cache_key)
+    @cache.cached(timeout=app.config["CACHE_DURATION"], key_prefix=make_cache_key)
     def get(self):
         args = self.parse_arg()
 
@@ -487,7 +487,7 @@ class ReleasesByMonth(ListReleases):
         self.accepted_order_by = ['total_value', 'count', 'month', None]
 
 
-    @cache.cached(timeout=5000, key_prefix=make_cache_key)
+    @cache.cached(timeout=app.config["CACHE_DURATION"], key_prefix=make_cache_key)
     def get(self):
         args = self.parse_arg()
 
@@ -527,7 +527,7 @@ class ReleasesByActivity(ListReleases):
         self.default_order_dir = 'desc'
         self.accepted_order_by = ['total_value', 'count', 'activity', None]
 
-    @cache.cached(timeout=5000, key_prefix=make_cache_key)
+    @cache.cached(timeout=app.config["CACHE_DURATION"], key_prefix=make_cache_key)
     def get(self):
         args = self.parse_arg()
 
@@ -581,7 +581,7 @@ class TreeMap(ListReleases):
             {"param": 'type', "type": str},    
         ]
 
-    @cache.cached(timeout=5000, key_prefix=make_cache_key)
+    @cache.cached(timeout=app.config["CACHE_DURATION"], key_prefix=make_cache_key)
     def get(self):
         args = self.parse_arg()
 
@@ -689,7 +689,7 @@ class TreeMap(ListReleases):
 api.add_resource(TreeMap, '/api/treemap')
 
 class IndividualRelease(Resource):
-    @cache.cached(timeout=5000)
+    @cache.cached(timeout=app.config["CACHE_DURATION"])
     def get(self,ocid):
         try:
             my_release = Release.query.filter_by(ocid=ocid).one()

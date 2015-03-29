@@ -18,6 +18,8 @@ class Config(object):
     URL_ROOT = 'http//localhost'
     OCID_PREFIX = 'ocds-a1234567-mt-'
 
+    CACHE_DURATION = 86400
+
     START_HIGHLIGHT = "<em>"
     END_HIGHLIGHT = "</em>"
 

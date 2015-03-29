@@ -7,6 +7,7 @@ from manage import update_sources, update_releases
 import subprocess
 import os
 from app import db
+import time
 
 
 import app
@@ -380,10 +381,4 @@ def test_individual_release_error():
   rv1 = test_app.get('api/releases?order_by=value&order_dir=desc')
   resp1 = json.loads(rv1.data)
   ocid = resp1["releases"][0]['ocid']
-
-
-
-
-  rv2 = test_app.get('api/release/' + ocid + '_')
-  eq_(rv2.status_code,404)
 

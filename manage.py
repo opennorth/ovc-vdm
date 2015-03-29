@@ -15,6 +15,11 @@ import re
 
 from app import app, db
 
+from flask.ext.cache import Cache
+
+cache = Cache()
+
+
 app.config.from_object(os.environ['APP_SETTINGS'])
 
 migrate = Migrate(app, db)
@@ -144,6 +149,11 @@ def update_releases(forced=False):
             load_source(source)
 
     compute_supplier_size()
+
+    #Let's flush the cache
+    cache.init_app(app, config={'CACHE_TYPE': 'simple'})
+    with app.app_context():
+        cache.clear()
 
        
 
