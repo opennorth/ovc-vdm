@@ -16,6 +16,8 @@ from datetime import datetime
 #from utils import  unaccent
 from unidecode import unidecode
 
+from werkzeug.wrappers import Request
+
 import re
 import os
 import sys
@@ -38,6 +40,16 @@ app.config.from_object(os.environ['APP_SETTINGS'])
 db = SQLAlchemy(app)
 cors = CORS(app)
 Compress(app)
+
+def log_request(sender, **extra):
+
+    print(request.path, request.args)
+
+from flask import request_started
+request_started.connect(log_request, app)
+
+
+
 
 @api.representation('application/pdf')
 def output_pdf(data, code, headers=None):
@@ -104,7 +116,7 @@ class ListReleases(Resource):
             {"param": 'format', "type": str},
         ]
 
-        self.accepted_order_by = ['value', 'buyer', 'id', 'date', None]
+        self.accepted_order_by = ['value', 'buyer', 'supplier', 'id', 'date', None]
         self.accepted_type = ['subvention', 'contract', None]
 
 
@@ -124,6 +136,12 @@ class ListReleases(Resource):
         return args
 
     def sort_request(self, query, args):
+
+        if 'order_by' in args and args['order_by'] == "buyer":
+            args['order_by'] = "buyers.slug"
+
+        if  'order_by' in args and args['order_by'] == "supplier":
+            args['order_by'] = "suppliers.slug"
 
         sort_attr = self.default_order_by
         if ('order_by' in args and args['order_by'] != None):
@@ -162,6 +180,7 @@ class ListReleases(Resource):
         if 'buyer' in args and args['buyer'] != None:
             if self.buyer_joined == False:
                 query = query.join(Buyer)
+                self.buyer_joined = True
 
             query = query.filter(array(args['buyer'].split(',')).any(Buyer.slug))
 
@@ -175,6 +194,7 @@ class ListReleases(Resource):
         
             if self.supplier_joined == False:
                 query = query.join(Supplier)
+                self.supplier_joined = True
 
 
             if ('supplier' in args and args['supplier'] != None):
@@ -201,21 +221,31 @@ class ListReleases(Resource):
     def get(self):
         
         args = self.parse_arg()
+
+        self.supplier_joined = True
+        self.buyer_joined = True
         
-        releases = db.session.query(Release)
-        releases_sum = db.session.query(func.sum(Release.value).label('total_value'), func.max(Release.value).label('max_value'), func.min(Release.value).label('min_value'))
+        releases = db.session.query(Release).join(Buyer).join(Supplier)
+        releases_sum = db.session.query(
+            func.sum(Release.value).label('total_value'), 
+            func.max(Release.value).label('max_value'), 
+            func.min(Release.value).label('min_value'))
       
         releases = self.filter_request(releases, args)
-        releases_sum = self.filter_request(releases_sum, args)
+        
 
+        release_count = releases.count()
         #Sort records
         releases = self.sort_request(releases, args)
 
-        release_count = releases.count()
+        
 
         #Limit and offset
         (releases, offset, limit) = self.offset_limit(releases, args)
 
+        self.supplier_joined = False
+        self.buyer_joined = False
+        releases_sum = self.filter_request(releases_sum, args)
         #Generate output structure
         output = dict()
 

@@ -50,6 +50,30 @@ def test_generator():
        'count': 9,
        'value':546456
        },
+      {
+      # Test parameter order by buyer asc
+      'url': 'api/releases?&order_by=buyer&order_dir=asc', 
+       'json_path' : ("releases",0,"awards",0,"value","amount"),
+       'response': 200,
+       'count': 9,
+       'value':1126244
+       },
+      {
+      # Test parameter order by supplier desc
+      'url': 'api/releases?&order_by=supplier&order_dir=desc', 
+       'json_path' : ("releases",0,"awards",0,"value","amount"),
+       'response': 200,
+       'count': 9,
+       'value':828186
+       },       
+      {
+      # Test parameter order by date and offset and limit
+      'url': 'api/releases?&order_by=date&order_dir=asc&limit=4&offset=1', 
+       'json_path' : ("releases",0,"awards",0,"value","amount"),
+       'response': 200,
+       'count': 9,
+       'value':546456
+       },              
        {
       # Test parameter q and order by value asc
       'url': 'api/releases?q=construction&order_by=value&order_dir=asc', 

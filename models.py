@@ -66,7 +66,7 @@ class Buyer(db.Model):
 
 
     def __repr__(self):
-        return '<Buyer{ }>'.format(self.buyer_name)
+        return '<Buyer{ }>'.format(self.slug)
 
 
 class Supplier(db.Model):
@@ -85,7 +85,7 @@ class Supplier(db.Model):
 
 
     def __repr__(self):
-        return '<Buyer{ }>'.format(self.buyer_name)
+        return '<Supplier{ }>'.format(self.name)
 
 
 class Release(db.Model):
