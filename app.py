@@ -99,6 +99,7 @@ class ListReleases(Resource):
 
         self.accepted_parameters = [
             {"param": 'q', "type": str},
+            {"param": 'highlight', "type": bool},
             {"param": 'offset', "type": inputs.natural},
             {"param": 'limit', "type": inputs.natural},
             {"param": 'value_gt', "type": inputs.natural},
@@ -225,7 +226,24 @@ class ListReleases(Resource):
         self.supplier_joined = True
         self.buyer_joined = True
         
-        releases = db.session.query(Release).join(Buyer).join(Supplier)
+        releases = db.session.query(Release.json).join(Buyer).join(Supplier)
+
+
+        highlighted_fields = [(Release.description, 'h_description'), 
+                                (Supplier.name, 'h_supplier_name'),
+                                (Buyer.name, 'h_buyer_name'),
+                                (Release.dossier, 'h_dossier'),
+                                (Release.decision, 'h_decision')
+        ]
+
+        if 'q' in args and args['q'] != None and 'highlight' in args and args['highlight'] == True: 
+            for (field, label) in highlighted_fields:
+                releases = releases.add_column(func.ts_headline('french', 
+                           field, 
+                           func.plainto_tsquery(args['q']),
+                           'HighlightAll=TRUE, StartSel="%s", StopSel = "%s"' % (app.config["START_HIGHLIGHT"], app.config["END_HIGHLIGHT"]))
+                            .label(label))
+
         releases_sum = db.session.query(
             func.sum(Release.value).label('total_value'), 
             func.max(Release.value).label('max_value'), 
@@ -246,6 +264,7 @@ class ListReleases(Resource):
         self.supplier_joined = False
         self.buyer_joined = False
         releases_sum = self.filter_request(releases_sum, args)
+
         #Generate output structure
         output = dict()
 
@@ -261,7 +280,19 @@ class ListReleases(Resource):
         output["uri"] = request.url
         output["publishedDate"] = datetime.now().isoformat()
 
-        output["releases"] = [r.json for r in releases] 
+        #output["releases"] = [r.json for r in releases]
+
+        output["releases"] = [] 
+        for r in releases:
+            if 'q' in args and args['q'] != None and 'highlight' in args and args['highlight'] == True: 
+                r.json["awards"][0]["items"][0]["description"] = r.h_description
+                r.json["awards"][0]["suppliers"][0]["name"] = r.h_supplier_name
+                r.json["buyer"]["name"] = r.h_buyer_name
+                r.json["awards"][0]["id"] = r.h_dossier
+                r.json["awards"][0]["items"][0]["id"] = r.h_decision
+
+            output["releases"].append(r.json)
+
 
         return output
 

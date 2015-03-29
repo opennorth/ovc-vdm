@@ -18,6 +18,9 @@ class Config(object):
     URL_ROOT = 'http//localhost'
     OCID_PREFIX = 'ocds-a1234567-mt-'
 
+    START_HIGHLIGHT = "<em>"
+    END_HIGHLIGHT = "</em>"
+
     DATA_SOURCES = [
         {
             'name': 'Conseil Muncipal',

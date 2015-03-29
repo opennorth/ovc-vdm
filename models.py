@@ -126,7 +126,7 @@ class Release(db.Model):
         self.value = json_data["awards"][0]["value"]["amount"]
         self.type = json_data["tender"]["procurementMethodRationale"]
 
-        self.concat = " ".join([slugify(json_data["awards"][0]["suppliers"][0]["name"], to_lower=True), self.dossier, self.decision, self.description, json_data["buyer"]["name"]]) 
+        self.concat = " ".join([json_data["awards"][0]["suppliers"][0]["name"], json_data["buyer"]["name"], self.dossier, self.decision, self.description]) 
 
     def __repr__(self):
         return '<ocid {}>'.format(self.ocid)

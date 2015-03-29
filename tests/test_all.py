@@ -91,6 +91,55 @@ def test_generator():
        'value':798556
        }, 
        {
+      # Test parameter q and highlight sur description
+      'url': 'api/releases?q=dickson&highlight=True', 
+       'json_path' : ("releases",0,"awards",0,"items",0,"description"),
+       'response': 200,
+       'count': 1,
+       'value': 'ACCORDER UN CONTRAT À PROCOVA INC. POUR LA MISE AUX NORMES DES SÉPARATEURS D\'HUILE AU GARAGE <em>DICKSON</em> (0434) - DÉPENSE TOTALE DE 903 979,44 $, TAXES INCLUSES - APPEL D\'OFFRES PUBLIC 5598 - TROIS SOUMISSIONNAIRES.'
+       },        
+       {
+      # Test parameter q and highlight sur fournisseur
+      'url': 'api/releases?q=LOUISBOURG&highlight=True', 
+       'json_path' : ("releases",0,"awards",0,"suppliers",0,"name"),
+       'response': 200,
+       'count': 1,
+       'value': '<em>LOUISBOURG</em> SBC S.E.C'
+       },  
+       {
+      # Test parameter q and highlight sur fournisseur
+      'url': 'api/releases?q=ROXBORO&highlight=True', 
+       'json_path' : ("releases",0,"buyer","name"),
+       'response': 200,
+       'count': 1,
+       'value': 'ARRONDISSEMENT DE PIERREFONDS-<em>ROXBORO</em>'
+       },
+       {
+      # Test parameter q and NO highlight sur fournisseur
+      'url': 'api/releases?q=ROXBORO', 
+       'json_path' : ("releases",0,"buyer","name"),
+       'response': 200,
+       'count': 1,
+       'value': 'ARRONDISSEMENT DE PIERREFONDS-ROXBORO'
+       },       
+       {
+      # Test parameter q and highlight sur numero de dossier
+      'url': 'api/releases?q=CM12 0837&highlight=True', 
+       'json_path' : ("releases",0,"awards",0,"items",0,"id"),
+       'response': 200,
+       'count': 1,
+       'value': '<em>CM12</em> <em>0837</em>'
+       },
+       {
+      # Test parameter q and highlight sur numero de dossier
+      'url': 'api/releases?q=1126013036&highlight=True', 
+       'json_path' : ("releases",0,"awards",0,"id"),
+       'response': 200,
+       'count': 1,
+       'value': '<em>1126013036</em>'
+       },   
+
+       {
       # Test parameter order by date and offset and limit
       'url': 'api/releases?&order_by=date&order_dir=desc&limit=8', 
        'json_path' : ("releases",7,"awards",0,"value","amount"),
@@ -331,6 +380,8 @@ def test_individual_release_error():
   rv1 = test_app.get('api/releases?order_by=value&order_dir=desc')
   resp1 = json.loads(rv1.data)
   ocid = resp1["releases"][0]['ocid']
+
+
 
 
   rv2 = test_app.get('api/release/' + ocid + '_')
