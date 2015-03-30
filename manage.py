@@ -141,10 +141,10 @@ def update_releases(forced=False):
             r = requests.get(source.url)
 
             #If Last-Modified not avaiable, we always process
-            now = datetime.datetime.now()
+            now = datetime.now()
             source_update = now
             if 'Last-Modified' in r.headers:
-                source_update = datetime.datetime(*eut.parsedate(r.headers['Last-Modified'])[:6])
+                source_update = datetime(*eut.parsedate(r.headers['Last-Modified'])[:6])
 
             if forced or source_update >= source.last_retrieve :
                 load_source(source)
