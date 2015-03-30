@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import declarative_base
 from slugify import slugify
-
+from datetime import datetime
 import json
 
 
@@ -130,4 +130,40 @@ class Release(db.Model):
 
     def __repr__(self):
         return '<ocid {}>'.format(self.ocid)
+
+
+class DailyStat(db.Model):
+    __tablename__ = 'daily_stats'
+    id = db.Column(Integer, primary_key=True)
+    datetime = db.Column(db.DateTime())
+    path = db.Column(db.String())
+    args =  db.Column(JSON)
+    referrer = db.Column(db.String())
+
+
+
+    def __init__(self, request):
+        self.datetime = datetime.now()
+        self.path = request["path"]
+        self.args = request["args"]
+        self.referrer = request["referrer"]
+
+
+    def __repr__(self):
+        return '<DailyStat {}>'.format(self.id)
+
+class Stat(db.Model):
+    __tablename__ = 'stats'
+    id = db.Column(Integer, primary_key=True)
+    date = db.Column(db.Date())
+    total_counts = db.Column(Integer)
+    referrers = db.Column(JSON)
+    counts_app = db.Column(Integer)
+    path = db.Column(JSON)
+    args =  db.Column(JSON)
+
+
+
+    def __repr__(self):
+        return '<DailyStat {}>'.format(self.id)              
       

@@ -2,18 +2,21 @@
 from flask.ext.script import Manager, Option, Command
 from flask.ext.migrate import Migrate, MigrateCommand
 from sqlalchemy.sql import exists
-from sqlalchemy import or_
-from sqlalchemy.orm import exc
+from sqlalchemy import or_, exc
 from mapper import Mapper
 import email.utils as eut
 import datetime
+from datetime import timedelta
 import requests
 import os
 import json
 from models import *
 import re
-
+from urlparse import urlparse
+import ast
+import sendgrid
 from app import app, db
+import time
 
 from flask.ext.cache import Cache
 
@@ -63,7 +66,7 @@ def flush_releases():
     try:
         db.session.query(Release).delete() 
         db.session.commit()
-    except exc.SQLAlchemyError:
+    except exc.SQLAlchemyError as e:
         db.session.rollback()
         app.logger.error("SQLAlchemyError error: %s" %  repr(e))
 
@@ -81,7 +84,7 @@ def update_sources():
     #TODO : Delete sources that have been removed from config
     #TODO : Mettre un parametre --force pour forcer la mise a jour des données quoiqu'il arrive.
 
-    start = datetime.datetime.now() 
+    start = datetime.now() 
     try:
         for config_source in  app.config["DATA_SOURCES"]:
             db_source =  db.session.query(Source).filter(Source.url == config_source["url"]).scalar()
@@ -95,7 +98,7 @@ def update_sources():
             db_source.last_update =  start.strftime("%Y-%m-%d %H:%M:%S")
             db.session.commit()
 
-        db.session.query(Source).filter(Source.last_update < start - datetime.timedelta(minutes=15)).delete()
+        db.session.query(Source).filter(Source.last_update < start - timedelta(minutes=15)).delete()
         db.session.commit()
 
 
@@ -200,7 +203,7 @@ def load_ocds(ocds, type='path', source=None):
 
             db.session.add(the_release)
 
-        source.last_retrieve = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        source.last_retrieve = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         db.session.commit()
 
     except exc.SQLAlchemyError as e:  
@@ -208,6 +211,92 @@ def load_ocds(ocds, type='path', source=None):
         db.session.rollback()
         app.logger.error("File import cancelled - SQLAlchemyError error: %s" %  repr(e))
 
+
+@manager.command
+def generate_stats():
+
+    os.rename(app.config["STATS_LOG"], app.config["STATS_LOG"] + '.tmp')
+    #process_log = open(app.config["STATS_LOG"] + '.tmp','r')
+    time.sleep(2)
+    total = 0
+    from_app = 0
+    path = dict()
+    args = dict()
+    referrers = dict()
+
+    with open(app.config["STATS_LOG"] + '.tmp') as process_log:
+
+        for line in process_log:
+
+            daily = ast.literal_eval(line)
+            #parsed = urlparse(daily["url"])
+
+
+            total += 1
+
+            if daily["path"] not in path:
+                path[daily["path"]] = 0
+            path[daily["path"]] += 1
+
+            if daily["referrer"] != None:
+                parsed_uri = urlparse(daily["referrer"])
+                domain = '{uri.scheme}://{uri.netloc}'.format(uri=parsed_uri)
+
+                if domain ==  app.config['URL_ROOT']:
+                    from_app += 1
+                else:
+                    if daily["referrer"] not in referrers:
+                        referrers[daily["referrer"]] = 0
+                    referrers[daily["referrer"]] += 1
+
+            for (key, value) in daily["args"]:
+                if key not in args:
+                    args[key] = dict()
+                if value not in args[key]:
+                    args[key][value] = 0
+
+                args[key][value] += 1
+
+        stat = Stat()
+
+        stat.date = datetime.today() - timedelta(days=1)
+        stat.total_counts = total
+        stat.referrers = referrers
+        stat.counts_app = from_app
+        stat.path = path
+        stat.args =  args
+
+
+        try:
+            db.session.add(stat)
+            db.session.commit()
+        except exc.SQLAlchemyError as e:  
+            db.session.rollback()
+            app.logger.error("SQLAlchemyError error: %s" %  repr(e))
+
+
+@manager.command
+def send_stats(delta_days = 31):
+    daily_stats = db.session.query(Stat).filter(Stat.date >= (datetime.today() - timedelta(days=delta_days)))
+
+    msg = 'Date\t\tTotal\tVenant de l\'application\n'
+    for stat in daily_stats:
+        msg += "%s\t%s\t%s\n" % (stat.date, stat.total_counts, stat.counts_app)
+
+    sg = sendgrid.SendGridClient(app.config['EMAIL_CREDENTIALS'][0], app.config['EMAIL_CREDENTIALS'][1])
+    message = sendgrid.Mail()
+
+    message.add_to(app.config['ADMINS'])
+    message.set_from(app.config['EMAIL_SENDER'])
+    message.set_subject("OVC - Statistiques API")
+    message.set_text(msg)
+
+    try:
+        sg.send(message)
+    except SendGridClientError as e:
+        app.logger.error("SendGridClientError error: %s" %  repr(e))
+    except SendGridServerError as e:
+        app.logger.error("SendGridServerError error: %s" %  repr(e))
 
 if __name__ == '__main__':
     manager.run()

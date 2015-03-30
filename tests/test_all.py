@@ -3,11 +3,12 @@ from flask import Flask, url_for
 from flask.ext.sqlalchemy import SQLAlchemy
 import json
 from nose.tools import *
-from manage import update_sources, update_releases
+from manage import update_sources, update_releases, generate_stats
 import subprocess
 import os
 from app import db
 import time
+from models import *
 
 
 import app
@@ -381,4 +382,8 @@ def test_individual_release_error():
   rv1 = test_app.get('api/releases?order_by=value&order_dir=desc')
   resp1 = json.loads(rv1.data)
   ocid = resp1["releases"][0]['ocid']
+
+def test_stats():
+  generate_stats()
+
 

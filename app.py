@@ -1,5 +1,5 @@
 
-from flask import Flask, render_template, request, abort
+from flask import Flask, render_template, request, abort, request_started
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.restful import reqparse, abort, Api, Resource, inputs
 from flask.ext.cache import Cache
@@ -11,12 +11,11 @@ from sqlalchemy.sql import func
 from sqlalchemy import select,cast, desc, asc, inspect
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.exc import InvalidRequestError
+from werkzeug.wrappers import Request
 
 from datetime import datetime
-#from utils import  unaccent
 from unidecode import unidecode
-
-from werkzeug.wrappers import Request
+from multiprocessing import Pool
 
 import re
 import os
@@ -40,15 +39,19 @@ app.config.from_object(os.environ['APP_SETTINGS'])
 db = SQLAlchemy(app)
 cors = CORS(app)
 Compress(app)
-
-def log_request(sender, **extra):
-
-    print(request.path, request.args)
-
-from flask import request_started
-request_started.connect(log_request, app)
+stats_log = open(app.config["STATS_LOG"],'a')
 
 
+
+def add_daily_stat(sender, **extra):
+
+
+    req = {"time": datetime.now().strftime("%Y-%m-%d %H:%M:%S") , "path": request.path, "args": [(key,value) for (key,value) in request.args.items()], "referrer" : request.referrer }    
+    stats_log.write(str(req) + '\n')   
+    stats_log.flush() 
+
+
+request_started.connect(add_daily_stat, app)
 
 
 @api.representation('application/pdf')
@@ -705,6 +708,9 @@ class ApiRoot(Resource):
     def get(self):
         accept_header = request.headers.get('Accept')
         request.headers.get('Accept')
+        #add_daily_stat(request)
+
+
 
         releases = db.session.query(Release).count()
         releases_sum = db.session.query(func.sum(Release.value).label('sum')).scalar()

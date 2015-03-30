@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 
+
 class Config(object):
     DEBUG = False
     TESTING = False
@@ -12,13 +13,14 @@ class Config(object):
         EMAIL_CREDENTIALS = tuple(os.environ['EMAIL_CREDENTIALS'].split('@'))
     
     SMTP_SERVER = 'smtp.sendgrid.net'
-    EMAIL_SENDER = 'erreur@opennorth.ca'
+    EMAIL_SENDER = 'ovc@opennorth.ca'
     ADMINS = ['stephane@opennorth.ca']
 
     URL_ROOT = 'http//localhost'
     OCID_PREFIX = 'ocds-a1234567-mt-'
 
     CACHE_DURATION = 86400
+    STATS_LOG = 'stats/log.out'
 
     START_HIGHLIGHT = "<em>"
     END_HIGHLIGHT = "</em>"
@@ -108,6 +110,7 @@ class StagingConfig(Config):
     DEBUG = True
 
 class DevelopmentConfig(Config):
+    URL_ROOT = 'http://localhost:5000'
     DEVELOPMENT = True
     DEBUG = True
     
