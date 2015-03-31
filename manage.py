@@ -57,6 +57,21 @@ if app.config['SENDMAIL']:
 
 manager.add_command('db', MigrateCommand)
 
+def send_mail(subject, msg, to=app.config['ADMINS'], sender=app.config['EMAIL_SENDER']):
+    sg = sendgrid.SendGridClient(app.config['EMAIL_CREDENTIALS'][0], app.config['EMAIL_CREDENTIALS'][1])
+    message = sendgrid.Mail()
+
+    message.add_to(to)
+    message.set_from(sender)
+    message.set_subject(subject)
+    message.set_text(msg)
+
+    try:
+        sg.send(message)
+    except SendGridClientError as e:
+        app.logger.error("SendGridClientError error: %s" %  repr(e))
+    except SendGridServerError as e:
+        app.logger.error("SendGridServerError error: %s" %  repr(e))
 
 
 
@@ -283,20 +298,12 @@ def send_stats(delta_days = 31):
     for stat in daily_stats:
         msg += "%s\t%s\t%s\n" % (stat.date, stat.total_counts, stat.counts_app)
 
+    send_mail("OVC - Statistiques API", msg)
     sg = sendgrid.SendGridClient(app.config['EMAIL_CREDENTIALS'][0], app.config['EMAIL_CREDENTIALS'][1])
     message = sendgrid.Mail()
 
-    message.add_to(app.config['ADMINS'])
-    message.set_from(app.config['EMAIL_SENDER'])
-    message.set_subject("OVC - Statistiques API")
-    message.set_text(msg)
 
-    try:
-        sg.send(message)
-    except SendGridClientError as e:
-        app.logger.error("SendGridClientError error: %s" %  repr(e))
-    except SendGridServerError as e:
-        app.logger.error("SendGridServerError error: %s" %  repr(e))
+ 
 
 if __name__ == '__main__':
     manager.run()

@@ -1,5 +1,5 @@
 
-from flask import Flask, render_template, request, abort, request_started
+from flask import Flask, render_template, request, abort, request_started, jsonify
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.restful import reqparse, abort, Api, Resource, inputs
 from flask.ext.cache import Cache
@@ -13,6 +13,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.exc import InvalidRequestError
 from werkzeug.wrappers import Request
 
+
 from datetime import datetime
 from unidecode import unidecode
 from multiprocessing import Pool
@@ -23,6 +24,7 @@ import sys
 
 from constants import OCDS_META
 from serializations import CustomApi, generate_pdf, generate_csv, generate_xlsx
+import manage
 
 #Initiate the APP
 
@@ -53,6 +55,22 @@ def add_daily_stat(sender, **extra):
 
 request_started.connect(add_daily_stat, app)
 
+
+@app.errorhandler(404)
+def internal_error(error):
+    error_msg = {"msg": "Url %s does not exist" % request.url}
+    resp = app.make_response(jsonify(error_msg))
+    resp.status_code = 404
+    
+    return resp
+
+@app.errorhandler(500)
+def internal_error(error):
+    error_msg = {"msg": "Internal error - We are working on it!"}
+    resp = app.make_response(jsonify(error_msg))
+    resp.status_code = 500
+    manage.send_mail("Internal Error", "Internal generated for url %s" % request.url)
+    return resp
 
 @api.representation('application/pdf')
 def output_pdf(data, code, headers=None):
@@ -702,6 +720,12 @@ class IndividualRelease(Resource):
 
 api.add_resource(IndividualRelease, '/api/release/<string:ocid>')
 
+
+class TriggerError(Resource):
+    def get(self):
+        raise NoResultFound
+    
+api.add_resource(TriggerError, '/api/trigger_500')
 
 #Define routes for API
 class ApiRoot(Resource):

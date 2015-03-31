@@ -6,7 +6,6 @@ from flask import render_template, request, abort
 from flask.ext.restful import Api
 
 
-
 class CustomApi(Api):
 
 
@@ -82,3 +81,5 @@ def generate_xlsx(data):
 
     workbook.close()
     return output_xlsx.getvalue()
+
+
