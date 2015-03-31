@@ -106,8 +106,8 @@ class ProductionConfig(Config):
 class StagingConfig(Config):
     URL_ROOT = 'https://ovc-stage.herokuapp.com'
     SENDMAIL = True
-    DEVELOPMENT = True
-    DEBUG = True
+    DEVELOPMENT = False
+    DEBUG = False
 
 class DevelopmentConfig(Config):
     URL_ROOT = 'http://localhost:5000'
