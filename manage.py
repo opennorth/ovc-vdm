@@ -14,9 +14,10 @@ from models import *
 import re
 from urlparse import urlparse
 import ast
-import sendgrid
+
 from app import app, db
 import time
+from utils import send_mail
 
 from flask.ext.cache import Cache
 
@@ -56,23 +57,6 @@ if app.config['SENDMAIL']:
 
 
 manager.add_command('db', MigrateCommand)
-
-def send_mail(subject, msg, to=app.config['ADMINS'], sender=app.config['EMAIL_SENDER']):
-    sg = sendgrid.SendGridClient(app.config['EMAIL_CREDENTIALS'][0], app.config['EMAIL_CREDENTIALS'][1])
-    message = sendgrid.Mail()
-
-    message.add_to(to)
-    message.set_from(sender)
-    message.set_subject(subject)
-    message.set_text(msg)
-
-    try:
-        sg.send(message)
-    except SendGridClientError as e:
-        app.logger.error("SendGridClientError error: %s" %  repr(e))
-    except SendGridServerError as e:
-        app.logger.error("SendGridServerError error: %s" %  repr(e))
-
 
 
 @manager.command

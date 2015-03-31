@@ -24,7 +24,7 @@ import sys
 
 from constants import OCDS_META
 from serializations import CustomApi, generate_pdf, generate_csv, generate_xlsx
-import manage
+from utils import send_mail
 
 #Initiate the APP
 
@@ -61,6 +61,7 @@ def internal_error(error):
     error_msg = {"msg": "Url %s does not exist" % request.url}
     resp = app.make_response(jsonify(error_msg))
     resp.status_code = 404
+    send_mail("Internal Error", "Internal generated for url %s" % request.url)
     
     return resp
 
@@ -69,7 +70,7 @@ def internal_error(error):
     error_msg = {"msg": "Internal error - We are working on it!"}
     resp = app.make_response(jsonify(error_msg))
     resp.status_code = 500
-    manage.send_mail("Internal Error", "Internal generated for url %s" % request.url)
+    send_mail("Internal Error", "Internal generated for url %s" % request.url)
     return resp
 
 @api.representation('application/pdf')
