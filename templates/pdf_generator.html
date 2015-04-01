@@ -2,16 +2,68 @@
 <html lang="fr">
     <head>
         <meta charset="UTF-8" />
+<style>
+
+h2 {
+    display: block;
+    margin: 20px auto 20px auto;
+
+} 
+
+table {border: 1px solid #444;}
+
+tr {vertical-align: top;}
+
+td {border: 1px solid #999;
+vertical-align: top;}
+
+.even {
+    background-color: #eef;
+}
+
+.ocid {
+    display: block;
+    margin: 20px 0 5px 0;
+}
+
+</style>
+
     </head>
+
     <body>
         <h2>Contrats de la Ville de Montréal</h2>
+        <div>Téléchargé à partir de l'adresse: <a href="{{url}}">{{url}}</a><div>
+        {% for release in data.releases %}
+        <span class="ocid">Référence Open Contracting: {{ release.ocid }}</span>
         <table width="100%" cellpadding="4" cellspacing="0">
             <tbody>
-                {% for release in data.releases %}
-                    <tr style="border: 1px solid #000000;"><td>{{ release.id }}</td><td>{{ release.tender.description }}</td></tr>
-                {% endfor %}
+                <tr class="even">
+                    <td>{% if release.tender.procurementMethodRationale == "contract" %}
+                    Contrat
+                    {%else%}
+                    Subvention
+                    {%endif%}</td>
+                    <td>Acheteur:<br/> {{ release.buyer.name }}</td>
+                    <td>Fournisseur / Bénéficiaire:<br/> {{ release.awards[0].suppliers[0].name }}</td>
+                </tr>
+                <tr class="other">
+                    <td><b>Montant:  {{ '%.2Lf' % release.awards[0].value.amount }}$</td>
+                    <td>Autorisé par: {{ release.tender.procuringEntity.name }}</td>
+                    <td>Activité(s): {{ release.subject|join(', ') }}</td>
+                </tr>
+                <tr class="even">
+                    <td><b>date:  {{ release.date|truncate(10, True, '') }}</td>
+                    <td>Décision: {{ release.awards[0]["items"][0].id }}</td>
+                    <td>Dossier: {{ release.awards[0].id }}</td>
+                </tr>  
+                <tr class="other">
+                    <td colspan="3">  {{ release.awards[0]["items"][0]["description"] }}</td>
+                </tr>     
+                                
+
             </tbody>
         </table>
-        <hr style="margin: 3em 0;"/>
+        {% endfor %}
     </body>
 </html>
+

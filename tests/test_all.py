@@ -336,7 +336,7 @@ def test_generator():
       # Invalide order by
       'url': 'api/releases?type=subvention&order_dir=ddejsy', 
        'response': 400,
-       },         
+       },            
     ]
 
     for item in params:
@@ -382,6 +382,26 @@ def test_individual_release_error():
   rv1 = test_app.get('api/releases?order_by=value&order_dir=desc')
   resp1 = json.loads(rv1.data)
   ocid = resp1["releases"][0]['ocid']
+
+def test_pdf():
+  '''Test parameter limit'''
+  rv = test_app.get('api/releases?q=construction&order_by=value&order_dir=desc&format=pdf')
+  eq_(rv.status_code,200)
+
+def test_csv():
+  '''Test parameter limit'''
+  rv = test_app.get('api/releases?q=construction&order_by=value&order_dir=desc&format=csv')
+  eq_(rv.status_code,200)
+
+def test_xlsx():
+  '''Test parameter limit'''
+  rv = test_app.get('api/releases?q=construction&order_by=value&order_dir=desc&format=xlsx')
+  eq_(rv.status_code,200)
+
+def test_ocds():
+  '''Test parameter limit'''
+  rv = test_app.get('api/releases?q=construction&order_by=value&order_dir=desc&format=ocds')
+  eq_(rv.status_code,200)
 
 def test_stats():
   generate_stats()

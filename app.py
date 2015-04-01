@@ -1,4 +1,4 @@
-
+# -*- coding: utf-8 -*-
 from flask import Flask, render_template, request, abort, request_started, jsonify
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.restful import reqparse, abort, Api, Resource, inputs

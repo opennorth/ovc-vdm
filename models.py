@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from app import db
 from sqlalchemy.dialects.postgresql import JSON, ARRAY
 from sqlalchemy import Table, Column, Integer, ForeignKey, cast
