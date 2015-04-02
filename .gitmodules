@@ -1,0 +1,3 @@
+[submodule "villedemontreal-contrats-public"]
+	path = static
+	url = https://bitbucket.org/ffunction/villedemontreal-contrats-public

@@ -32,7 +32,7 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='')
 api = CustomApi(app)
 cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 
@@ -100,8 +100,8 @@ from models import *
 
 #Define routes for HTML content
 @app.route("/")
-def index():
-    return render_template('index.html')
+def root():
+    return app.send_static_file('index.html')
 
 
 
