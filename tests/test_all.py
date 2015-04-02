@@ -174,7 +174,7 @@ def test_generator():
        }, 
        {  
       # multiple buyer
-      'url': 'api/releases?buyer=arrondissement-de-pierrefonds-roxboro,service-des-infrastructures-du-transport-et-de-lenvironnement&order_by=value&order_dir=desc', 
+      'url': 'api/releases?buyer=arrondissement-de-pierrefonds-roxboro;service-des-infrastructures-du-transport-et-de-lenvironnement&order_by=value&order_dir=desc', 
        'json_path' : ("releases",0,"awards",0,"value","amount"),
        'count': 5,
        'response': 200,
@@ -189,8 +189,16 @@ def test_generator():
        'value':1126244
        },
        {  
+      # activity with shitty name
+      'url': 'api/releases?type=subvention&activity=Sports, loisirs, culture et développement social', 
+       'json_path' : ("releases",0,"awards",0,"value","amount"),
+       'count': 6,
+       'response': 200,
+       'value':4500
+       },       
+       {  
       # Multiple activity
-      'url': 'api/releases?activity=Arrondissements,Environnement&order_by=value&order_dir=desc', 
+      'url': 'api/releases?activity=Arrondissements;Environnement&order_by=value&order_dir=desc', 
        'json_path' : ("releases",0,"awards",0,"value","amount"),
        'count': 5,
        'response': 200,
@@ -214,7 +222,7 @@ def test_generator():
        },
        {
       # multiple supplier
-      'url': 'api/releases?supplier=construction-djl-inc,procova-inc&order_by=value&order_dir=desc', 
+      'url': 'api/releases?supplier=construction-djl-inc;procova-inc&order_by=value&order_dir=desc', 
        'json_path' : ("releases",0,"awards",0,"value","amount"),
        'count': 2,
        'response': 200,
@@ -230,7 +238,7 @@ def test_generator():
        },   
        {  
       # multiple supplier size
-      'url': 'api/releases?supplier_size=3,2', 
+      'url': 'api/releases?supplier_size=3;2', 
        'json_path' : ("releases",0,"awards",0,"value","amount"),
        'count': 9,
        'response': 200,

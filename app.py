@@ -204,13 +204,13 @@ class ListReleases(Resource):
                 query = query.join(Buyer)
                 self.buyer_joined = True
 
-            query = query.filter(array(args['buyer'].split(',')).any(Buyer.slug))
+            query = query.filter(array(args['buyer'].split(';')).any(Buyer.slug))
 
         if 'activity' in args and args['activity'] != None:
-            query = query.filter(Release.activities.overlap(args['activity'].split(',')))
+            query = query.filter(Release.activities.overlap(args['activity'].split(';')))
 
         if 'procuring_entity' in args and args['procuring_entity'] != None:
-            query = query.filter(array(args['procuring_entity'].split(',')).any(Release.procuring_entity_slug))
+            query = query.filter(array(args['procuring_entity'].split(';')).any(Release.procuring_entity_slug))
 
         if ('supplier' in args and args['supplier'] != None) or ('supplier_size' in args and args['supplier_size'] != None):
         
@@ -220,10 +220,10 @@ class ListReleases(Resource):
 
 
             if ('supplier' in args and args['supplier'] != None):
-                query = query.filter(array(args['supplier'].split(',')).any(Supplier.slug))
+                query = query.filter(array(args['supplier'].split(';')).any(Supplier.slug))
 
             if ('supplier_size' in args and args['supplier_size'] != None):
-                integered = [ int(item) for item in args['supplier_size'].split(',')]
+                integered = [ int(item) for item in args['supplier_size'].split(';')]
                 query = query.filter(array(integered).any(Supplier.size))
 
         return query          

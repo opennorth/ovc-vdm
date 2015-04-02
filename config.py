@@ -55,6 +55,7 @@ class Config(object):
     SUPPLIER_SIZE = [0, 100000, 10000000]
 
     SERVICE_TO_ACTIVITY = {
+        # NO SEMI_COLUMN - PAS DE POINT-VIRGULE
         "ARRONDISSEMENT DE MONTRÉAL-NORD": ["Arrondissements"],
         "ARRONDISSEMENT DE RIVIÈRE-DES-PRAIRIES–POINTE-AUX-TREMBLES": ["Arrondissements"],
         "ARRONDISSEMENT DE LASALLE" : ["Arrondissements"],
