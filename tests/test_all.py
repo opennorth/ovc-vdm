@@ -391,6 +391,46 @@ def test_individual_release_error():
   resp1 = json.loads(rv1.data)
   ocid = resp1["releases"][0]['ocid']
 
+
+def test_cache_etag():
+  '''Test that cache and etag are working'''
+
+  #Do a first request and get etag
+  start = int(round(time.time() * 1000))
+  rv1 = test_app.get('api/releases')
+  first = int(round(time.time() * 1000)) - start
+
+  etag = rv1.headers.get("etag")
+
+  #Do a second request and check etag is the same
+  start = int(round(time.time() * 1000))
+  rv2 = test_app.get('api/releases')
+  second = int(round(time.time() * 1000)) - start
+
+  assert(second <= (first/1.5))
+  eq_(etag, rv2.headers.get("etag"))
+
+  #Third request with if-none-match should trigger a 304
+  headers = [("If-None-Match", etag)]
+  start = int(round(time.time() * 1000))
+  rv3 = test_app.get('api/releases', headers=headers)
+  third = int(round(time.time() * 1000)) - start
+
+  eq_(rv3.status_code, 304)
+
+  #For relead of source to change timestamp used for etag
+  update_releases(forced=True)
+
+  #Try again with if-none-match, but this time etag shoud have changed.
+  #This time we should get a 200 with different etag
+  headers = [("If-None-Match", etag)]
+  start = int(round(time.time() * 1000))
+  rv4 = test_app.get('api/releases', headers=headers)
+  fourth = int(round(time.time() * 1000)) - start
+
+  eq_(rv4.status_code, 200)
+  assert(etag != rv4.headers.get("etag"))
+
 def test_pdf():
   '''Test parameter limit'''
   rv = test_app.get('api/releases?q=construction&order_by=value&order_dir=desc&format=pdf')

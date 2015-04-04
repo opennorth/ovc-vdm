@@ -76,8 +76,6 @@ def test_emails():
 
     app.logger.error('This is a test message to check emails will be sent in case of an error')
 
-
-
 @manager.command
 def update_sources():
     #TODO : Delete sources that have been removed from config

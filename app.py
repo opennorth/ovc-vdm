@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from flask import Flask, render_template, request, abort, request_started, jsonify
+from flask import Flask, render_template, request, abort, request_started, jsonify, g
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.restful import reqparse, abort, Api, Resource, inputs
 from flask.ext.cache import Cache
@@ -25,6 +25,7 @@ import sys
 from constants import OCDS_META
 from serializations import CustomApi, generate_pdf, generate_csv, generate_xlsx
 from utils import send_mail
+import hashlib
 
 #Initiate the APP
 
@@ -42,19 +43,27 @@ db = SQLAlchemy(app)
 cors = CORS(app)
 Compress(app)
 stats_log = open(app.config["STATS_LOG"],'a')
+#g.etag = datetime.now()
 
 
+def before_request(sender, **extra):
 
-def add_daily_stat(sender, **extra):
-
-
+    #Je note
     req = {"time": datetime.now().strftime("%Y-%m-%d %H:%M:%S") , "path": request.path, "args": [(key,value) for (key,value) in request.args.items()], "referrer" : request.referrer }    
     stats_log.write(str(req) + '\n')   
     stats_log.flush() 
 
 
-request_started.connect(add_daily_stat, app)
+request_started.connect(before_request, app)
 
+
+
+
+@app.after_request
+def after(response):
+    if g.etag != None:
+        response.headers.add('etag', g.etag)
+    return response
 
 @app.errorhandler(404)
 def internal_error(error):
@@ -106,6 +115,20 @@ def root():
 
 
 class ListReleases(Resource):
+
+    def dispatch_request(self, *args, **kwargs):
+
+        #Generate etag
+        last_update =  str(db.session.query(Source.last_retrieve).order_by("last_retrieve desc").first())
+        g.etag = hashlib.sha1(str(last_update) + request.url).hexdigest()
+
+        #Check if etag verified
+        if request.headers.get('If-None-Match') == g.etag:
+            resp = app.make_response('')
+            resp.status_code = 304
+            return resp
+        
+        return super(ListReleases, self).dispatch_request(*args, **kwargs)
 
     def __init__(self, *args, **kwargs):
         super(ListReleases, self).__init__(*args, **kwargs)
@@ -709,7 +732,7 @@ class TreeMap(ListReleases):
         return output 
 api.add_resource(TreeMap, '/api/treemap')
 
-class IndividualRelease(Resource):
+class IndividualRelease(ListReleases):
     @cache.cached(timeout=app.config["CACHE_DURATION"])
     def get(self,ocid):
         try:
@@ -728,12 +751,8 @@ class TriggerError(Resource):
 api.add_resource(TriggerError, '/api/trigger_500')
 
 #Define routes for API
-class ApiRoot(Resource):
+class ApiRoot(ListReleases):
     def get(self):
-        accept_header = request.headers.get('Accept')
-        request.headers.get('Accept')
-        #add_daily_stat(request)
-
 
 
         releases = db.session.query(Release).count()
