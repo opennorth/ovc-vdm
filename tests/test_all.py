@@ -307,38 +307,6 @@ def test_generator():
        'response': 200,
        'count':3,
        'value':27759569
-       },       
-       {
-      # Treemap activity => buyer
-      'url': 'api/treemap?parent=activity&child=buyer', 
-       'json_path' : ("releases",0,"children",0,"total_value"),
-       'response': 200,
-       'count':3,
-       'value':27759569
-       },  
-       {
-      # Treemap activity => buyer with self join
-      'url': 'api/treemap?parent=activity&child=buyer&buyer=arrondissement-de-pierrefonds-roxboro', 
-       'json_path' : ("releases",0,"children",0,"total_value"),
-       'response': 200,
-       'count':1,
-       'value':1126244
-       },         
-       {
-      # Treemap buyer => supplier
-      'url': 'api/treemap?parent=buyer&child=supplier&activity=Transport', 
-       'json_path' : ("releases",0,"children",0,"total_value"),
-       'response': 200,
-       'count':1,
-       'value':1966515
-       },          
-       {
-      # Treemap buyer => supplier
-      'url': 'api/treemap?parent=size&child=supplier', 
-       'json_path' : ("releases",0,"children",0,"total_value"),
-       'response': 200,
-       'count':2,
-       'value':25394603
        },
        {
       # Invalide order by
@@ -380,10 +348,13 @@ def test_individual_release():
   ocid = resp1["releases"][0]['ocid']
 
 
-  rv2 = test_app.get('api/release/' + ocid)
+  rv2 = test_app.get('api/release/' + ocid + '?q=MCGILL&highlight=True')
   eq_(rv2.status_code,200)
   resp2 = json.loads(rv2.data)
+
+  desc = "1- RÉSILIER LE BAIL INTERVENU ENTRE LA VILLE ET LA RÉGIE DE LA SANTÉ ET DES SERVICES SOCIAUX MONTRÉAL-CENTRE (CO98 00531). 2- RÉSILIER LE BAIL INTERVENU ENTRE LA VILLE ET LE CENTRE UNIVERSITAIRE <em>MCGILL</em> (CM11 0631). 3- APPROUVER LE NOUVEAU BAIL PAR LEQUEL LA VILLE LOUE, À L’AGENCE DE LA SANTÉ ET DES SERVICES SOCIAUX DE MONTRÉAL, POUR UNE DURÉE DE 9 ANS, À COMPTER DU 1ER OCTOBRE 2011, UN ESPACE SITUÉ AU 1301, RUE SHERBROOKE EST (PAVILLON LAFONTAINE), POUR DES FINS ADMINISTRATIVES MOYENNANT UNE RECETTE TOTALE DE 25 394 602,80 $ TPS INCLUSE. "
   eq_(resp2['awards'][0]['value']['amount'],25394603)
+  eq_(resp2['awards'][0]['items'][0]['description'],desc)
 
 def test_individual_release_error():
   '''Test parameter limit'''

@@ -16,7 +16,7 @@ from werkzeug.wrappers import Request
 
 from datetime import datetime
 from unidecode import unidecode
-from multiprocessing import Pool
+
 
 import re
 import os
@@ -198,6 +198,36 @@ class ListReleases(Resource):
 
         return query.order_by("%s %s" % (sort_attr, sorter) )
 
+    def highlight_request (self, query, args):
+
+        highlighted_fields = [(Release.description, 'h_description'), 
+                                (Supplier.name, 'h_supplier_name'),
+                                (Buyer.name, 'h_buyer_name'),
+                                (Release.dossier, 'h_dossier'),
+                                (Release.decision, 'h_decision')
+        ]
+
+        if 'q' in args and args['q'] != None and 'highlight' in args and args['highlight'] == True: 
+            for (field, label) in highlighted_fields:
+                query = query.add_column(func.ts_headline('french', 
+                           field, 
+                           func.plainto_tsquery(args['q']),
+                           'HighlightAll=TRUE, StartSel="%s", StopSel = "%s"' % (app.config["START_HIGHLIGHT"], app.config["END_HIGHLIGHT"]))
+                            .label(label))   
+                            
+        return query     
+
+    def highlight_result(self, result, args):
+
+        if 'q' in args and args['q'] != None and 'highlight' in args and args['highlight'] == True: 
+            result.json["awards"][0]["items"][0]["description"] = result.h_description
+            result.json["awards"][0]["suppliers"][0]["name"] = result.h_supplier_name
+            result.json["buyer"]["name"] = result.h_buyer_name
+            result.json["awards"][0]["id"] = result.h_dossier
+            result.json["awards"][0]["items"][0]["id"] = result.h_decision
+
+        return result
+
     def filter_request(self, query, args):
 
         #By default we filter contracts
@@ -271,22 +301,9 @@ class ListReleases(Resource):
         self.buyer_joined = True
         
         releases = db.session.query(Release.json).join(Buyer).join(Supplier)
+        releases = self.highlight_request(releases, args)
 
 
-        highlighted_fields = [(Release.description, 'h_description'), 
-                                (Supplier.name, 'h_supplier_name'),
-                                (Buyer.name, 'h_buyer_name'),
-                                (Release.dossier, 'h_dossier'),
-                                (Release.decision, 'h_decision')
-        ]
-
-        if 'q' in args and args['q'] != None and 'highlight' in args and args['highlight'] == True: 
-            for (field, label) in highlighted_fields:
-                releases = releases.add_column(func.ts_headline('french', 
-                           field, 
-                           func.plainto_tsquery(args['q']),
-                           'HighlightAll=TRUE, StartSel="%s", StopSel = "%s"' % (app.config["START_HIGHLIGHT"], app.config["END_HIGHLIGHT"]))
-                            .label(label))
 
         releases_sum = db.session.query(
             func.sum(Release.value).label('total_value'), 
@@ -328,13 +345,7 @@ class ListReleases(Resource):
 
         output["releases"] = [] 
         for r in releases:
-            if 'q' in args and args['q'] != None and 'highlight' in args and args['highlight'] == True: 
-                r.json["awards"][0]["items"][0]["description"] = r.h_description
-                r.json["awards"][0]["suppliers"][0]["name"] = r.h_supplier_name
-                r.json["buyer"]["name"] = r.h_buyer_name
-                r.json["awards"][0]["id"] = r.h_dossier
-                r.json["awards"][0]["items"][0]["id"] = r.h_decision
-
+            r = self.highlight_result(r, args)
             output["releases"].append(r.json)
 
 
@@ -602,142 +613,42 @@ class ReleasesByActivity(ListReleases):
 api.add_resource(ReleasesByActivity, '/api/releases/by_activity')
 
 
-class TreeMap(ListReleases):
+class IndividualRelease(ListReleases):
 
     def __init__(self, *args, **kwargs):
-        super(TreeMap, self).__init__(*args, **kwargs)
+        super(ListReleases, self).__init__(*args, **kwargs)
 
-        self.default_limit = 50
-        self.default_order_by = 'total_value'
-        self.default_order_dir = 'desc'
+
+        self.supplier_joined = True
+        self.buyer_joined = True
+
+        self.default_order_by = None
+        self.default_order_dir = None
+        self.accepted_order_by = None
+        self.accepted_type = None
 
         self.accepted_parameters = [
-            {"param": 'parent', "type": str}, 
-            {"param": 'child', "type": str}, 
-            {"param": 'limit', "type": inputs.natural},
-            {"param": 'date_gt', "type": inputs.date},
-            {"param": 'date_lt', "type": inputs.date},
-            {"param": 'buyer', "type": str},
-            {"param": 'activity', "type": str}, 
-            {"param": 'supplier', "type": str},            
-            {"param": 'supplier_size', "type": str},
-            {"param": 'procuring_entity', "type": str},       
-            {"param": 'type', "type": str},    
+            {"param": 'q', "type": str},
+            {"param": 'highlight', "type": bool},
         ]
 
+
+
     @cache.cached(timeout=app.config["CACHE_DURATION"], key_prefix=make_cache_key)
-    def get(self):
-        args = self.parse_arg()
-
-        self.buyer_joined = False
-        self.supplier_joined = False
-        groupby = ''
-
-        if args["parent"] == "activity":
-            releases = db.session.query(
-                Release.activities[1].label(args["parent"]), 
-                func.sum(Release.value).label('total_value'), 
-                func.count(Release.value).label('count'))
-            groupby = args["parent"]
-
-        elif args["parent"] == "buyer":
-            self.buyer_joined = True
-            releases = db.session.query(
-                func.sum(Release.value).label('total_value'), 
-                func.count(Release.value).label('count'),
-                Buyer.name.label('buyer'))
-            releases = releases.filter(Buyer.id == Release.buyer_id)
-            groupby = 'buyer'
-
-        elif args["parent"] == "size":
-            self.supplier_joined = True
-            releases = db.session.query(
-                func.sum(Release.value).label('total_value'), 
-                func.count(Release.value).label('count'),
-                Supplier.size.label('size'))
-            releases = releases.filter(Supplier.id == Release.supplier_id)
-            groupby = 'size'
-
-        releases = self.filter_request(releases, args)
-        releases = releases.group_by(groupby)
-        releases = self.sort_request(releases, args)
-
-        
-        release_count = releases.count()
-
-        (releases, offset, limit) = self.offset_limit(releases, args)
-
-
-        #Generate output structure
-        output = dict()
-            
-        output["meta"] = {
-            "count": release_count,
-            "pagination" : {"offset" : offset, "limit":  limit}
-        }
-
-        output["releases"] = [r._asdict() for r in releases] 
-
-        for item in output["releases"]:
-            self.buyer_joined = False
-            self.supplier_joined = False
-            groupby = ''
-            if args["child"] == "buyer":
-
-                self.buyer_joined = True
-                children = db.session.query(
-                    Buyer.name.label('buyer'), 
-                    func.min(Buyer.slug).label('buyer_slug'), 
-                    func.sum(Release.value).label('total_value'), 
-                    func.count(Release.value).label('count'))
-                children = children.filter(Buyer.id == Release.buyer_id)  
-                groupby =  'buyer'
-
-            elif args["child"] == "supplier":       
-
-                self.supplier_joined = True
-                children = db.session.query(
-                    func.sum(Release.value).label('total_value'), 
-                    func.count(Release.value).label('count'),
-                    Supplier.name.label('supplier'), 
-                    func.min(Supplier.slug).label('supplier_slug')) 
-
-                children = children.filter(Supplier.id == Release.supplier_id)  
-                groupby =  'supplier'
-            else:
-                abort(400, message='Treemap only accepts supplier or buyer as child')
-                #children = db.session.query(getattr(Release, args["child"]).label(args["child"]), func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))
-
-            if args["parent"] == "activity":
-                children = children.filter(Release.activities[1] == item[args['parent']])
-            elif args["parent"] == "buyer":
-                #self.buyer_joined = True
-                children = children.filter(Buyer.name == item[args['parent']]) 
-            elif args["parent"] == "size":
-                #self.supplier_joined = True
-                children = children.filter(Supplier.size == item[args['parent']])  
-            else:
-                abort(400, message='Treemap only accepts activity, buyer or supplier_size as parent')
-
-            children = self.filter_request(children, args)
-            children = children.group_by(groupby)
-            children = children.order_by('total_value desc')
-
-            (children, offset, limit) = self.offset_limit(children, args)
-
-            item["children"] = []
-            for child in children:
-                item["children"].append(child._asdict())
-
-        return output 
-api.add_resource(TreeMap, '/api/treemap')
-
-class IndividualRelease(ListReleases):
-    @cache.cached(timeout=app.config["CACHE_DURATION"])
     def get(self,ocid):
+
+        args = self.parse_arg()
         try:
-            my_release = Release.query.filter_by(ocid=ocid).one()
-            return my_release.json
+
+
+            my_release = db.session.query(Release.json).join(Buyer).join(Supplier)
+            my_release = my_release.filter(Release.ocid==ocid)
+            my_release = self.highlight_request(my_release, args)
+
+            r = my_release.one()
+            r = self.highlight_result(r, args)
+            return r.json
+
         except NoResultFound:
             abort(404, message="Release {} does not exist".format(ocid)) 
 
