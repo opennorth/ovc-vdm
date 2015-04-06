@@ -47,21 +47,17 @@ stats_log = open(app.config["STATS_LOG"],'a')
 
 
 def before_request(sender, **extra):
-
-    #Je note
+    '''Called on request reception to log request before cache kicks in'''
     req = {"time": datetime.now().strftime("%Y-%m-%d %H:%M:%S") , "path": request.path, "args": [(key,value) for (key,value) in request.args.items()], "referrer" : request.referrer }    
     stats_log.write(str(req) + '\n')   
     stats_log.flush() 
 
-
 request_started.connect(before_request, app)
-
-
-
 
 @app.after_request
 def after(response):
-    if g.etag != None:
+    ''' Add etag in response'''
+    if hasattr(g, "etag") and g.etag != None:
         response.headers.add('etag', g.etag)
     return response
 
@@ -75,6 +71,7 @@ def internal_error(error):
 
 @app.errorhandler(500)
 def internal_error(error):
+    '''Catch 500 errors and send custom message + alert email'''
     error_msg = {"msg": "Internal error - We are working on it!"}
     resp = app.make_response(jsonify(error_msg))
     resp.status_code = 500
@@ -99,6 +96,7 @@ def output_xlsx(data, code, headers=None):
 
 
 def make_cache_key(*args, **kwargs):
+    '''Make key for caching that integrates the args'''
     path = request.path
     args = str(hash(frozenset(request.args.items())))
     return (path + args).encode('utf-8')
@@ -107,15 +105,16 @@ def make_cache_key(*args, **kwargs):
 from models import *
 
 
-#Define routes for HTML content
+
 @app.route("/")
 def root():
     return app.send_static_file('index.html')
 
 class CustomResource(Resource):
-    def dispatch_request(self, *args, **kwargs):
 
-        #Generate etag
+    def dispatch_request(self, *args, **kwargs):
+        '''Overload function to handle etag/If-None-Match behaviour'''
+
         last_update =  str(db.session.query(Source.last_retrieve).order_by("last_retrieve desc").first())
         g.etag = hashlib.sha1(str(last_update) + request.url).hexdigest()
 
@@ -733,18 +732,19 @@ class ApiRoot(CustomResource):
             releases_dict["endpoints"].append(resource_dict)
 
         releases_dict["parameters_description"] = parameters_dict
-
+        releases_dict["sources"] = [source.url for source in Source.query.all()]
+        releases_dict["last_update"] = (db.session.query(Source.last_retrieve).order_by("last_retrieve desc").first()[0]).strftime("%Y-%m-%dT%H:%M:%S")
         releases_dict["releases_count"] = db.session.query(Release).count()
         releases_dict["releases_value"] = db.session.query(func.sum(Release.value).label('sum')).scalar()
         releases_dict["supplier_count"] = db.session.query(Supplier).count()
         releases_dict["buyer_count"] = db.session.query(Buyer).count()
 
 
-        output = releases_dict
+        return releases_dict
 
- 
-        return output
 api.add_resource(ApiRoot, '/api/')
+
+
 
 if __name__ == '__main__':
     app.run()
