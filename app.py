@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from flask import Flask, render_template, request, abort, request_started, jsonify, g
+from flask import Flask, render_template, request, abort, request_started, jsonify, g, url_for
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.restful import reqparse, abort, Api, Resource, inputs
 from flask.ext.cache import Cache
@@ -112,10 +112,7 @@ from models import *
 def root():
     return app.send_static_file('index.html')
 
-
-
-class ListReleases(Resource):
-
+class CustomResource(Resource):
     def dispatch_request(self, *args, **kwargs):
 
         #Generate etag
@@ -128,10 +125,10 @@ class ListReleases(Resource):
             resp.status_code = 304
             return resp
         
-        return super(ListReleases, self).dispatch_request(*args, **kwargs)
+        return super(CustomResource, self).dispatch_request(*args, **kwargs)
 
     def __init__(self, *args, **kwargs):
-        super(ListReleases, self).__init__(*args, **kwargs)
+        super(CustomResource, self).__init__(*args, **kwargs)
 
         self.supplier_joined = False
         self.buyer_joined = False
@@ -142,23 +139,22 @@ class ListReleases(Resource):
         self.default_type = 'contract'
 
         self.accepted_parameters = [
-            {"param": 'q', "type": str},
-            {"param": 'highlight', "type": bool},
-            {"param": 'offset', "type": inputs.natural},
-            {"param": 'limit', "type": inputs.natural},
-            {"param": 'value_gt', "type": inputs.natural},
-            {"param": 'value_lt', "type": inputs.natural},
-            {"param": 'date_gt', "type": inputs.date},
-            {"param": 'date_lt', "type": inputs.date},
-            {"param": 'buyer', "type": str},
-            {"param": 'activity', "type": str}, 
-            {"param": 'supplier', "type": str},
-            {"param": 'order_by', "type": str}, 
-            {"param": 'order_dir', "type": str},
-            {"param": 'type', "type": str},
-            {"param": 'supplier_size', "type": str},
-            {"param": 'procuring_entity', "type": str},                 
-            {"param": 'format', "type": str},
+            {"param": 'q', "type": str, "desc": "Free text search parameter, free text. e.g ?q=aménagement"},
+            {"param": 'offset', "type": inputs.natural, "desc": "Pagination parameter. Positive integer number identifying the first record to return"},
+            {"param": 'limit', "type": inputs.natural, "desc": "Pagination parameter. Positive integer number to limit the number of record to return, use with offet, e.g. ?limit=10&offset=20 will return records 20 to 30"},
+            {"param": 'value_gt', "type": inputs.natural, "desc": "Filter on releases/contracts with value greater that the parameter. Positive integer number."},
+            {"param": 'value_lt', "type": inputs.natural, "desc": "Filter on releases/contracts with value lesser that the parameter. Positive integer number."},
+            {"param": 'date_gt', "type": inputs.date, "desc": "Filter on releases/contracts with date greater that the parameter. Positive integer number."},
+            {"param": 'date_lt', "type": inputs.date, "desc": "Filter on releases/contracts with date lesser that the parameter. Positive integer number."},
+            {"param": 'buyer', "type": str, "desc": "Filter by buyer, provide buyer slug to limit results to this buyer only."},
+            {"param": 'activity', "type": str, "desc": "Filter by activity, provide activity to limit results to this activity only."}, 
+            {"param": 'supplier', "type": str, "desc": "Filter by supplier, provide supplier slug to limit results to this supplier only."},
+            {"param": 'order_by', "type": str, "desc": "Criteria used to order results. See accepted_order_by for acceted values for each end point"}, 
+            {"param": 'order_dir', "type": str, "desc": "Direction for the order criteria. Value 'desc' or 'asc'"},
+            {"param": 'type', "type": str, "desc": "Type of contract. Accepted values: 'contract' or 'subvention'"},
+            {"param": 'supplier_size', "type": str, "desc": "Filter by the size of supplier. Accepted values: 1 (smaller),2 and 3 (larger)"},
+            {"param": 'procuring_entity', "type": str, "desc": "Filter by procuring entity, provide procuring entity to limit results to this procuring entity only."},                 
+
         ]
 
         self.accepted_order_by = ['value', 'buyer', 'supplier', 'id', 'date', None]
@@ -292,6 +288,19 @@ class ListReleases(Resource):
         
         return (query[offset:offset+limit], offset, limit)
 
+
+
+class ListReleases(CustomResource):
+    '''Provide list releases following the Open Contracting format based on filters provided'''
+
+    def __init__(self, *args, **kwargs):
+        super(ListReleases, self).__init__(*args, **kwargs)
+
+        self.accepted_parameters.append({"param": 'highlight', "type": bool, "desc": "Highlight search results. If set to 'True', add a <em> on search terms provided in parameter 'q'"})
+        self.accepted_parameters.append({"param": 'format', "type": str, "desc": "Select output format. Accepter values: 'json' (default), 'ocds': static OCDS file, 'pdf': PDF file, 'csv': CSV file, 'xlsx': MS Excel"})
+
+                
+
     @cache.cached(timeout=5000, key_prefix=make_cache_key)
     def get(self):
         
@@ -353,7 +362,9 @@ class ListReleases(Resource):
 
 api.add_resource(ListReleases, '/api/releases')
 
-class ReleasesBySupplier(ListReleases):
+class ReleasesBySupplier(CustomResource):
+    '''Group releases by  supplier and provide the number of contracts and the total 
+    value of contracts by supplier'''
 
     def __init__(self, *args, **kwargs):
         super(ReleasesBySupplier, self).__init__(*args, **kwargs)
@@ -401,7 +412,9 @@ class ReleasesBySupplier(ListReleases):
 api.add_resource(ReleasesBySupplier, '/api/releases/by_supplier')
 
 
-class ReleasesByBuyer(ListReleases):
+class ReleasesByBuyer(CustomResource):
+    '''Group releases by buyer. Provide the number of contract and total
+    value for each buyer'''
 
     def __init__(self, *args, **kwargs):
         super(ReleasesByBuyer, self).__init__(*args, **kwargs)
@@ -446,7 +459,10 @@ class ReleasesByBuyer(ListReleases):
 api.add_resource(ReleasesByBuyer, '/api/releases/by_buyer')
 
 
-class ReleasesByProcuringEntity(ListReleases):
+class ReleasesByProcuringEntity(CustomResource):
+    '''Group releases by procuring entity. Provide the number of contract and total
+    value for each procuring entity'''
+
 
     def __init__(self, *args, **kwargs):
         super(ReleasesByProcuringEntity, self).__init__(*args, **kwargs)
@@ -485,7 +501,10 @@ class ReleasesByProcuringEntity(ListReleases):
 api.add_resource(ReleasesByProcuringEntity, '/api/releases/by_procuring_entity')
 
 
-class ReleasesByValueRange(ListReleases):
+class ReleasesByValueRange(CustomResource):
+    '''Group releases by buckets of value. Parameter 'bucket' is mandatory for this endpoint.
+    Provide the start value, end value and number of intervals, the endpoint returns the number
+    of contracts and total value for each segment of value'''
 
     def __init__(self, *args, **kwargs):
         super(ReleasesByValueRange, self).__init__(*args, **kwargs)
@@ -496,7 +515,7 @@ class ReleasesByValueRange(ListReleases):
         self.accepted_order_by = ['total_value', 'count', 'segment', None]
         self.width_bucket = (0, 10000000, 19)
 
-        self.accepted_parameters.append({"param": 'bucket', "type": str})
+        self.accepted_parameters.append({"param": 'bucket', "type": str, "desc": "Parameters of the value bucket for the by_value endpoint. 3 coma-separated positive integer: first, minimum value; second, maximum value, third, number of intervals. E.g by_value?bucket=0,10000000,49"})
 
     @cache.cached(timeout=app.config["CACHE_DURATION"], key_prefix=make_cache_key)
     def get(self):
@@ -531,7 +550,9 @@ class ReleasesByValueRange(ListReleases):
 api.add_resource(ReleasesByValueRange, '/api/releases/by_value')
 
 
-class ReleasesByMonth(ListReleases):
+class ReleasesByMonth(CustomResource):
+    '''Group releases by month-year. Provide the number of contract and total
+    value for each month-year where some contracts are available'''    
 
     def __init__(self, *args, **kwargs):
         super(ReleasesByMonth, self).__init__(*args, **kwargs)
@@ -572,7 +593,9 @@ class ReleasesByMonth(ListReleases):
         return output 
 api.add_resource(ReleasesByMonth, '/api/releases/by_month')
 
-class ReleasesByActivity(ListReleases):
+class ReleasesByActivity(CustomResource):
+    '''Group releases by activity. Provide the number of contracts and total value
+    for each activity available. On the primary (first in the list) activity is considered'''
 
     def __init__(self, *args, **kwargs):
         super(ReleasesByActivity, self).__init__(*args, **kwargs)
@@ -613,10 +636,11 @@ class ReleasesByActivity(ListReleases):
 api.add_resource(ReleasesByActivity, '/api/releases/by_activity')
 
 
-class IndividualRelease(ListReleases):
+class IndividualRelease(CustomResource):
+    '''Provide OCDS formatted output for an individual release given its OCID'''
 
     def __init__(self, *args, **kwargs):
-        super(ListReleases, self).__init__(*args, **kwargs)
+        super(IndividualRelease, self).__init__(*args, **kwargs)
 
 
         self.supplier_joined = True
@@ -662,29 +686,62 @@ class TriggerError(Resource):
 api.add_resource(TriggerError, '/api/trigger_500')
 
 #Define routes for API
-class ApiRoot(ListReleases):
+class ApiRoot(CustomResource):
+    '''Root API listing available ressource, and general informations about the 
+    data available in the system'''
+
     def get(self):
 
+        resource_list = ["ListReleases", "ReleasesBySupplier", "ReleasesByBuyer", 
+        "ReleasesByProcuringEntity", "ReleasesByValueRange", "ReleasesByMonth", "ReleasesByActivity"]
 
-        releases = db.session.query(Release).count()
-        releases_sum = db.session.query(func.sum(Release.value).label('sum')).scalar()
-        buyers = db.session.query(Buyer).count()
+        def has_no_empty_params(rule):
+            defaults = rule.defaults if rule.defaults is not None else ()
+            arguments = rule.arguments if rule.arguments is not None else ()
+            return len(defaults) >= len(arguments)
+
+        url_dict = {}
+        for rule in app.url_map.iter_rules():
+            if "GET" in rule.methods and has_no_empty_params(rule):
+                url = url_for(rule.endpoint)  
+                url_dict[rule.endpoint] = url
+
 
         releases_dict = {}
-        releases_dict["url"] = '/releases'
-        releases_dict["count"] = releases
-        releases_dict["value"] = releases_sum
+        releases_dict["endpoints"] = []
+        parameters_dict = {}
 
-        '''
-        list_releases = ListReleases()
-        print [item["param"] for item in list_releases.accepted_parameters]
-        releases_dict["params"] = [item["param"] for item in list_releases.accepted_parameters]
+        for resource in resource_list:
+            resource_dict = {}
+            resource_dict["url"] = url_dict[resource.lower()]
 
-        print api.__dict__
-        '''
+            introspection = eval(resource)()
 
-        output = {}
-        output["releases"] = releases_dict
+            
+            resource_dict["accepted_parameters"] = [param["param"] for param in introspection.accepted_parameters]
+
+            for param in introspection.accepted_parameters:
+                if "desc" in param and param["param"] not in parameters_dict:
+                    parameters_dict[param["param"]] = param["desc"]
+
+
+            resource_dict["accepted_order_by"] = [order for order in introspection.accepted_order_by]
+
+            if introspection.__doc__ != None:
+                resource_dict["description"] = introspection.__doc__
+
+            releases_dict["endpoints"].append(resource_dict)
+
+        releases_dict["parameters_description"] = parameters_dict
+
+        releases_dict["releases_count"] = db.session.query(Release).count()
+        releases_dict["releases_value"] = db.session.query(func.sum(Release.value).label('sum')).scalar()
+        releases_dict["supplier_count"] = db.session.query(Supplier).count()
+        releases_dict["buyer_count"] = db.session.query(Buyer).count()
+
+
+        output = releases_dict
+
  
         return output
 api.add_resource(ApiRoot, '/api/')

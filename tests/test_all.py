@@ -38,7 +38,7 @@ def test_api_root():
   eq_(rv.status_code,200)
   resp = json.loads(rv.data)
 
-  eq_(resp["releases"]["count"],18)
+  eq_(resp["releases_count"],18)
 
 def test_generator():
 
