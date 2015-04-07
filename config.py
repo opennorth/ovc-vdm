@@ -27,6 +27,12 @@ class Config(object):
 
     DATA_SOURCES = [
         {
+            'name': 'Fonctionnaires',
+            'mapper': 'field_mapper_fonc_mtl',
+            'url': 'http://donnees.ville.montreal.qc.ca/dataset/74efbfc7-b1bd-488f-be6f-ad122f1ebe8d/resource/a7c221f7-7472-4b01-9783-ed9e847ee8c1/download/contratsfonctionnaires.csv',
+            'type': 'contract'
+        }, 
+        {
             'name': 'Conseil Muncipal',
             'mapper': 'field_mapper_pol_mtl',
             'url': 'http://donnees.ville.montreal.qc.ca/dataset/6df93670-af44-492e-a644-72643bf58bc0/resource/a6869244-1a4d-4080-9577-b73e09d95ed5/download/contratsconseilmunicipal.csv',
@@ -49,7 +55,8 @@ class Config(object):
             'mapper': 'field_mapper_subvention_mtl',
             'url': 'http://donnees.ville.montreal.qc.ca/dataset/067c3bf6-0ec0-4159-a582-b0d58b44491f/resource/3abb3596-45fb-4c80-8d6f-1633db5427d4/download/subventionsconseilmunicipal.csv',
             'type': 'subvention'
-        }          
+        },
+                
     ]
 
     SUPPLIER_SIZE = [0, 100000, 10000000]

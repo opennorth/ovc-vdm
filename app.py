@@ -688,7 +688,7 @@ api.add_resource(TriggerError, '/api/trigger_500')
 class ApiRoot(CustomResource):
     '''Root API listing available ressource, and general informations about the 
     data available in the system'''
-
+    @cache.cached(timeout=app.config["CACHE_DURATION"])
     def get(self):
 
         resource_list = ["ListReleases", "ReleasesBySupplier", "ReleasesByBuyer", 
