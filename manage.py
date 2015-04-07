@@ -160,6 +160,7 @@ def update_releases(forced=False):
 @manager.command
 def load_source(source, action='load'):
 
+
     mapper = Mapper(source)
     output = mapper.to_ocds()
 
@@ -177,10 +178,13 @@ def load_ocds(ocds, type='path', source=None):
     try:
 
         if source != None:
+            print unicode(datetime.now()) + " - Je supprime tout"
             db.session.query(Release).filter(Release.source_id == source.id).delete() 
             
+        i = 0;
         for release in data["releases"]:
-        
+            i += 1
+            print unicode(datetime.now()) + " - " + str(i)
             the_release= Release(release)
             the_release.source_id = source.id
 
@@ -201,7 +205,9 @@ def load_ocds(ocds, type='path', source=None):
             db.session.add(the_release)
 
         source.last_retrieve = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print unicode(datetime.now()) + " Je fais le commit "
         db.session.commit()
+        print unicode(datetime.now()) + " J'ai fait le commit "
 
     except exc.SQLAlchemyError as e:  
         #If we have a SQLAlchemy error here, we can assume it's serious so we rollback...
