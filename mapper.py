@@ -14,8 +14,7 @@ from slugify import slugify
 import hashlib
 
 
-def field_mapper_pol_mtl(row, source):
-    my_release = json.load(open('templates/release.json'))
+def field_mapper_pol_mtl(row, source, my_release):
     eastern = pytz.timezone('US/Eastern')
     contract_date = eastern.localize(datetime.strptime(row[7], "%Y-%m-%d"))
 
@@ -57,8 +56,9 @@ def field_mapper_pol_mtl(row, source):
 
     return my_release
 
-def field_mapper_fonc_mtl(row, source):
-    my_release = json.load(open('templates/release.json'))
+
+def field_mapper_fonc_mtl(row, source, my_release):
+    
     eastern = pytz.timezone('US/Eastern')
     contract_date = eastern.localize(datetime.strptime(row[2], "%Y-%m-%d"))
 
@@ -99,10 +99,11 @@ def field_mapper_fonc_mtl(row, source):
     description += "Approuvé par : " + row[3]
     my_release["awards"][0]["items"][0]["description"] = description
 
+    del description
+
     return my_release
 
-def field_mapper_subvention_mtl(row, source):
-    my_release = json.load(open('templates/release.json'))
+def field_mapper_subvention_mtl(row, source, my_release):
     eastern = pytz.timezone('US/Eastern')
     contract_date = eastern.localize(datetime.strptime(row[7], "%Y-%m-%d"))
 
@@ -154,36 +155,38 @@ class Mapper():
             self.cr = csv.reader(open(source.url))
         else:
             self.cr = csv.reader(urllib2.urlopen(source.url))
-        self.output = {}
-        self.release_list= []
+        self.template = json.load(open('templates/release.json'))
         self.mapper_type = source.mapper
+        self.mapper = getattr(sys.modules[__name__],  self.mapper_type)
         self.source = source
+        self.output = {}
         self.csv_skip = 1
         if hasattr(source, "skip_lines") and source.skip_lines != None:
             self.csv_skip  = source.skip_lines
 
 
-
-
     def to_ocds(self):
 
-        custom_mapper = getattr(sys.modules[__name__],  self.mapper_type)
-
         i = 0
-        errors = []
+        #errors = []
         for row in self.cr:
+            print i
+            
             if i >= self.csv_skip:
                 try:
-                    self.release_list.append(custom_mapper(row, self.source))
+                    #self.release_list.append(custom_mapper(row, self.source))
+                    yield self.mapper(row, self.source, self.template)
+
                 except (ValueError, IndexError) as e:
-                    errors.append('Ligne #: %s  \tMessage: %s \nContenu de la ligne: %s' % (i+1, repr(e), row))   
+                    pass
+                    #errors.append('Ligne #: %s  \tMessage: %s \nContenu de la ligne: %s' % (i+1, repr(e), row))   
     
             i = i+1
-
+            
+'''
         message = ''
         if len(errors) > 0:
             app.logger.error("Erreur lors du chargement du fichier %s \n\n%s" %  (self.source.url, '\n'.join(errors)))
 
         self.output["releases"] = self.release_list 
-
-        return self.output
+'''

@@ -14,7 +14,7 @@ from models import *
 import re
 from urlparse import urlparse
 import ast
-
+import gc
 from app import app, db
 import time
 from utils import send_mail
@@ -57,6 +57,43 @@ if app.config['SENDMAIL']:
 
 
 manager.add_command('db', MigrateCommand)
+
+
+
+
+
+
+
+
+
+#***********
+
+
+from pympler import summary, muppy
+import psutil
+
+def get_virtual_memory_usage_kb():
+    """
+    The process's current virtual memory size in Kb, as a float.
+
+    """
+    return float(psutil.Process().memory_info_ex().vms) / 1024.0
+
+def memory_usage(where):
+    """
+    Print out a basic summary of memory usage.
+
+    """
+    mem_summary = summary.summarize(muppy.get_objects())
+    print "Memory summary:", where
+    summary.print_(mem_summary, limit=5)
+    print "VM: %.2fMb" % (get_virtual_memory_usage_kb() / 1024.0)
+
+#******
+
+
+
+
 
 
 @manager.command
@@ -125,10 +162,10 @@ def compute_supplier_size():
     db.session.commit()
 
 
-
 @manager.command
 def update_releases(forced=False):
     '''Uses the sources list in DB to search for contracts'''
+    memory_usage("Je commence!")
     sources =  db.session.query(Source).all()
 
     for source in sources:
@@ -149,6 +186,7 @@ def update_releases(forced=False):
             load_source(source)
 
     compute_supplier_size()
+    memory_usage("finito!")
 
     #Let's flush the cache
     cache.init_app(app, config={'CACHE_TYPE': 'simple'})
@@ -161,53 +199,64 @@ def update_releases(forced=False):
 def load_source(source, action='load'):
 
 
+    if source != None:
+        #memory_usage("Je supprime tout")
+        db.session.query(Release).filter(Release.source_id == source.id).delete() 
+
+
     mapper = Mapper(source)
-    output = mapper.to_ocds()
+    for release in  mapper.to_ocds():
+        load_ocds(release, type='dict', source=source)
 
-    load_ocds(output, type='dict', source=source)
-        
 
-@manager.command
-def load_ocds(ocds, type='path', source=None):
+    source.last_retrieve = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    db.session.commit()
+
+
+
+'''
     data = {}
     if type == 'path':
         data = json.load(open(ocds))
     else:
         data = ocds
+'''
+        
+@manager.command
+def load_ocds(release, type='path', source=None):
 
     try:
 
-        if source != None:
-            print unicode(datetime.now()) + " - Je supprime tout"
-            db.session.query(Release).filter(Release.source_id == source.id).delete() 
-            
-        i = 0;
-        for release in data["releases"]:
-            i += 1
-            print unicode(datetime.now()) + " - " + str(i)
-            the_release= Release(release)
-            the_release.source_id = source.id
-
-            the_buyer =  db.session.query(Buyer).filter(Buyer.name== release["buyer"]["name"]).scalar()
-            if the_buyer == None:
-                the_buyer = Buyer(release["buyer"]) 
-                db.session.add(the_buyer)
+        the_release= Release(release)
         
-            the_buyer.releases.append(the_release)
+        the_release.source_id = source.id
 
-            the_supplier =  db.session.query(Supplier).filter(Supplier.slug == slugify(release["awards"][0]["suppliers"][0]["name"], to_lower=True)).scalar()
-            if the_supplier == None:
-                the_supplier = Supplier(release["awards"][0]["suppliers"][0]) 
-                db.session.add(the_supplier)
+        the_buyer =  db.session.query(Buyer).filter(Buyer.name== release["buyer"]["name"]).scalar()
+        if the_buyer == None:
+            the_buyer = Buyer(release["buyer"]) 
+            db.session.add(the_buyer)
+            db.session.flush()
         
-            the_supplier.releases.append(the_release)
+        
+        
 
-            db.session.add(the_release)
+        the_supplier =  db.session.query(Supplier).filter(Supplier.slug == slugify(release["awards"][0]["suppliers"][0]["name"], to_lower=True)).scalar()
+        if the_supplier == None:
+            the_supplier = Supplier(release["awards"][0]["suppliers"][0]) 
+            db.session.add(the_supplier)
+            db.session.flush()
+    
+        #the_supplier.releases.append(the_release)
+        #the_buyer.releases.append(the_release)
+        the_release.supplier_id = the_supplier.id
 
-        source.last_retrieve = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        print unicode(datetime.now()) + " Je fais le commit "
-        db.session.commit()
-        print unicode(datetime.now()) + " J'ai fait le commit "
+        the_release.buyer_id = the_buyer.id
+        db.session.add(the_release)
+
+        
+        db.session.flush()
+        
+
 
     except exc.SQLAlchemyError as e:  
         #If we have a SQLAlchemy error here, we can assume it's serious so we rollback...
