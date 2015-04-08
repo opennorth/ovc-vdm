@@ -119,7 +119,8 @@ class CustomResource(Resource):
         g.etag = hashlib.sha1(str(last_update) + request.url).hexdigest()
 
         #Check if etag verified
-        if request.headers.get('If-None-Match') == g.etag:
+        print (str(request.headers.get('If-None-Match')),  g.etag) 
+        if request.headers.get('If-None-Match') == g.etag :
             resp = app.make_response('')
             resp.status_code = 304
             return resp
