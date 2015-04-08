@@ -128,7 +128,6 @@ def compute_supplier_size():
 @manager.command
 def update_releases(forced=False):
     '''Uses the sources list in DB to search for contracts'''
-    memory_usage("Je commence!")
     sources =  db.session.query(Source).all()
 
     for source in sources:
@@ -149,7 +148,6 @@ def update_releases(forced=False):
             load_source(source)
 
     compute_supplier_size()
-    memory_usage("finito!")
 
     #Let's flush the cache
     cache.init_app(app, config={'CACHE_TYPE': 'simple'})
@@ -163,7 +161,6 @@ def load_source(source, action='load'):
 
 
     if source != None:
-        #memory_usage("Je supprime tout")
         db.session.query(Release).filter(Release.source_id == source.id).delete() 
 
 

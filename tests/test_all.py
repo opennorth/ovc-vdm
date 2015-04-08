@@ -390,6 +390,7 @@ def test_cache_etag():
   eq_(rv3.status_code, 304)
 
   #For relead of source to change timestamp used for etag
+  time.sleep(2)
   update_releases(forced=True)
 
   #Try again with if-none-match, but this time etag shoud have changed.

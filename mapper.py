@@ -17,24 +17,28 @@ import hashlib
 def field_mapper_pol_mtl(row, source, my_release):
     eastern = pytz.timezone('US/Eastern')
     contract_date = eastern.localize(datetime.strptime(row[7], "%Y-%m-%d"))
+    if (row[2] in app.config["SERVICE_AGGREGATOR"]):
+        buyer = app.config["SERVICE_AGGREGATOR"][row[2]]
+    else:
+        buyer = row[2]
 
     # TODO: USE NO DOSSIER OR NO DECISION? 
-    key = hashlib.sha1(bytes(row[0] + row[2] + row[4] + row[7] + row[8])).hexdigest()
+    key = hashlib.sha1(bytes(row[0] + buyer + row[4] + row[7] + row[8])).hexdigest()
     my_release["ocid"] =  app.config["OCID_PREFIX"] + key
     my_release["id"] =  key
 
     #TODO: IL FAUT SUREMENT AJOUTER UN TIMEZONE
     my_release["date"] = contract_date.isoformat()
-    my_release["buyer"]["name"] = row[2]
-    my_release["buyer"]["identifier"]["id"] = slugify(row[2], to_lower=True)
+    my_release["buyer"]["name"] = buyer
+    my_release["buyer"]["identifier"]["id"] = slugify(buyer, to_lower=True)
     my_release["buyer"]["subOrganisationOf"]["name"] = row[3]
 
 
     #TODO: FAIT MAPPING SERVICE  => ACTIVITE
     my_release["subject"] = ["Autre"]
 
-    if (row[2] in app.config["SERVICE_TO_ACTIVITY"]):
-        my_release["subject"] = app.config["SERVICE_TO_ACTIVITY"][row[2]]
+    if (buyer in app.config["SERVICE_TO_ACTIVITY"]):
+        my_release["subject"] = app.config["SERVICE_TO_ACTIVITY"][buyer]
 
 
     #TODO : Pass the procuring entity as a paramter of the mapper?
@@ -62,22 +66,28 @@ def field_mapper_fonc_mtl(row, source, my_release):
     eastern = pytz.timezone('US/Eastern')
     contract_date = eastern.localize(datetime.strptime(row[2], "%Y-%m-%d"))
 
+    if (row[5] in app.config["SERVICE_AGGREGATOR"]):
+        buyer = app.config["SERVICE_AGGREGATOR"][row[5]]
+    else:
+        buyer = row[5]
+
+
     # TODO: USE NO DOSSIER OR NO DECISION? 
-    key = hashlib.sha1(bytes(row[0] + row[1] + row[2] + row[4] + row[5] + row[7])).hexdigest()
+    key = hashlib.sha1(bytes(row[0] + row[1] + row[2] + row[4] + buyer + row[7])).hexdigest()
     my_release["ocid"] =  app.config["OCID_PREFIX"] + key
     my_release["id"] =  key
 
     #TODO: IL FAUT SUREMENT AJOUTER UN TIMEZONE
     my_release["date"] = contract_date.isoformat()
-    my_release["buyer"]["name"] = row[5]
-    my_release["buyer"]["identifier"]["id"] = slugify(row[5], to_lower=True)
+    my_release["buyer"]["name"] = buyer
+    my_release["buyer"]["identifier"]["id"] = slugify(buyer, to_lower=True)
 
 
     #TODO: FAIT MAPPING SERVICE  => ACTIVITE
     my_release["subject"] = ["Autre"]
 
-    if (row[5] in app.config["SERVICE_TO_ACTIVITY"]):
-        my_release["subject"] = app.config["SERVICE_TO_ACTIVITY"][row[5]]
+    if (buyer in app.config["SERVICE_TO_ACTIVITY"]):
+        my_release["subject"] = app.config["SERVICE_TO_ACTIVITY"][buyer]
 
 
     #TODO : Pass the procuring entity as a paramter of the mapper?
@@ -107,24 +117,29 @@ def field_mapper_subvention_mtl(row, source, my_release):
     eastern = pytz.timezone('US/Eastern')
     contract_date = eastern.localize(datetime.strptime(row[7], "%Y-%m-%d"))
 
-    # TODO: USE NO DOSSIER OR NO DECISION? 
-    key = hashlib.sha1(bytes(row[0] + row[2] + row[4] + row[7] + row[8])).hexdigest()
+    # TODO: USE NO DOSSIER OR NO DECISION?
+    if (row[2] in app.config["SERVICE_AGGREGATOR"]):
+        buyer = app.config["SERVICE_AGGREGATOR"][row[2]]
+    else:
+        buyer = row[2]
+
+    key = hashlib.sha1(bytes(row[0] + buyer + row[4] + row[7] + row[8])).hexdigest()
     my_release["ocid"] =  app.config["OCID_PREFIX"] + key
     my_release["id"] =  key
     my_release["tender"]["procurementMethodRationale"] =  source.type
 
     #TODO: IL FAUT SUREMENT AJOUTER UN TIMEZONE
     my_release["date"] = contract_date.isoformat()
-    my_release["buyer"]["name"] = row[2]
-    my_release["buyer"]["identifier"]["id"] = slugify(row[2], to_lower=True)
+    my_release["buyer"]["name"] = buyer
+    my_release["buyer"]["identifier"]["id"] = slugify(buyer, to_lower=True)
     my_release["buyer"]["subOrganisationOf"]["name"] = row[3]
 
 
     #TODO: FAIT MAPPING SERVICE  => ACTIVITE
     my_release["subject"] = ["Autre"]
 
-    if (row[2] in app.config["SERVICE_TO_ACTIVITY"]):
-        my_release["subject"] = app.config["SERVICE_TO_ACTIVITY"][row[2]]
+    if (buyer in app.config["SERVICE_TO_ACTIVITY"]):
+        my_release["subject"] = app.config["SERVICE_TO_ACTIVITY"][buyer]
 
 
     #TODO : Pass the procuring entity as a paramter of the mapper?
@@ -170,7 +185,6 @@ class Mapper():
         i = 0
         #errors = []
         for row in self.cr:
-            print i
             
             if i >= self.csv_skip:
                 try:
