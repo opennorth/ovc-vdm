@@ -56,7 +56,24 @@ class Config(object):
             'url': 'http://donnees.ville.montreal.qc.ca/dataset/067c3bf6-0ec0-4159-a582-b0d58b44491f/resource/3abb3596-45fb-4c80-8d6f-1633db5427d4/download/subventionsconseilmunicipal.csv',
             'type': 'subvention'
         },
-                
+        {
+            'name': 'Conseil d\'agglomeration',
+            'mapper': 'field_mapper_subvention_mtl',
+            'url': 'http://donnees.ville.montreal.qc.ca/dataset/067c3bf6-0ec0-4159-a582-b0d58b44491f/resource/bc862025-9735-4a10-8d29-a5ee6621277c/download/subventionsconseilagglomeration.csv',
+            'type': 'subvention'
+        },                
+        {
+            'name': 'Conseil Muncipal',
+            'mapper': 'field_mapper_subvention_mtl',
+            'url': 'http://donnees.ville.montreal.qc.ca/dataset/067c3bf6-0ec0-4159-a582-b0d58b44491f/resource/3abb3596-45fb-4c80-8d6f-1633db5427d4/download/subventionsconseilmunicipal.csv',
+            'type': 'subvention'
+        },
+        {
+            'name': 'Comité éxecutif',
+            'mapper': 'field_mapper_subvention_mtl',
+            'url': 'http://donnees.ville.montreal.qc.ca/dataset/4900f199-445f-4a89-a4e1-a02ee2391d26/resource/96c66e8d-f217-4249-8ff5-42ebac8045b9/download/subventionscomiteexecutif.csv',
+            'type': 'subvention'
+        },        
     ]
 
     SUPPLIER_SIZE = [0, 1000000, 10000000]
