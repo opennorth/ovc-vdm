@@ -104,9 +104,13 @@ def field_mapper_fonc_mtl(row, source, my_release):
     my_release["awards"][0]["items"][0]["id"] = ""
 
     #TODO : Pass the procuring entity as a paramter of the mapper?
+
     description = row[4] + "."
-    description += " " + row[6]
-    description += "Approuvé par : " + row[3]
+
+    if len(row[6]) > 0:
+        description += " " + row[6] + ". "
+    if len(row[3]) > 0:
+        description += "APPROUVÉ PAR : " + row[3] + ". "
     my_release["awards"][0]["items"][0]["description"] = description
 
     del description
