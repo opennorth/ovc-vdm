@@ -10,7 +10,7 @@ from sqlalchemy.dialects.postgresql import array
 from sqlalchemy.sql import func
 from sqlalchemy import select,cast, desc, asc, inspect
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.exc import InvalidRequestError
+from sqlalchemy.exc import InvalidRequestError, SQLAlchemyError
 from werkzeug.wrappers import Request
 
 
@@ -207,7 +207,7 @@ class CustomResource(Resource):
             for (field, label) in highlighted_fields:
                 query = query.add_column(func.ts_headline('french', 
                            field, 
-                           func.plainto_tsquery(args['q']),
+                           func.plainto_tsquery('french', args['q']),
                            'HighlightAll=TRUE, StartSel="%s", StopSel = "%s"' % (app.config["START_HIGHLIGHT"], app.config["END_HIGHLIGHT"]))
                             .label(label))   
                             
@@ -232,7 +232,7 @@ class CustomResource(Resource):
 
         if 'q' in args and args['q'] != None:
             search = unidecode(unicode(args['q'])).replace(" ", "&")
-            query = query.filter(func.to_tsvector('french', Release.concat).match(search))
+            query = query.filter(func.to_tsvector('french', Release.concat).match(search, postgresql_regconfig='french'))
         
         if 'value_gt' in args and args['value_gt'] != None:
             query = query.filter(Release.value >= args['value_gt'])
@@ -303,60 +303,68 @@ class ListReleases(CustomResource):
 
     @cache.cached(timeout=5000, key_prefix=make_cache_key)
     def get(self):
-        
-        args = self.parse_arg()
 
-        self.supplier_joined = True
-        self.buyer_joined = True
-        
-        releases = db.session.query(Release.json).join(Buyer).join(Supplier)
-        releases = self.highlight_request(releases, args)
-
-
-
-        releases_sum = db.session.query(
-            func.sum(Release.value).label('total_value'), 
-            func.max(Release.value).label('max_value'), 
-            func.min(Release.value).label('min_value'))
-      
-        releases = self.filter_request(releases, args)
-        
-
-        release_count = releases.count()
-        #Sort records
-        releases = self.sort_request(releases, args)
-
-        
-
-        #Limit and offset
-        (releases, offset, limit) = self.offset_limit(releases, args)
-
-        self.supplier_joined = False
-        self.buyer_joined = False
-        releases_sum = self.filter_request(releases_sum, args)
-
-        #Generate output structure
         output = dict()
 
+        try:
+        
+            args = self.parse_arg()
+
+            self.supplier_joined = True
+            self.buyer_joined = True
             
-        output["meta"] = {
-            "count": release_count,
-            "pagination" : {"offset" : offset, "limit":  limit}
-        }
+            releases = db.session.query(Release.json).join(Buyer).join(Supplier)
+            releases = self.highlight_request(releases, args)
 
-        output["meta"].update(releases_sum.one()._asdict())
 
-        output.update(OCDS_META)
-        output["uri"] = request.url
-        output["publishedDate"] = datetime.now().isoformat()
 
-        #output["releases"] = [r.json for r in releases]
+            releases_sum = db.session.query(
+                func.sum(Release.value).label('total_value'), 
+                func.max(Release.value).label('max_value'), 
+                func.min(Release.value).label('min_value'))
+          
+            releases = self.filter_request(releases, args)
+            
 
-        output["releases"] = [] 
-        for r in releases:
-            r = self.highlight_result(r, args)
-            output["releases"].append(r.json)
+            release_count = releases.count()
+            #Sort records
+            releases = self.sort_request(releases, args)
 
+            
+
+            #Limit and offset
+            (releases, offset, limit) = self.offset_limit(releases, args)
+
+            self.supplier_joined = False
+            self.buyer_joined = False
+            releases_sum = self.filter_request(releases_sum, args)
+
+            #Generate output structure
+            
+
+                
+            output["meta"] = {
+                "count": release_count,
+                "pagination" : {"offset" : offset, "limit":  limit}
+            }
+
+            output["meta"].update(releases_sum.one()._asdict())
+
+            output.update(OCDS_META)
+            output["uri"] = request.url
+            output["publishedDate"] = datetime.now().isoformat()
+
+            #output["releases"] = [r.json for r in releases]
+
+            output["releases"] = [] 
+            for r in releases:
+                r = self.highlight_result(r, args)
+                output["releases"].append(r.json)
+
+
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            abort(500, message="Database error %s" % e) 
 
         return output
 
