@@ -119,7 +119,7 @@ class CustomResource(Resource):
         g.etag = hashlib.sha1(str(last_update) + request.url).hexdigest()
 
         #Check if etag verified
-        print (str(request.headers.get('If-None-Match')),  g.etag) 
+        #print (str(request.headers.get('If-None-Match')),  g.etag) 
         if request.headers.get('If-None-Match') == g.etag :
             resp = app.make_response('')
             resp.status_code = 304
@@ -687,6 +687,20 @@ class IndividualRelease(CustomResource):
 api.add_resource(IndividualRelease, '/api/release/<string:ocid>')
 
 
+class SlugMapping(CustomResource):
+    @cache.cached(timeout=app.config["CACHE_DURATION"])
+    def get(self):
+        buyers = db.session.query(Buyer.name, Buyer.slug)
+        suppliers = db.session.query(Supplier.name, Supplier.slug)
+
+        output = {"suppliers" : [s._asdict() for s in suppliers], "buyers": [b._asdict() for b in buyers]}
+
+        return output
+        
+    
+api.add_resource(SlugMapping, '/api/slugs')
+
+
 class TriggerError(Resource):
     def get(self):
         raise NoResultFound
@@ -747,6 +761,7 @@ class ApiRoot(CustomResource):
         releases_dict["releases_value"] = db.session.query(func.sum(Release.value).label('sum')).scalar()
         releases_dict["supplier_count"] = db.session.query(Supplier).count()
         releases_dict["buyer_count"] = db.session.query(Buyer).count()
+        releases_dict["buyer_range"] = app.config["SUPPLIER_SIZE"]
 
 
         return releases_dict
