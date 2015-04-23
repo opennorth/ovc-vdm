@@ -130,12 +130,13 @@ def compute_supplier_size():
 def update_releases(forced=False):
     '''Uses the sources list in DB to search for contracts'''
     sources =  db.session.query(Source).all()
+    updated_sources = 0
 
     for source in sources:
         print source.url
         if re.match("^http", source.url):
             #TODO: With the fixture we are not testing this part which is fairly sensitive
-            r = requests.get(source.url)
+            r = requests.head(source.url)
 
             #If Last-Modified not avaiable, we always process
             now = datetime.now()
@@ -145,10 +146,13 @@ def update_releases(forced=False):
 
             if forced or source_update >= source.last_retrieve :
                 load_source(source)
+                updated_sources += 1
         else:
             load_source(source)
+            updated_sources += 1
 
-    compute_supplier_size()
+    if updated_sources > 0:
+        compute_supplier_size()
 
     #Let's flush the cache
     cache.init_app(app, config={'CACHE_TYPE': 'simple'})
