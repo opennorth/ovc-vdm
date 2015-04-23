@@ -37,10 +37,10 @@ if app.config['SENDMAIL']:
         app.config['SMTP_SERVER'],
         app.config['EMAIL_SENDER'],
         app.config['ADMINS'], 
-        'Outil de visualisation des contrats - Erreur lors de l\'import des contrats', 
+        "Outil de visualisation des contrats" , 
         credentials=app.config['EMAIL_CREDENTIALS']
     )
-    mail_handler.setLevel(logging.ERROR)
+    mail_handler.setLevel(logging.INFO)
     mail_handler.setFormatter(logging.Formatter('''
     Message type:       %(levelname)s
     Location:           %(pathname)s:%(lineno)d
@@ -163,24 +163,28 @@ def load_source(source, action='load'):
     if source != None:
         db.session.query(Release).filter(Release.source_id == source.id).delete() 
 
-
+    error_hash = {}
     mapper = Mapper(source)
-    for release in  mapper.to_ocds():
-        load_ocds(release, type='dict', source=source)
+    for release, error in  mapper.to_ocds():
+        if error != None:
+            if error[0] not in error_hash:
+                error_hash[error[0]] = []
+            error_hash[error[0]].append(error[1])
+        else:
+            load_ocds(release, type='dict', source=source)
 
+
+    if len(error_hash) > 0:
+        message = "Erreurs lors du chargement du fichier %s \n\n" % (source.url)
+        message += "\n".join(["Erreur: %s pour les lignes: %s" % (error_type, lines) for error_type, lines in error_hash.items()])
+        app.logger.error(message)
+    else: 
+        app.logger.info("Succès du chargement du fichier : %s" % (source.url))
 
     source.last_retrieve = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     db.session.commit()
 
 
-
-'''
-    data = {}
-    if type == 'path':
-        data = json.load(open(ocds))
-    else:
-        data = ocds
-'''
         
 @manager.command
 def load_ocds(release, type='path', source=None):
@@ -195,10 +199,7 @@ def load_ocds(release, type='path', source=None):
         if the_buyer == None:
             the_buyer = Buyer(release["buyer"]) 
             db.session.add(the_buyer)
-            db.session.flush()
-        
-        
-        
+            db.session.flush()     
 
         the_supplier =  db.session.query(Supplier).filter(Supplier.slug == slugify(release["awards"][0]["suppliers"][0]["name"], to_lower=True)).scalar()
         if the_supplier == None:
@@ -206,8 +207,7 @@ def load_ocds(release, type='path', source=None):
             db.session.add(the_supplier)
             db.session.flush()
     
-        #the_supplier.releases.append(the_release)
-        #the_buyer.releases.append(the_release)
+
         the_release.supplier_id = the_supplier.id
 
         the_release.buyer_id = the_buyer.id

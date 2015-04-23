@@ -155,7 +155,7 @@ def field_mapper_subvention_mtl(row, source, my_release):
     my_release["awards"][0]["date"] = contract_date.isoformat()
     my_release["awards"][0]["repartition"] = row[1]
 
-    my_release["awards"][0]["value"]["amount"] = float(row[8].replace(',','.'))
+    my_release["awards"][0]["value"]["amount"] = float(row[11].replace(',','.'))
     my_release["awards"][0]["suppliers"][0]["name"] = row[0]
     my_release["awards"][0]["suppliers"][0]["identifier"]["id"] = slugify(row[0], to_lower=True)
     my_release["awards"][0]["items"][0]["id"] = row[6]
@@ -193,10 +193,12 @@ class Mapper():
             if i >= self.csv_skip:
                 try:
                     #self.release_list.append(custom_mapper(row, self.source))
-                    yield self.mapper(row, self.source, self.template)
+                    yield (self.mapper(row, self.source, self.template), None)
 
+                except IndexError as e: 
+                    yield (None, ["MISSING_FIELD", i ])
                 except (ValueError, IndexError) as e:
-                    pass
+                    yield (None, ["INVALID_FIELD", i ])
                     #errors.append('Ligne #: %s  \tMessage: %s \nContenu de la ligne: %s' % (i+1, repr(e), row))   
     
             i = i+1

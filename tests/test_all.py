@@ -194,7 +194,7 @@ def test_generator():
        'json_path' : ("releases",0,"awards",0,"value","amount"),
        'count': 6,
        'response': 200,
-       'value':4500
+       'value':53810
        },       
        {  
       # Multiple activity
