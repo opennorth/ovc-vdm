@@ -18,6 +18,7 @@ import gc
 from app import app, db
 import time
 from utils import send_mail
+import sendgrid
 
 from flask.ext.cache import Cache
 
@@ -241,9 +242,6 @@ def generate_stats():
         for line in process_log:
 
             daily = ast.literal_eval(line)
-            #parsed = urlparse(daily["url"])
-
-
             total += 1
 
             if daily["path"] not in path:
