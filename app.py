@@ -668,7 +668,7 @@ class ReleasesByMonthActivity(CustomResource):
 
         releases = self.filter_request(releases, args)
         releases = releases.group_by('month', 'activity')
-        #releases = self.sort_request(releases, args)
+        releases = self.sort_request(releases, args)
         
         release_count = releases.count()
 
@@ -682,7 +682,20 @@ class ReleasesByMonthActivity(CustomResource):
             "pagination" : {"offset" : offset, "limit":  limit}
         }
 
-        output["releases"] = [r._asdict() for r in releases] 
+        months_dict = {}
+
+        for release in releases:
+            r = release._asdict()
+            current_month = r["month"]
+            del r["month"]
+
+            if current_month not in months_dict:
+                months_dict[current_month] = []
+            
+            months_dict[current_month].append(r)
+
+
+        output["releases"] = [{"month" : month, "activities": activities} for month,activities in months_dict.iteritems()] 
 
         return output 
 api.add_resource(ReleasesByMonthActivity, '/api/releases/by_month_activity')
