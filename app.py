@@ -643,6 +643,51 @@ class ReleasesByActivity(CustomResource):
         return output 
 api.add_resource(ReleasesByActivity, '/api/releases/by_activity')
 
+class ReleasesByMonthActivity(CustomResource):
+    '''Group releases by month-year and then by activity. Provide the number of contract and total
+    value for each month-year/activity pairs where some contracts are available'''    
+
+    def __init__(self, *args, **kwargs):
+        super(ReleasesByMonthActivity, self).__init__(*args, **kwargs)
+
+        self.default_limit = 1000
+        self.default_order_by = '1'
+        self.default_order_dir = 'asc'
+        self.accepted_order_by = ['total_value', 'count', 'month', None]
+
+
+    @cache.cached(timeout=app.config["CACHE_DURATION"], key_prefix=make_cache_key)
+    def get(self):
+        args = self.parse_arg()
+
+        releases = db.session.query(
+            func.substring(cast(Release.date, db.String), 0,8).label('month'), 
+            Release.activities[1].label('activity'), 
+            func.count(Release.value).label('count'), 
+            func.sum(Release.value).label('total_value'))
+
+        releases = self.filter_request(releases, args)
+        releases = releases.group_by('month', 'activity')
+        #releases = self.sort_request(releases, args)
+        
+        release_count = releases.count()
+
+        (releases, offset, limit) = self.offset_limit(releases, args)
+
+        #Generate output structure
+        output = dict()
+            
+        output["meta"] = {
+            "count": release_count,
+            "pagination" : {"offset" : offset, "limit":  limit}
+        }
+
+        output["releases"] = [r._asdict() for r in releases] 
+
+        return output 
+api.add_resource(ReleasesByMonthActivity, '/api/releases/by_month_activity')
+
+
 
 class IndividualRelease(CustomResource):
     '''Provide OCDS formatted output for an individual release given its OCID'''
