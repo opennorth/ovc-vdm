@@ -732,19 +732,39 @@ class IndividualRelease(CustomResource):
 api.add_resource(IndividualRelease, '/api/release/<string:ocid>')
 
 
-class SlugMapping(CustomResource):
+class BuyerSlugs(CustomResource):
     @cache.cached(timeout=app.config["CACHE_DURATION"])
     def get(self):
         buyers = db.session.query(Buyer.name, Buyer.slug)
-        suppliers = db.session.query(Supplier.name, Supplier.slug)
-
-        output = {"suppliers" : [s._asdict() for s in suppliers], "buyers": [b._asdict() for b in buyers]}
+        output = {"buyers": [b._asdict() for b in buyers]}
 
         return output
         
     
-api.add_resource(SlugMapping, '/api/slugs')
+api.add_resource(BuyerSlugs, '/api/helpers/buyer_slugs')
 
+
+class SupplierSlugs(CustomResource):
+    @cache.cached(timeout=app.config["CACHE_DURATION"])
+    def get(self):
+        suppliers = db.session.query(Supplier.name, Supplier.slug)
+
+        output = {"suppliers" : [s._asdict() for s in suppliers]}
+
+        return output
+        
+api.add_resource(SupplierSlugs, '/api/helpers/supplier_slugs')
+
+class ActivityList(CustomResource):
+    @cache.cached(timeout=app.config["CACHE_DURATION"])
+    def get(self):
+        activity_dict = app.config["ACTIVITY_COLOR_CODE"]
+
+        output = {"activities" : [{"name": key, "color_code": value} for key,value in activity_dict.iteritems()]}
+
+        return output
+        
+api.add_resource(ActivityList, '/api/helpers/activity_list')
 
 class TriggerError(Resource):
     def get(self):

@@ -334,20 +334,21 @@ def call_api(item):
 
 
 
-def test_releases_pagination_2():
+def test_supplier_slugs():
   '''Test parameter limit'''
-  rv = test_app.get('api/slugs')
+  rv = test_app.get('api/helpers/supplier_slugs')
   eq_(rv.status_code,200)
   resp = json.loads(rv.data)
-  eq_(len(resp["buyers"]),5)
   eq_(len(resp["suppliers"]),18)
 
 
-def test_slugs():
+def test_buyer_slugs():
   '''Test parameter limit'''
-  rv = test_app.get('api/releases?&order_by=date&order_dir=asc&limit=4&offset=1')
+  rv = test_app.get('api/helpers/buyer_slugs')
+  eq_(rv.status_code,200)
   resp = json.loads(rv.data)
-  eq_(len(resp["releases"]),4)
+  eq_(len(resp["buyers"]),5)
+
 
 def test_individual_release():
   '''Test parameter limit'''

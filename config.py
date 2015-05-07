@@ -78,6 +78,16 @@ class Config(object):
 
     SUPPLIER_SIZE = [0, 1000000, 10000000]
 
+    ACTIVITY_COLOR_CODE = {
+        "Arrondissements": "#888888",
+        "Organisation et administration" : "#ff0000",
+        "Infrastructures" : "#00ff00",
+        "Transport" : "#0000ff",
+        "Sports, loisirs, culture et développement social" : "#ffff00",
+        "Gestion de l'information" : "#ff00ff",
+        "Autre" : "#00ffff"
+    }
+
     SERVICE_TO_ACTIVITY = {
         # NO SEMI_COLUMN - PAS DE POINT-VIRGULE
         "ARRONDISSEMENT DE VILLERAY-SAINT-MICHEL-PARC-EXTENSION" : ["Arrondissements"],
