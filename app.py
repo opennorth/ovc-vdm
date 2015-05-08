@@ -42,15 +42,18 @@ app.config.from_object(os.environ['APP_SETTINGS'])
 db = SQLAlchemy(app)
 cors = CORS(app)
 Compress(app)
-stats_log = open(app.config["STATS_LOG"],'a')
+
 #g.etag = datetime.now()
 
 
 def before_request(sender, **extra):
     '''Called on request reception to log request before cache kicks in'''
-    req = {"time": datetime.now().strftime("%Y-%m-%d %H:%M:%S") , "path": request.path, "args": [(key,value) for (key,value) in request.args.items()], "referrer" : request.referrer }    
-    stats_log.write(str(req) + '\n')   
-    stats_log.flush() 
+
+    if request.path[0:5] == "/api/":
+        stats_log = open(app.config["STATS_LOG"],'a')
+        req = {"time": datetime.now().strftime("%Y-%m-%d %H:%M:%S") , "path": request.path, "args": [(key,value) for (key,value) in request.args.items()], "referrer" : request.referrer }    
+        stats_log.write(str(req) + '\n')   
+        stats_log.flush() 
 
 request_started.connect(before_request, app)
 
