@@ -214,9 +214,9 @@ class CustomResource(Resource):
 
         if 'q' in args and args['q'] != None and 'highlight' in args and args['highlight'] == True: 
             for (field, label) in highlighted_fields:
-                query = query.add_column(func.ts_headline('french', 
+                query = query.add_column(func.ts_headline(app.config["FTS_LANG"], 
                            field, 
-                           func.plainto_tsquery('french', args['q']),
+                           func.plainto_tsquery(app.config["FTS_LANG"], args['q']),
                            'HighlightAll=TRUE, StartSel="%s", StopSel = "%s"' % (app.config["START_HIGHLIGHT"], app.config["END_HIGHLIGHT"]))
                             .label(label))   
                             
@@ -241,7 +241,7 @@ class CustomResource(Resource):
 
         if 'q' in args and args['q'] != None:
             search = unidecode(unicode(args['q'])).replace(" ", "&")
-            query = query.filter(func.to_tsvector('french', Release.concat).match(search, postgresql_regconfig='french'))
+            query = query.filter(func.to_tsvector(app.config["FTS_LANG"], Release.concat).match(search, postgresql_regconfig=app.config["FTS_LANG"]))
         
         if 'value_gt' in args and args['value_gt'] != None:
             query = query.filter(Release.value >= args['value_gt'])

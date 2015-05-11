@@ -22,6 +22,7 @@ class Config(object):
     CACHE_DURATION = 86400
     STATS_LOG = 'stats/log.out'
 
+    FTS_LANG = 'french'
     START_HIGHLIGHT = "<em>"
     END_HIGHLIGHT = "</em>"
 
@@ -230,6 +231,7 @@ class ProductionConfig(Config):
     SENDMAIL = True
     URL_ROOT = 'https://ovc-prod.herokuapp.com'
     ADMINS = ['stephane@opennorth.ca']
+    FTS_LANG = 'fr'
 
 class StagingConfig(Config):
     URL_ROOT = 'https://ovc-stage.herokuapp.com'
