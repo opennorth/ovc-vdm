@@ -349,6 +349,20 @@ def test_buyer_slugs():
   resp = json.loads(rv.data)
   eq_(len(resp["buyers"]),5)
 
+def test_activity_colors():
+  '''Test parameter limit'''
+  rv = test_app.get('api/helpers/activity_list')
+  eq_(rv.status_code,200)
+  resp = json.loads(rv.data)
+  eq_(len(resp["activities"]),18)
+
+  for activity in resp["activities"]:
+    if activity["name"] == "Arrondissements":
+      eq_(activity["color_code"], "#888888")
+      eq_(activity["aggregate"], False)
+
+
+
 
 def test_individual_release():
   '''Test parameter limit'''

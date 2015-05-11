@@ -78,6 +78,7 @@ class Config(object):
 
     SUPPLIER_SIZE = [0, 1000000, 10000000]
 
+    AGG_ACTIVITIES = 4
     ACTIVITY_COLOR_CODE = {
         "Infrastructures" : "#00ff00",
         "Organisation et administration" : "#ff0000",
@@ -227,7 +228,7 @@ class Config(object):
 class ProductionConfig(Config):
     DEBUG = False
     SENDMAIL = True
-
+    URL_ROOT = 'https://ovc-prod.herokuapp.com'
     ADMINS = ['stephane@opennorth.ca']
 
 class StagingConfig(Config):

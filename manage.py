@@ -6,7 +6,7 @@ from sqlalchemy import or_, exc
 from mapper import Mapper
 import email.utils as eut
 import datetime
-from datetime import timedelta
+from datetime import timedelta, date
 import requests
 import os
 import json
@@ -232,61 +232,62 @@ def load_ocds(release, type='path', source=None):
 @manager.command
 def generate_stats():
 
-    os.rename(app.config["STATS_LOG"], app.config["STATS_LOG"] + '.tmp')
-    #process_log = open(app.config["STATS_LOG"] + '.tmp','r')
-    time.sleep(2)
     total = 0
     from_app = 0
     path = dict()
     args = dict()
     referrers = dict()
 
-    with open(app.config["STATS_LOG"] + '.tmp') as process_log:
+    today = date.today( )
+    today_midnight = str(today) + " 00:00:00"
+    yesterday = today - timedelta(days=1)
+    yesterday_midnight = str(yesterday) + " 00:00:00"
 
-        for line in process_log:
+    dailies =  db.session.query(DailyStat).filter(DailyStat.datetime >= yesterday_midnight).filter(DailyStat.datetime < today_midnight)
 
-            daily = ast.literal_eval(line)
-            total += 1
+    for daily in dailies:
 
-            if daily["path"] not in path:
-                path[daily["path"]] = 0
-            path[daily["path"]] += 1
+        total += 1
 
-            if daily["referrer"] != None:
-                parsed_uri = urlparse(daily["referrer"])
-                domain = '{uri.scheme}://{uri.netloc}'.format(uri=parsed_uri)
+        if daily.path not in path:
+            path[daily.path] = 0
+        path[daily.path] += 1
 
-                if domain ==  app.config['URL_ROOT']:
-                    from_app += 1
-                else:
-                    if daily["referrer"] not in referrers:
-                        referrers[daily["referrer"]] = 0
-                    referrers[daily["referrer"]] += 1
+        if daily.referrer != None:
+            parsed_uri = urlparse(daily.referrer)
+            domain = '{uri.scheme}://{uri.netloc}'.format(uri=parsed_uri)
 
-            for (key, value) in daily["args"]:
-                if key not in args:
-                    args[key] = dict()
-                if value not in args[key]:
-                    args[key][value] = 0
+            if domain ==  app.config['URL_ROOT']:
+                from_app += 1
+            else:
+                if daily.referrer not in referrers:
+                    referrers[daily.referrer] = 0
+                referrers[daily.referrer] += 1
 
-                args[key][value] += 1
+        for (key, value) in daily.args.iteritems():
+            if key not in args:
+                args[key] = dict()
+            if value not in args[key]:
+                args[key][value] = 0
 
-        stat = Stat()
+            args[key][value] += 1
 
-        stat.date = datetime.today() - timedelta(days=1)
-        stat.total_counts = total
-        stat.referrers = referrers
-        stat.counts_app = from_app
-        stat.path = path
-        stat.args =  args
+    stat = Stat()
+
+    stat.date = yesterday
+    stat.total_counts = total
+    stat.referrers = referrers
+    stat.counts_app = from_app
+    stat.path = path
+    stat.args =  args
 
 
-        try:
-            db.session.add(stat)
-            db.session.commit()
-        except exc.SQLAlchemyError as e:  
-            db.session.rollback()
-            app.logger.error("SQLAlchemyError error: %s" %  repr(e))
+    try:
+        db.session.add(stat)
+        db.session.commit()
+    except exc.SQLAlchemyError as e:  
+        db.session.rollback()
+        app.logger.error("SQLAlchemyError error: %s" %  repr(e))
 
 
 @manager.command

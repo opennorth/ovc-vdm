@@ -15,6 +15,7 @@ from werkzeug.wrappers import Request
 
 
 from datetime import datetime
+import time
 from unidecode import unidecode
 
 
@@ -49,11 +50,16 @@ Compress(app)
 def before_request(sender, **extra):
     '''Called on request reception to log request before cache kicks in'''
 
+    start = int(round(time.time() * 1000))
+
     if request.path[0:5] == "/api/":
-        stats_log = open(app.config["STATS_LOG"],'a')
-        req = {"time": datetime.now().strftime("%Y-%m-%d %H:%M:%S") , "path": request.path, "args": [(key,value) for (key,value) in request.args.items()], "referrer" : request.referrer }    
-        stats_log.write(str(req) + '\n')   
-        stats_log.flush() 
+        daily = DailyStat(request)
+        db.session.add(daily)
+        db.session.commit()
+
+    end = int(round(time.time() * 1000))
+
+    print ("Dur: %s" % (end - start))
 
 request_started.connect(before_request, app)
 
@@ -783,13 +789,14 @@ class ActivityList(CustomResource):
         activities = activities.group_by('activity')
         activities = activities.order_by("total_value desc")
 
-        activities = activities[0:5]
+        activities = activities[0:app.config["AGG_ACTIVITIES"]]
 
-        top_5 = [a._asdict()['activity'] for a in activities]
+        top = [a._asdict()['activity'] for a in activities]
         output = {"activities" : []}
+
         for key,value in activity_dict.iteritems():
             agg = True
-            if key in top_5:
+            if key in top:
                 agg = False
 
             output["activities"].append({"name": key, "color_code": value, "aggregate": agg} )

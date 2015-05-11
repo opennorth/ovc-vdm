@@ -145,9 +145,9 @@ class DailyStat(db.Model):
 
     def __init__(self, request):
         self.datetime = datetime.now()
-        self.path = request["path"]
-        self.args = request["args"]
-        self.referrer = request["referrer"]
+        self.path = request.path
+        self.args = request.args
+        self.referrer = request.referrer
 
 
     def __repr__(self):
