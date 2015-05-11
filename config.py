@@ -79,13 +79,25 @@ class Config(object):
     SUPPLIER_SIZE = [0, 1000000, 10000000]
 
     ACTIVITY_COLOR_CODE = {
-        "Arrondissements": "#888888",
-        "Organisation et administration" : "#ff0000",
         "Infrastructures" : "#00ff00",
+        "Organisation et administration" : "#ff0000",
         "Transport" : "#0000ff",
         "Sports, loisirs, culture et développement social" : "#ffff00",
         "Gestion de l'information" : "#ff00ff",
-        "Autre" : "#00ffff"
+        "Immeubles et terrains" : "#114477",
+        "Arrondissements": "#888888",
+        "Autre" : "#00ffff",
+        "Sécurité publique": "#888888",
+        "Ressources matérielles et services": "#888888",
+        "Urbanisme et habitation": "#888888",
+        "Environnement": "#888888",
+        "Ressources financières": "#888888",
+        "Ressources humaines": "#888888",
+        "Juridique": "#888888",
+        "Développement économique": "#888888",
+        "Communications et relations publiques": "#888888",
+        "Foncier": "#888888"
+
     }
 
     SERVICE_TO_ACTIVITY = {

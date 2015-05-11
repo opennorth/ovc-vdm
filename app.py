@@ -776,7 +776,23 @@ class ActivityList(CustomResource):
     def get(self):
         activity_dict = app.config["ACTIVITY_COLOR_CODE"]
 
-        output = {"activities" : [{"name": key, "color_code": value} for key,value in activity_dict.iteritems()]}
+        activities = db.session.query(
+            Release.activities[1].label('activity'), 
+            func.sum(Release.value).label('total_value'))
+
+        activities = activities.group_by('activity')
+        activities = activities.order_by("total_value desc")
+
+        activities = activities[0:5]
+
+        top_5 = [a._asdict()['activity'] for a in activities]
+        output = {"activities" : []}
+        for key,value in activity_dict.iteritems():
+            agg = True
+            if key in top_5:
+                agg = False
+
+            output["activities"].append({"name": key, "color_code": value, "aggregate": agg} )
 
         return output
         
