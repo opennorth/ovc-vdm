@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from flask import Flask, render_template, request, abort, request_started, jsonify, g, url_for
+from flask import Flask, render_template, request, abort, request_started, jsonify, g, url_for, Response
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.restful import reqparse, abort, Api, Resource, inputs
 from flask.ext.cache import Cache
@@ -95,7 +95,8 @@ def output_pdf(data, code, headers=None):
 
 @api.representation('text/csv')
 def output_csv(data, code, headers=None):
-    resp = app.make_response(generate_csv(data))
+    resp = Response(generate_csv(data), mimetype='text/csv')
+    #resp = app.make_response(generate_csv(data))
     return resp
 
 @api.representation('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')

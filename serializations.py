@@ -46,13 +46,15 @@ def generate_pdf(data):
     return output_pdf.getvalue()
 
 def generate_csv(data):
-    output_csv = StringIO()
-    csv_writer = csv.writer(output_csv)
 
-    header = ["identifiant", "date", "montant", "type", "acheteur", "activité", "description", "fournisseur", "autorisation", "décision", "dossier" ]
-    csv_writer.writerow(header)
+
+    #header = ["identifiant", "date", "montant", "type", "acheteur", "activité", "description", "fournisseur", "autorisation", "décision", "dossier" ]
+    #csv_writer.writerow(header)
 
     for release in data["releases"]:
+        output_csv = StringIO()
+        csv_writer = csv.writer(output_csv)
+
         laliste = []
         laliste.append(release["ocid"])
         laliste.append(release["date"][0:9])
@@ -67,8 +69,9 @@ def generate_csv(data):
         laliste.append(release["awards"][0]["id"])
                 
         csv_writer.writerow(laliste)
+        yield output_csv.getvalue()
 
-    return output_csv.getvalue()
+    #return output_csv.getvalue()
 
 
 def generate_xlsx(data):
