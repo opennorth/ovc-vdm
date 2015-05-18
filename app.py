@@ -17,6 +17,7 @@ from werkzeug.wrappers import Request
 from datetime import datetime
 import time
 from unidecode import unidecode
+from itertools import ifilterfalse
 
 
 import re
@@ -50,16 +51,11 @@ Compress(app)
 def before_request(sender, **extra):
     '''Called on request reception to log request before cache kicks in'''
 
-    start = int(round(time.time() * 1000))
 
     if request.path[0:5] == "/api/":
         daily = DailyStat(request)
         db.session.add(daily)
         db.session.commit()
-
-    end = int(round(time.time() * 1000))
-
-    print ("Dur: %s" % (end - start))
 
 request_started.connect(before_request, app)
 
@@ -665,6 +661,9 @@ class ReleasesByMonthActivity(CustomResource):
         self.default_order_dir = 'asc'
         self.accepted_order_by = ['total_value', 'count', 'month', None]
 
+        self.accepted_parameters.append({"param": 'aggregate', "type": bool, "desc": "For by_month_activity, aggregate acitivities after top N results"})
+
+
 
     @cache.cached(timeout=app.config["CACHE_DURATION"], key_prefix=make_cache_key)
     def get(self):
@@ -684,6 +683,8 @@ class ReleasesByMonthActivity(CustomResource):
 
         (releases, offset, limit) = self.offset_limit(releases, args)
 
+
+
         #Generate output structure
         output = dict()
             
@@ -701,11 +702,45 @@ class ReleasesByMonthActivity(CustomResource):
 
             if current_month not in months_dict:
                 months_dict[current_month] = []
-            
+
+
             months_dict[current_month].append(r)
 
-
         output["releases"] = [{"month" : month, "activities": activities} for month,activities in months_dict.iteritems()] 
+
+                
+        if 'aggregate' in args and args['aggregate'] == True:
+            top = []
+            activities = db.session.query(
+                Release.activities[1].label('activity'), 
+                func.sum(Release.value).label('total_value'))
+
+            activities = activities.group_by('activity')
+            activities = activities.order_by("total_value desc")
+
+            activities = activities[0:app.config["AGG_ACTIVITIES"]]
+
+            top = [a._asdict()['activity'] for a in activities]
+        
+            for m in output["releases"]:
+
+                count = 0
+                total_value = 0
+                for  i, a in reversed(list(enumerate(m["activities"]))):
+                    print "Element de list %s : %s" % (i, a["activity"])
+
+                    if a["activity"] not in top:
+                        print "pas dans le top!"
+                        count += a["count"]
+                        total_value += a["total_value"]
+                        del m["activities"][i]
+                        
+                if count > 0 and total_value > 0:
+                    print "J'ajoute Autre"
+                    autre = {"activity": "Autre", "count": count,"total_value": total_value}
+                    m["activities"].append(autre)
+
+
 
         return output 
 api.add_resource(ReleasesByMonthActivity, '/api/releases/by_month_activity')
