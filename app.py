@@ -492,7 +492,10 @@ class ReleasesByProcuringEntity(CustomResource):
 
         releases = db.session.query(
             Release.procuring_entity.label('procuring_entity'),
-            func.sum(Release.value).label('total_value'), func.count(Release.value).label('count'))
+            func.min(Release.procuring_entity_slug).label('procuring_entity_slug'),
+            func.sum(Release.value).label('total_value'), 
+            func.count(Release.value).label('count'))
+
         releases = self.filter_request(releases, args)
         releases = releases.group_by(Release.procuring_entity)
         releases = self.sort_request(releases, args)
