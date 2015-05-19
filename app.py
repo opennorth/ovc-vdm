@@ -718,28 +718,30 @@ class ReleasesByMonthActivity(CustomResource):
                 Release.activities[1].label('activity'), 
                 func.sum(Release.value).label('total_value'))
 
+            activities = self.filter_request(activities, args)
+            activities = activities.filter(Release.activities[1] != "Autre")           
             activities = activities.group_by('activity')
             activities = activities.order_by("total_value desc")
 
             activities = activities[0:app.config["AGG_ACTIVITIES"]]
 
             top = [a._asdict()['activity'] for a in activities]
+
+            print top
         
             for m in output["releases"]:
 
                 count = 0
                 total_value = 0
                 for  i, a in reversed(list(enumerate(m["activities"]))):
-                    print "Element de list %s : %s" % (i, a["activity"])
 
                     if a["activity"] not in top:
-                        print "pas dans le top!"
                         count += a["count"]
                         total_value += a["total_value"]
                         del m["activities"][i]
                         
                 if count > 0 and total_value > 0:
-                    print "J'ajoute Autre"
+
                     autre = {"activity": "Autre", "count": count,"total_value": total_value}
                     m["activities"].append(autre)
 
