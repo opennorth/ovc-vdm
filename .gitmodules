@@ -1,3 +1,3 @@
 [submodule "static"]
 	path = static
-	url = ssh://repos@repos.caravan.coop:elatulippe/ovc.git
+	url = repos@repos.caravan.coop:sguidoin/ovc.git 
