@@ -81,14 +81,14 @@ class Config(object):
 
     AGG_ACTIVITIES = 4
     ACTIVITY_COLOR_CODE = {
-        "Infrastructures" : "#00ff00",
-        "Organisation et administration" : "#ff0000",
-        "Transport" : "#0000ff",
-        "Sports, loisirs, culture et développement social" : "#ffff00",
+        "Infrastructures" : "#33577B",
+        "Organisation et administration" : "#3884AF",
+        "Transport" : "#57A9B7",
+        "Sports, loisirs, culture et développement social" : "#7DBB92",
         "Gestion de l'information" : "#ff00ff",
         "Immeubles et terrains" : "#114477",
         "Arrondissements": "#888888",
-        "Autre" : "#00ffff",
+        "Autre" : "#E3D7A0",
         "Sécurité publique": "#888888",
         "Ressources matérielles et services": "#888888",
         "Urbanisme et habitation": "#888888",

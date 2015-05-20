@@ -664,7 +664,7 @@ class ReleasesByMonthActivity(CustomResource):
         self.default_order_dir = 'asc'
         self.accepted_order_by = ['total_value', 'count', 'month', None]
 
-        self.accepted_parameters.append({"param": 'aggregate', "type": bool, "desc": "For by_month_activity, aggregate acitivities after top N results"})
+        self.accepted_parameters.append({"param": 'aggregate', "type": str, "desc": "For by_month_activity, aggregate acitivities after top N results"})
 
 
 
@@ -712,16 +712,21 @@ class ReleasesByMonthActivity(CustomResource):
         output["releases"] = [{"month" : month, "activities": activities} for month,activities in months_dict.iteritems()] 
 
                 
-        if 'aggregate' in args and args['aggregate'] == True:
+        if 'aggregate' in args and (args['aggregate'] == "value" or args['aggregate'] == "count"):
             top = []
             activities = db.session.query(
                 Release.activities[1].label('activity'), 
-                func.sum(Release.value).label('total_value'))
+                func.sum(Release.value).label('total_value'), 
+                func.count(Release.value).label('count'))
 
             activities = self.filter_request(activities, args)
-            activities = activities.filter(Release.activities[1] != "Autre")           
+            activities = activities.filter(Release.activities[1] != "Autre")         
             activities = activities.group_by('activity')
-            activities = activities.order_by("total_value desc")
+
+            if args['aggregate'] == "value":
+                activities = activities.order_by("total_value desc")
+            else :
+                activities = activities.order_by("count desc")
 
             activities = activities[0:app.config["AGG_ACTIVITIES"]]
 

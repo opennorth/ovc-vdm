@@ -8,6 +8,7 @@ import re
 import urllib2
 import sys
 from datetime import datetime
+from datetime import date
 from app import app
 import pytz
 from slugify import slugify
@@ -192,21 +193,17 @@ class Mapper():
             
             if i >= self.csv_skip:
                 try:
-                    #self.release_list.append(custom_mapper(row, self.source))
-                    yield (self.mapper(row, self.source, self.template), None)
+                    release = self.mapper(row, self.source, self.template)
+                    if int(release["awards"][0]["date"][0:4]) < 2011 or int(release["awards"][0]["date"][0:4]) > date.today().year:
+                        yield (None, ["INVALID_YEAR", i ])
+                    else: 
+                        yield (release, None)
 
                 except IndexError as e: 
                     yield (None, ["MISSING_FIELD", i ])
                 except (ValueError, IndexError) as e:
                     yield (None, ["INVALID_FIELD", i ])
-                    #errors.append('Ligne #: %s  \tMessage: %s \nContenu de la ligne: %s' % (i+1, repr(e), row))   
+
     
             i = i+1
             
-'''
-        message = ''
-        if len(errors) > 0:
-            app.logger.error("Erreur lors du chargement du fichier %s \n\n%s" %  (self.source.url, '\n'.join(errors)))
-
-        self.output["releases"] = self.release_list 
-'''
