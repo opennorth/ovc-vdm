@@ -194,7 +194,7 @@ def test_generator():
        'json_path' : ("releases",0,"awards",0,"value","amount"),
        'count': 6,
        'response': 200,
-       'value':53810
+       'value':62003
        },       
        {  
       # Multiple activity
@@ -242,7 +242,7 @@ def test_generator():
        'json_path' : ("releases",0,"awards",0,"value","amount"),
        'count': 9,
        'response': 200,
-       'value':546456
+       'value':828186
 
        },                                                     
        {        
@@ -359,7 +359,6 @@ def test_activity_colors():
   for activity in resp["activities"]:
     if activity["name"] == "Arrondissements":
       eq_(activity["color_code"], "#888888")
-      eq_(activity["aggregate"], False)
 
 
 

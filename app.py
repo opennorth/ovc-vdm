@@ -195,8 +195,11 @@ class CustomResource(Resource):
             sort_attr = args['order_by']
         
         sorter = self.default_order_dir
-        if ('order_dir' in args and 'order_dir' in args and args['order_dir'] == 'desc'):
-            sorter = 'desc'
+        if 'order_dir' in args :
+            if args['order_dir'] == 'desc': 
+                sorter = 'desc'
+            elif args['order_dir'] == 'asc':
+                sorter = 'asc'
 
         return query.order_by("%s %s" % (sort_attr, sorter) )
 
@@ -302,6 +305,9 @@ class ListReleases(CustomResource):
     def __init__(self, *args, **kwargs):
         super(ListReleases, self).__init__(*args, **kwargs)
 
+        self.default_order_by = 'date'
+        self.default_order_dir = 'desc'
+
         self.accepted_parameters.append({"param": 'highlight', "type": bool, "desc": "Highlight search results. If set to 'True', add a <em> on search terms provided in parameter 'q'"})
         self.accepted_parameters.append({"param": 'format', "type": str, "desc": "Select output format. Accepter values: 'json' (default), 'ocds': static OCDS file, 'pdf': PDF file, 'csv': CSV file, 'xlsx': MS Excel"})
 
@@ -374,7 +380,7 @@ class ListReleases(CustomResource):
 
         return output
 
-api.add_resource(ListReleases, '/api/releases')
+api.add_resource(ListReleases, '/api/releases', '/api/releases.csv', '/api/releases.xlsx', '/api/releases.pdf', '/api/releases.json')
 
 class ReleasesBySupplier(CustomResource):
     '''Group releases by  supplier and provide the number of contracts and the total 
