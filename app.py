@@ -680,7 +680,7 @@ class ReleasesByMonthActivity(CustomResource):
 
         releases = db.session.query(
             func.substring(cast(Release.date, db.String), 0,8).label('month'), 
-            Release.activities[1].label('activity'), 
+            func.unnest(Release.activities).label('activity'), 
             func.count(Release.value).label('count'), 
             func.sum(Release.value).label('total_value'))
 
@@ -717,7 +717,21 @@ class ReleasesByMonthActivity(CustomResource):
 
         output["releases"] = [{"month" : month, "activities": activities} for month,activities in months_dict.iteritems()] 
 
-                
+        #Ugly hack to remove activities that were not requested by provided because
+        #some services are in 2 different activities        
+        if 'activity' in args:
+            activity_list = args['activity'].split(';')
+            for j, m in reversed(list(enumerate(output["releases"]))):
+
+                for  i, a in reversed(list(enumerate(m["activities"]))):
+
+                    if a["activity"] not in activity_list:
+                            del m["activities"][i]
+
+                if len(output["releases"][j]["activities"]) == 0:
+                    del output["releases"][j]
+
+        #Another hack to aggregate activities not in the top N
         if 'aggregate' in args and (args['aggregate'] == "value" or args['aggregate'] == "count"):
             top = []
             activities = db.session.query(
@@ -737,8 +751,6 @@ class ReleasesByMonthActivity(CustomResource):
             activities = activities[0:app.config["AGG_ACTIVITIES"]]
 
             top = [a._asdict()['activity'] for a in activities]
-
-            print top
         
             for m in output["releases"]:
 
@@ -828,6 +840,23 @@ class SupplierSlugs(CustomResource):
         return output
         
 api.add_resource(SupplierSlugs, '/api/helpers/supplier_slugs')
+
+class FormatList(CustomResource):
+    @cache.cached(timeout=app.config["CACHE_DURATION"])
+    def get(self):
+
+
+        output = {"formats" : [
+        {"format": "csv", "record_limit": 10000},
+        {"format": "xlsx", "record_limit": 10000},
+        {"format": "json", "record_limit": 10000},
+        {"format": "pdf", "record_limit": 100}
+        ]}
+
+        return output
+        
+api.add_resource(FormatList, '/api/helpers/format_list')
+
 
 class ActivityList(CustomResource):
     @cache.cached(timeout=app.config["CACHE_DURATION"])
