@@ -47,9 +47,14 @@ def generate_pdf(data):
 
 def generate_csv(data):
 
+    output_csv = StringIO()
+    csv_writer = csv.writer(output_csv)
+    header = ["identifiant", "date", "montant", "type", "acheteur", "activité", "description", "fournisseur", "autorisation", "décision", "dossier" ]
+    csv_writer.writerow(header)
+    yield output_csv.getvalue()
 
-    #header = ["identifiant", "date", "montant", "type", "acheteur", "activité", "description", "fournisseur", "autorisation", "décision", "dossier" ]
-    #csv_writer.writerow(header)
+
+
 
     for release in data["releases"]:
         output_csv = StringIO()
@@ -57,7 +62,7 @@ def generate_csv(data):
 
         laliste = []
         laliste.append(release["ocid"])
-        laliste.append(release["date"][0:9])
+        laliste.append(release["date"][0:10])
         laliste.append(release["awards"][0]["value"]["amount"])
         laliste.append(release["tender"]["procurementMethodRationale"])
         laliste.append(release["buyer"]["name"])
@@ -88,7 +93,7 @@ def generate_xlsx(data):
     for release in data["releases"]:
 
         worksheet.write(row, col, release["ocid"])
-        worksheet.write(row, col+1, release["date"][0:9])
+        worksheet.write(row, col+1, release["date"][0:10])
         worksheet.write(row, col+2, release["awards"][0]["value"]["amount"])
         worksheet.write(row, col+3, release["tender"]["procurementMethodRationale"])
         worksheet.write(row, col+4, release["buyer"]["name"])
