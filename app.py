@@ -719,7 +719,7 @@ class ReleasesByMonthActivity(CustomResource):
 
         #Ugly hack to remove activities that were not requested by provided because
         #some services are in 2 different activities        
-        if 'activity' in args:
+        if 'activity' in args and args['activity'] != None:
             activity_list = args['activity'].split(';')
             for j, m in reversed(list(enumerate(output["releases"]))):
 
