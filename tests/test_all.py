@@ -358,7 +358,7 @@ def test_activity_colors():
 
   for activity in resp["activities"]:
     if activity["name"] == "Arrondissements":
-      eq_(activity["color_code"], "#888888")
+      eq_(activity["color_code"], "#DDA2A2")
 
 
 
