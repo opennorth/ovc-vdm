@@ -740,7 +740,7 @@ class ReleasesByMonthActivity(CustomResource):
                 func.count(Release.value).label('count'))
 
             activities = self.filter_request(activities, args)
-            activities = activities.filter(Release.activities[1] != "Autre")         
+            activities = activities.filter(Release.activities[1] != "Autres")         
             activities = activities.group_by('activity')
 
             if args['aggregate'] == "value":
@@ -765,8 +765,8 @@ class ReleasesByMonthActivity(CustomResource):
                         
                 if count > 0 and total_value > 0:
 
-                    autre = {"activity": "Autre", "count": count,"total_value": total_value}
-                    m["activities"].append(autre)
+                    autres = {"activity": "Autres", "count": count,"total_value": total_value}
+                    m["activities"].append(autres)
 
 
 
@@ -868,7 +868,7 @@ class ActivityList(CustomResource):
             func.sum(Release.value).label('total_value'))
 
         activities = activities.group_by('activity')
-        activities = activities.order_by("total_value desc")
+        activities = activities.order_by("activity asc")
 
         activities = activities[0:app.config["AGG_ACTIVITIES"]]
 

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+import collections
 import os
+
 
 
 class Config(object):
@@ -34,43 +36,37 @@ class Config(object):
             'type': 'contract'
         }, 
         {
-            'name': 'Conseil Muncipal',
+            'name': 'Conseil municipal',
             'mapper': 'field_mapper_pol_mtl',
             'url': 'http://donnees.ville.montreal.qc.ca/dataset/6df93670-af44-492e-a644-72643bf58bc0/resource/a6869244-1a4d-4080-9577-b73e09d95ed5/download/contratsconseilmunicipal.csv',
             'type': 'contract'
         },
         {
-            'name': 'Comité éxecutif',
+            'name': 'Comité exécutif',
             'mapper': 'field_mapper_pol_mtl',
             'url': 'http://donnees.ville.montreal.qc.ca/dataset/505f2f9e-8cec-43f9-a83a-465717ef73a5/resource/87a6e535-3a6e-4964-91f5-836cd31099f7/download/contratscomiteexecutif.csv',
             'type': 'contract'
         },        
         {
-            'name': 'Conseil d\'agglomeration',
+            'name': 'Conseil d\'agglomération',
             'mapper': 'field_mapper_pol_mtl',
             'url': 'http://donnees.ville.montreal.qc.ca/dataset/6df93670-af44-492e-a644-72643bf58bc0/resource/35e636c1-9f99-4adf-8898-67c2ea4f8c47/download/contratsconseilagglomeration.csv',
             'type': 'contract'
         },
         {
-            'name': 'Conseil Muncipal',
+            'name': 'Conseil municipal',
             'mapper': 'field_mapper_subvention_mtl',
             'url': 'http://donnees.ville.montreal.qc.ca/dataset/067c3bf6-0ec0-4159-a582-b0d58b44491f/resource/3abb3596-45fb-4c80-8d6f-1633db5427d4/download/subventionsconseilmunicipal.csv',
             'type': 'subvention'
         },
         {
-            'name': 'Conseil d\'agglomeration',
+            'name': 'Conseil d\'agglomération',
             'mapper': 'field_mapper_subvention_mtl',
             'url': 'http://donnees.ville.montreal.qc.ca/dataset/067c3bf6-0ec0-4159-a582-b0d58b44491f/resource/bc862025-9735-4a10-8d29-a5ee6621277c/download/subventionsconseilagglomeration.csv',
             'type': 'subvention'
         },                
         {
-            'name': 'Conseil Muncipal',
-            'mapper': 'field_mapper_subvention_mtl',
-            'url': 'http://donnees.ville.montreal.qc.ca/dataset/067c3bf6-0ec0-4159-a582-b0d58b44491f/resource/3abb3596-45fb-4c80-8d6f-1633db5427d4/download/subventionsconseilmunicipal.csv',
-            'type': 'subvention'
-        },
-        {
-            'name': 'Comité éxecutif',
+            'name': 'Comité exécutif',
             'mapper': 'field_mapper_subvention_mtl',
             'url': 'http://donnees.ville.montreal.qc.ca/dataset/4900f199-445f-4a89-a4e1-a02ee2391d26/resource/96c66e8d-f217-4249-8ff5-42ebac8045b9/download/subventionscomiteexecutif.csv',
             'type': 'subvention'
@@ -80,27 +76,29 @@ class Config(object):
     SUPPLIER_SIZE = [0, 1000000, 10000000]
 
     AGG_ACTIVITIES = 4
-    ACTIVITY_COLOR_CODE = {
-        "Infrastructures" : "#33577B",
-        "Organisation et administration" : "#3884AF",
-        "Transport" : "#57A9B7",
-        "Sports, loisirs, culture et développement social" : "#7DBB92",
-        "Gestion de l'information" : "#ff00ff",
-        "Immeubles et terrains" : "#114477",
-        "Arrondissements": "#888888",
-        "Autre" : "#E3D7A0",
-        "Sécurité publique": "#888888",
-        "Ressources matérielles et services": "#888888",
-        "Urbanisme et habitation": "#888888",
-        "Environnement": "#888888",
-        "Ressources financières": "#888888",
-        "Ressources humaines": "#888888",
-        "Juridique": "#888888",
-        "Développement économique": "#888888",
-        "Communications et relations publiques": "#888888",
-        "Foncier": "#888888"
 
-    }
+
+    ACTIVITY_COLOR_CODE = collections.OrderedDict([
+        ("Arrondissements", "#DDA2A2"),
+        ("Communications et relations publiques", "#A8657E"),
+        ("Développement économique", "#A165A9"),
+        ("Environnement", "#61BFC8"),
+        ("Foncier", "#B6A2CE"),
+        ("Gestion de l'information" , "#E1C6A0"),
+        ("Immeubles et terrains" , "#DFB2A1"),
+        ("Infrastructures" , "#33577B"),
+        ("Juridique", "#7264AC"),
+        ("Organisation et administration" , "#3884AF"),
+        ("Ressources financières", "#619CC6"),
+        ("Ressources humaines", "#637EBE"),
+        ("Ressources matérielles et services", "#A2B1CC"),
+        ("Sécurité publique", "#B6A2CE"),
+        ("Sports, loisirs, culture et développement social" , "#7DBB92"),
+        ("Transport" , "#57A9B7"),
+        ("Urbanisme et habitation", "#A2CBCB"),        
+        ("Autres" , "#E3D7A0")
+
+    ])
 
     SERVICE_TO_ACTIVITY = {
         # NO SEMI_COLUMN - PAS DE POINT-VIRGULE
