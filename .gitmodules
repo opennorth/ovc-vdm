@@ -1,0 +1,3 @@
+[submodule "static"]
+	path = static
+	url = repos@repos.caravan.coop:open-source/ovc.git
