@@ -36,7 +36,7 @@ def field_mapper_pol_mtl(row, source, my_release):
 
 
     #TODO: FAIT MAPPING SERVICE  => ACTIVITE
-    my_release["subject"] = ["Autre"]
+    my_release["subject"] = ["Autres"]
 
     if (buyer in app.config["SERVICE_TO_ACTIVITY"]):
         my_release["subject"] = app.config["SERVICE_TO_ACTIVITY"][buyer]
@@ -85,7 +85,7 @@ def field_mapper_fonc_mtl(row, source, my_release):
 
 
     #TODO: FAIT MAPPING SERVICE  => ACTIVITE
-    my_release["subject"] = ["Autre"]
+    my_release["subject"] = ["Autres"]
 
     if (buyer in app.config["SERVICE_TO_ACTIVITY"]):
         my_release["subject"] = app.config["SERVICE_TO_ACTIVITY"][buyer]
@@ -141,7 +141,7 @@ def field_mapper_subvention_mtl(row, source, my_release):
 
 
     #TODO: FAIT MAPPING SERVICE  => ACTIVITE
-    my_release["subject"] = ["Autre"]
+    my_release["subject"] = ["Autres"]
 
     if (buyer in app.config["SERVICE_TO_ACTIVITY"]):
         my_release["subject"] = app.config["SERVICE_TO_ACTIVITY"][buyer]

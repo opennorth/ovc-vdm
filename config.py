@@ -158,7 +158,7 @@ class Config(object):
         "SERVICE DU CAPITAL HUMAIN ET DES COMMUNICATIONS" : ["Ressources humaines", "Communications et relations publiques"],
         "SERVICE DU CONTRÔLEUR GÉNÉRAL" : ["Organisation et administration"],
         "SERVICE DU GREFFE" : ["Gestion de l'information"],
-        "SERVICE DES INFRASTRUCTURES, DE LA VOIRIE ET DES TRANSPORTS" : ["Infrastructures, Transport"],
+        "SERVICE DES INFRASTRUCTURES, DE LA VOIRIE ET DES TRANSPORTS" : ["Infrastructures", "Transport"],
         "SERVICE DE LA CONCERTATION DES ARRONDISSEMENTS ET RESSOURCES MATÉRIELLES": ["Organisation et administration"],
         "SOCIÉTÉ DU PARC JEAN-DRAPEAU" : ["Sports, loisirs, culture et développement social"],
     }
