@@ -18,7 +18,7 @@ class Config(object):
     EMAIL_SENDER = 'ovc@opennorth.ca'
     ADMINS = ['stephane@opennorth.ca']
 
-    URL_ROOT = 'http//localhost'
+    URL_ROOT = 'http://localhost'
     OCID_PREFIX = 'ocds-a1234567-mt-'
 
     CACHE_DURATION = 86400
@@ -227,12 +227,12 @@ class Config(object):
 class ProductionConfig(Config):
     DEBUG = False
     SENDMAIL = True
-    URL_ROOT = 'https://ovc-prod.herokuapp.com'
+    URL_ROOT = 'http://ovc-prod.herokuapp.com'
     ADMINS = ['stephane@opennorth.ca']
     FTS_LANG = 'fr'
 
 class StagingConfig(Config):
-    URL_ROOT = 'https://ovc-stage.herokuapp.com'
+    URL_ROOT = 'http://ovc-stage.herokuapp.com'
     SENDMAIL = True
     DEVELOPMENT = False
     DEBUG = False
