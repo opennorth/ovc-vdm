@@ -21,7 +21,7 @@ Le projet a été développé en vue d'être déployé sur la plateforme [Heroku
 
 ## Documentation de l'API
 
-Le fonctionnement de l'API est documenté [ici](blob/master/doc/api.doc.fr.md) 
+Le fonctionnement de l'API est documenté [ici](doc/api.doc.fr.md) 
 
 ##Installation
 
