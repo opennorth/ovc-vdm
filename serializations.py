@@ -29,9 +29,7 @@ class CustomApi(Api):
         if format:
             mimetype = self.FORMAT_MIMETYPE_MAP.get(format)
             preferred_response_type.append(mimetype)
-            if not mimetype:
-                #TODO: THIS DOES NOT WORK...
-                abort(404)
+
         return preferred_response_type + super(CustomApi, self).mediatypes()
 
 

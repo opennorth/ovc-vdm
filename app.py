@@ -51,7 +51,6 @@ Compress(app)
 def before_request(sender, **extra):
     '''Called on request reception to log request before cache kicks in'''
 
-
     if request.path[0:5] == "/api/":
         daily = DailyStat(request)
         db.session.add(daily)
@@ -120,6 +119,13 @@ class CustomResource(Resource):
 
     def dispatch_request(self, *args, **kwargs):
         '''Overload function to handle etag/If-None-Match behaviour'''
+
+        if "format" in request.args and request.args["format"] not in ['csv', 'pdf', 'xlsx', 'json', 'ocds']:
+            error_msg = {"msg": "Requested format '%s' is not supported" % request.args["format"]}
+            resp = app.make_response(jsonify(error_msg))
+            resp.status_code = 400
+            return resp
+
 
         last_update =  str(db.session.query(Source.last_retrieve).order_by("last_retrieve desc").first())
         g.etag = hashlib.sha1(str(last_update) + request.url).hexdigest()
@@ -313,7 +319,7 @@ class ListReleases(CustomResource):
 
                 
 
-    @cache.cached(timeout=5000, key_prefix=make_cache_key)
+    @cache.cached(timeout=app.config["CACHE_DURATION"], key_prefix=make_cache_key)
     def get(self):
 
         output = dict()
@@ -321,6 +327,10 @@ class ListReleases(CustomResource):
         try:
         
             args = self.parse_arg()
+
+            if args['limit'] and  args['limit'] > 10000 or (args['format'] and args['format'] == 'csv' and  args['limit'] > 100):
+                print "Trop de résultats"
+                abort(400, message="Too many records requested. Set parameter LIMIT lower") 
 
             self.supplier_joined = True
             self.buyer_joined = True

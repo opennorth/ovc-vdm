@@ -445,6 +445,16 @@ def test_ocds():
   rv = test_app.get('api/releases?q=construction&order_by=value&order_dir=desc&format=ocds')
   eq_(rv.status_code,200)
 
+def test_too_records():
+  '''Test parameter limit'''
+  rv = test_app.get('api/releases?limit=10000000')
+  eq_(rv.status_code,400)
+
+def test_invalid_format():
+  '''Test parameter limit'''
+  rv = test_app.get('api/releases?format=foo')
+  eq_(rv.status_code,400)
+
 def test_stats():
   generate_stats()
 

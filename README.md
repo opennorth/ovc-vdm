@@ -17,7 +17,11 @@ L'API repose sur les technologies suivantes:
 
 Le code a été développé en utilisant le mini-système python [Flask](http://flask.pocoo.org/). Flask ainsi que l'ensemble des autres librairies nécessaires sont contenues dans le fichier `requirements.txt`.
 
-Le projet a été développé en vue d'être déployé sur la plateforme [Heroku](https://heroku.com) et suit les standards qu'ils suggèrent. Cela étant dit, il est possible d'executer le présent code sur n'importe quelle configuration respectant les prérequis ci-dessus.
+Le projet a été développé en vue d'être déployé sur la plateforme [Heroku](https://heroku.com) et suit les standards suggéré pour cette plateforme. Cela étant dit, il est possible d'executer le présent code sur n'importe quelle configuration respectant les prérequis ci-dessus; il sera toutefois nécessaire d'ajouter un WSGI tel que [uWSGI](http://flask.pocoo.org/docs/0.10/deploying/uwsgi/) pour fonctionner.
+
+## Documentation de l'API
+
+Le fonctionnement de l'API est documenté [ici](blob/master/doc/api.doc.fr.md) 
 
 ##Installation
 
