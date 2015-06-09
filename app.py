@@ -246,19 +246,18 @@ class CustomResource(Resource):
         query = query.filter(Release.type == con_type)
 
         if 'q' in args and args['q'] != None:
-            search = unidecode(unicode(args['q'])).replace(" ", "&")
-            query = query.filter(func.to_tsvector(app.config["FTS_LANG"], Release.concat).match(search, postgresql_regconfig=app.config["FTS_LANG"]))
-        
+            #search = unidecode(unicode(args['q'])).replace(" ", "&")
+            #query = query.filter(func.to_tsvector(app.config["FTS_LANG"], Release.concat).match(search, postgresql_regconfig=app.config["FTS_LANG"]))
+            query = query.filter('to_tsvector(\'' + app.config["FTS_LANG"] +'\', releases.concat) @@ plainto_tsquery(\''+  app.config["FTS_LANG"] +'\', \''+ args['q'] +'\')')
+
         if 'value_gt' in args and args['value_gt'] != None:
             query = query.filter(Release.value >= args['value_gt'])
-
 
         if 'value_lt' in args and args['value_lt'] != None:
             query = query.filter(Release.value <= args['value_lt'])
 
         if 'date_gt' in args and args['date_gt'] != None:
             query = query.filter(Release.date >= args['date_gt'])
-
 
         if 'date_lt' in args and args['date_lt'] != None:
             query = query.filter(Release.date <= args['date_lt'])

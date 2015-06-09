@@ -93,6 +93,14 @@ def test_generator():
        'value':798556
        }, 
        {
+      # q with "invalid" chars
+      'url': 'api/releases?q=construction()_    de&order_by=value&order_dir=desc', 
+       'json_path' : ("releases",0,"awards",0,"value","amount"),
+       'response': 200,
+       'count': 2,
+       'value':798556
+       },        
+       {
       # Test parameter q and highlight sur description
       'url': 'api/releases?q=dickson&highlight=True', 
        'json_path' : ("releases",0,"awards",0,"items",0,"description"),
