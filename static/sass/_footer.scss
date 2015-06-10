@@ -1,0 +1,15 @@
+/*
+Footer
+*/
+.footer{
+	border-top: 1px solid $border-color;
+	margin: 0px 0px 0 0px;
+	font-size: 0.846em;
+	color: $footer-color;
+	background: $footer-background;
+	.col-md-6{
+		margin-bottom: 0;
+		padding-left:0;
+		padding-right:0;
+	}
+}

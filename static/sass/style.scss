@@ -1,0 +1,34 @@
+/* bootstrap */
+@import url('bootstrap.css');
+
+/* OVC */
+
+@import 'fonts';
+@import 'variables';
+@import 'base';
+@import 'animations';
+@import 'header';
+@import 'sections/home';
+@import 'sections/about';
+@import 'footer';
+
+
+/*
+PLUGINS
+*/
+
+/* datepicker */
+@import url('plugin/bootstrap-datepicker/datepicker.css');
+
+/*tags input*/
+@import url('plugin/bootstrap-tagsinput.css');
+
+/* Bootstrap Select */
+@import url('plugin/bootstrap-select/bootstrap-select.css');
+
+/* Bootstrap toggle */
+@import url('plugin/bootstrap-toggle/bootstrap-toggle.min.css');
+
+
+
+

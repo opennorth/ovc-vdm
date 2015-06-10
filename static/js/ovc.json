@@ -1,0 +1,1553 @@
+ses_value": 3285917254.29,
+    "last_update": "2015-05-08T02:12:40",
+    "buyer_range": [
+        0,
+        1000000,
+        10000000
+    ],
+    "parameters_description": {
+        "procuring_entity": "Filter by procuring entity, provide procuring entity to limit results to this procuring entity only.",
+        "buyer": "Filter by buyer, provide buyer slug to limit results to this buyer only.",
+        "offset": "Pagination parameter. Positive integer number identifying the first record to return",
+        "value_lt": "Filter on releases/contracts with value lesser that the parameter. Positive integer number.",
+        "order_dir": "Direction for the order criteria. Value 'desc' or 'asc'",
+        "date_lt": "Filter on releases/contracts with date lesser that the parameter. Positive integer number.",
+        "value_gt": "Filter on releases/contracts with value greater that the parameter. Positive integer number.",
+        "date_gt": "Filter on releases/contracts with date greater that the parameter. Positive integer number.",
+        "supplier": "Filter by supplier, provide supplier slug to limit results to this supplier only.",
+        "activity": "Filter by activity, provide activity to limit results to this activity only.",
+        "bucket": "Parameters of the value bucket for the by_value endpoint. 3 coma-separated positive integer: first, minimum value; second, maximum value, third, number of intervals. E.g by_value?bucket=0,10000000,49",
+        "limit": "Pagination parameter. Positive integer number to limit the number of record to return, use with offet, e.g. ?limit=10&offset=20 will return records 20 to 30",
+        "type": "Type of contract. Accepted values: 'contract' or 'subvention'",
+        "format": "Select output format. Accepter values: 'json' (default), 'ocds': static OCDS file, 'pdf': PDF file, 'csv': CSV file, 'xlsx': MS Excel",
+        "supplier_size": "Filter by the size of supplier. Accepted values: 1 (smaller),2 and 3 (larger)",
+        "q": "Free text search parameter, free text. e.g ?q=aménagement",
+        "highlight": "Highlight search results. If set to 'True', add a <em> on search terms provided in parameter 'q'",
+        "order_by": "Criteria used to order results. See accepted_order_by for acceted values for each end point"
+    },
+    "buyer_count": 86,
+    "endpoints": [
+        {
+            "url": "/api/releases",
+            "accepted_order_by": [
+                "value",
+                "buyer",
+                "supplier",
+                "id",
+                "date",
+                null
+            ],
+            "description": "Provide list releases following the Open Contracting format based on filters provided",
+            "accepted_parameters": [
+                "q",
+                "offset",
+                "limit",
+                "value_gt",
+                "value_lt",
+                "date_gt",
+                "date_lt",
+                "buyer",
+                "activity",
+                "supplier",
+                "order_by",
+                "order_dir",
+                "type",
+                "supplier_size",
+                "procuring_entity",
+                "highlight",
+                "format"
+            ]
+        },
+        {
+            "url": "/api/releases/by_supplier",
+            "accepted_order_by": [
+                "total_value",
+                "count",
+                "supplier_size",
+                "supplier_slug",
+                null
+            ],
+            "description": "Group releases by  supplier and provide the number of contracts and the total \n    value of contracts by supplier",
+            "accepted_parameters": [
+                "q",
+                "offset",
+                "limit",
+                "value_gt",
+                "value_lt",
+                "date_gt",
+                "date_lt",
+                "buyer",
+                "activity",
+                "supplier",
+                "order_by",
+                "order_dir",
+                "type",
+                "supplier_size",
+                "procuring_entity"
+            ]
+        },
+        {
+            "url": "/api/releases/by_buyer",
+            "accepted_order_by": [
+                "total_value",
+                "count",
+                "buyer_slug",
+                null
+            ],
+            "description": "Group releases by buyer. Provide the number of contract and total\n    value for each buyer",
+            "accepted_parameters": [
+                "q",
+                "offset",
+                "limit",
+                "value_gt",
+                "value_lt",
+                "date_gt",
+                "date_lt",
+                "buyer",
+                "activity",
+                "supplier",
+                "order_by",
+                "order_dir",
+                "type",
+                "supplier_size",
+                "procuring_entity"
+            ]
+        },
+        {
+            "url": "/api/releases/by_procuring_entity",
+            "accepted_order_by": [
+                "total_value",
+                "count",
+                "procuring_entity",
+                null
+            ],
+            "description": "Group releases by procuring entity. Provide the number of contract and total\n    value for each procuring entity",
+            "accepted_parameters": [
+                "q",
+                "offset",
+                "limit",
+                "value_gt",
+                "value_lt",
+                "date_gt",
+                "date_lt",
+                "buyer",
+                "activity",
+                "supplier",
+                "order_by",
+                "order_dir",
+                "type",
+                "supplier_size",
+                "procuring_entity"
+            ]
+        },
+        {
+            "url": "/api/releases/by_value",
+            "accepted_order_by": [
+                "total_value",
+                "count",
+                "segment",
+                null
+            ],
+            "description": "Group releases by buckets of value. Parameter 'bucket' is mandatory for this endpoint.\n    Provide the start value, end value and number of intervals, the endpoint returns the number\n    of contracts and total value for each segment of value",
+            "accepted_parameters": [
+                "q",
+                "offset",
+                "limit",
+                "value_gt",
+                "value_lt",
+                "date_gt",
+                "date_lt",
+                "buyer",
+                "activity",
+                "supplier",
+                "order_by",
+                "order_dir",
+                "type",
+                "supplier_size",
+                "procuring_entity",
+                "bucket"
+            ]
+        },
+        {
+            "url": "/api/releases/by_month",
+            "accepted_order_by": [
+                "total_value",
+                "count",
+                "month",
+                null
+            ],
+            "description": "Group releases by month-year. Provide the number of contract and total\n    value for each month-year where some contracts are available",
+            "accepted_parameters": [
+                "q",
+                "offset",
+                "limit",
+                "value_gt",
+                "value_lt",
+                "date_gt",
+                "date_lt",
+                "buyer",
+                "activity",
+                "supplier",
+                "order_by",
+                "order_dir",
+                "type",
+                "supplier_size",
+                "procuring_entity"
+            ]
+        },
+        {
+            "url": "/api/releases/by_activity",
+            "accepted_order_by": [
+                "total_value",
+                "count",
+                "activity",
+                null
+            ],
+            "description": "Group releases by activity. Provide the number of contracts and total value\n    for each activity available. On the primary (first in the list) activity is considered",
+            "accepted_parameters": [
+                "q",
+                "offset",
+                "limit",
+                "value_gt",
+                "value_lt",
+                "date_gt",
+                "date_lt",
+                "buyer",
+                "activity",
+                "supplier",
+                "order_by",
+                "order_dir",
+                "type",
+                "supplier_size",
+                "procuring_entity"
+            ]
+        }
+    ],
+    "supplier_count": 9002,
+    "releases_count": 45928,
+    "sources": [
+        "http://donnees.ville.montreal.qc.ca/dataset/74efbfc7-b1bd-488f-be6f-ad122f1ebe8d/resource/a7c221f7-7472-4b01-9783-ed9e847ee8c1/download/contratsfonctionnaires.csv",
+        "http://donnees.ville.montreal.qc.ca/dataset/6df93670-af44-492e-a644-72643bf58bc0/resource/a6869244-1a4d-4080-9577-b73e09d95ed5/download/contratsconseilmunicipal.csv",
+        "http://donnees.ville.montreal.qc.ca/dataset/505f2f9e-8cec-43f9-a83a-465717ef73a5/resource/87a6e535-3a6e-4964-91f5-836cd31099f7/download/contratscomiteexecutif.csv",
+        "http://donnees.ville.montreal.qc.ca/dataset/6df93670-af44-492e-a644-72643bf58bc0/resource/35e636c1-9f99-4adf-8898-67c2ea4f8c47/download/contratsconseilagglomeration.csv",
+        "http://donnees.ville.montreal.qc.ca/dataset/067c3bf6-0ec0-4159-a582-b0d58b44491f/resource/bc862025-9735-4a10-8d29-a5ee6621277c/download/subventionsconseilagglomeration.csv",
+        "http://donnees.ville.montreal.qc.ca/dataset/067c3bf6-0ec0-4159-a582-b0d58b44491f/resource/3abb3596-45fb-4c80-8d6f-1633db5427d4/download/subventionsconseilmunicipal.csv",
+        "http://donnees.ville.montreal.qc.ca/dataset/4900f199-445f-4a89-a4e1-a02ee2391d26/resource/96c66e8d-f217-4249-8ff5-42ebac8045b9/download/subventionscomiteexecutif.csv"
+    ]
+}
+
+
+
+
+
+{
+    "meta": {
+        "pagination": {
+            "offset": 0,
+            "limit": 1000
+        },
+        "count": 228
+    },
+    "releases": [
+        {
+            "activities": [
+                {
+                    "count": 4,
+                    "total_value": 4207350,
+                    "activity": "Transport"
+                },
+                {
+                    "count": 1,
+                    "total_value": 1126244,
+                    "activity": "Arrondissements"
+                },
+                {
+                    "count": 4,
+                    "total_value": 27759569,
+                    "activity": "Organisation et administration"
+                },
+                {
+                    "count": 1,
+                    "total_value": 874729,
+                    "activity": "Urbanisme et habitation"
+                }
+            ],
+            "month": "2012-09"
+        },
+        {
+            "activities": [
+                {
+                    "count": 5,
+                    "total_value": 5458512,
+                    "activity": "Sécurité publique"
+                },
+                {
+                    "count": 3,
+                    "total_value": 6543964,
+                    "activity": "Urbanisme et habitation"
+                },
+                {
+                    "count": 11,
+                    "total_value": 31961132,
+                    "activity": "Organisation et administration"
+                },
+                {
+                    "count": 5,
+                    "total_value": 21898145,
+                    "activity": "Infrastructures"
+                },
+                {
+                    "count": 3,
+                    "total_value": 49847763,
+                    "activity": "Gestion de l'information"
+                },
+                {
+                    "count": 5,
+                    "total_value": 7521881,
+                    "activity": "Sports, loisirs, culture et développement social"
+                },
+                {
+                    "count": 13,
+                    "total_value": 18391509,
+                    "activity": "Transport"
+                }
+            ],
+            "month": "2012-08"
+        },
+        {
+            "activities": [
+                {
+                    "count": 1,
+                    "total_value": 4510149,
+                    "activity": "Infrastructures"
+                }
+            ],
+            "month": "1899-12"
+        },
+        {
+            "activities": [
+                {
+                    "count": 1,
+                    "total_value": 60202,
+                    "activity": "Arrondissements"
+                },
+                {
+                    "count": 4,
+                    "total_value": 3136547,
+                    "activity": "Infrastructures"
+                },
+                {
+                    "count": 1,
+                    "total_value": 764475,
+                    "activity": "Ressources humaines"
+                },
+                {
+                    "count": 4,
+                    "total_value": 1660662,
+                    "activity": "Sécurité publique"
+                },
+                {
+                    "count": 5,
+                    "total_value": 2406307,
+                    "activity": "Sports, loisirs, culture et développement social"
+                },
+                {
+                    "count": 1,
+                    "total_value": 3289752,
+                    "activity": "Gestion de l'information"
+                },
+                {
+                    "count": 25,
+                    "total_value": 63426306,
+                    "activity": "Organisation et administration"
+                },
+                {
+                    "count": 15,
+                    "total_value": 26699595.25,
+                    "activity": "Transport"
+                }
+            ],
+            "month": "2013-06"
+        },
+        {
+            "activities": [
+                {
+                    "count": 13,
+                    "total_value": 40655173,
+                    "activity": "Arrondissements"
+                },
+                {
+                    "count": 1,
+                    "total_value": 672604,
+                    "activity": "Sports, loisirs, culture et développement social"
+                },
+                {
+                    "count": 9,
+                    "total_value": 84749029,
+                    "activity": "Infrastructures"
+                },
+                {
+                    "count": 3,
+                    "total_value": 1216440,
+                    "activity": "Sécurité publique"
+                },
+                {
+                    "count": 1,
+                    "total_value": 400000,
+                    "activity": "Gestion de l'information"
+                },
+                {
+                    "count": 10,
+                    "total_value": 7269091,
+                    "activity": "Organisation et administration"
+                },
+                {
+                    "count": 8,
+                    "total_value": 31828913,
+                    "activity": "Transport"
+                }
+            ],
+            "month": "2013-07"
+        },
+        {
+            "activities": [
+                {
+                    "count": 2,
+                    "total_value": 2802852,
+                    "activity": "Gestion de l'information"
+                },
+                {
+                    "count": 4,
+                    "total_value": 4014231,
+                    "activity": "Sécurité publique"
+                },
+                {
+                    "count": 27,
+                    "total_value": 49040861,
+                    "activity": "Organisation et administration"
+                },
+                {
+                    "count": 20,
+                    "total_value": 25174596,
+                    "activity": "Transport"
+                },
+                {
+                    "count": 2,
+                    "total_value": 397146,
+                    "activity": "Sports, loisirs, culture et développement social"
+                },
+                {
+                    "count": 2,
+                    "total_value": 3349279,
+                    "activity": "Infrastructures"
+                }
+            ],
+            "month": "2013-04"
+        },
+        {
+            "activities": [
+                {
+                    "count": 1,
+                    "total_value": 7107557,
+                    "activity": "Arrondissements"
+                },
+                {
+                    "count": 4,
+                    "total_value": 9367409,
+                    "activity": "Organisation et administration"
+                },
+                {
+                    "count": 6,
+                    "total_value": 28215607,
+                    "activity": "Transport"
+                },
+                {
+                    "count": 4,
+                    "total_value": 5560643,
+                    "activity": "Sports, loisirs, culture et développement social"
+                },
+                {
+                    "count": 1,
+                    "total_value": 1348404,
+                    "activity": "Gestion de l'information"
+                }
+            ],
+            "month": "2013-05"
+        },
+        {
+            "activities": [
+                {
+                    "count": 5,
+                    "total_value": 9488400,
+                    "activity": "Organisation et administration"
+                },
+                {
+                    "count": 3,
+                    "total_value": 28316007,
+                    "activity": "Gestion de l'information"
+                },
+                {
+                    "count": 3,
+                    "total_value": 8910117,
+                    "activity": "Infrastructures"
+                },
+                {
+                    "count": 2,
+                    "total_value": 1097802,
+                    "activity": "Sports, loisirs, culture et développement social"
+                },
+                {
+                    "count": 1,
+                    "total_value": 895205,
+                    "activity": "Sécurité publique"
+                }
+            ],
+            "month": "2013-02"
+        },
+        {
+            "activities": [
+                {
+                    "count": 4,
+                    "total_value": 2643255,
+                    "activity": "Gestion de l'information"
+                },
+                {
+                    "count": 5,
+                    "total_value": 6828991,
+                    "activity": "Transport"
+                },
+                {
+                    "count": 3,
+                    "total_value": 4517142,
+                    "activity": "Sécurité publique"
+                },
+                {
+                    "count": 11,
+                    "total_value": 26592348,
+                    "activity": "Organisation et administration"
+                },
+                {
+                    "count": 1,
+                    "total_value": 119314,
+                    "activity": "Ressources financières"
+                },
+                {
+                    "count": 1,
+                    "total_value": 1409301,
+                    "activity": "Infrastructures"
+                }
+            ],
+            "month": "2013-03"
+        },
+        {
+            "activities": [
+                {
+                    "count": 1,
+                    "total_value": 406090,
+                    "activity": "Sécurité publique"
+                },
+                {
+                    "count": 4,
+                    "total_value": 7540447,
+                    "activity": "Sports, loisirs, culture et développement social"
+                },
+                {
+                    "count": 1,
+                    "total_value": 214391,
+                    "activity": "Infrastructures"
+                },
+                {
+                    "count": 1,
+                    "total_value": 690848,
+                    "activity": "Ressources humaines"
+                },
+                {
+                    "count": 8,
+                    "total_value": 37966158,
+                    "activity": "Gestion de l'information"
+                },
+                {
+                    "count": 6,
+                    "total_value": 41253397,
+                    "activity": "Organisation et administration"
+                },
+                {
+                    "count": 1,
+                    "total_value": 517380,
+                    "activity": "Transport"
+                },
+                {
+                    "count": 1,
+                    "total_value": 156304,
+                    "activity": "Ressources financières"
+                }
+            ],
+            "month": "2013-01"
+        },
+        {
+            "activities": [
+                {
+                    "count": 13,
+                    "total_value": 20398166,
+                    "activity": "Organisation et administration"
+                },
+                {
+                    "count": 1,
+                    "total_value": 200000,
+                    "activity": "Juridique"
+                },
+                {
+                    "count": 6,
+                    "total_value": 657196,
+                    "activity": "Sécurité publique"
+                },
+                {
+                    "count": 3,
+                    "total_value": 9453878,
+                    "activity": "Arrondissements"
+                },
+                {
+                    "count": 8,
+                    "total_value": 5585164,
+                    "activity": "Sports, loisirs, culture et développement social"
+                },
+                {
+                    "count": 9,
+                    "total_value": 13242820,
+                    "activity": "Transport"
+                },
+                {
+                    "count": 2,
+                    "total_value": 31544561,
+                    "activity": "Gestion de l'information"
+                }
+            ],
+            "month": "2013-08"
+        },
+        {
+            "activities": [
+                {
+                    "count": 16,
+                    "total_value": 94111042,
+                    "activity": "Transport"
+                },
+                {
+                    "count": 6,
+                    "total_value": 11050501,
+                    "activity": "Gestion de l'information"
+                },
+                {
+                    "count": 3,
+                    "total_value": 5179417,
+                    "activity": "Arrondissements"
+                },
+                {
+                    "count": 3,
+                    "total_value": 2784197.01,
+                    "activity": "Sécurité publique"
+                },
+                {
+                    "count": 14,
+                    "total_value": 5371281,
+                    "activity": "Sports, loisirs, culture et développement social"
+                },
+                {
+                    "count": 17,
+                    "total_value": 50249543,
+                    "activity": "Infrastructures"
+                },
+                {
+                    "count": 2,
+                    "total_value": 510000,
+                    "activity": "Ressources financières"
+                },
+                {
+                    "count": 3,
+                    "total_value": 2761412.5,
+                    "activity": "Ressources humaines"
+                },
+                {
+                    "count": 37,
+                    "total_value": 85894622,
+                    "activity": "Organisation et administration"
+                }
+            ],
+            "month": "2013-09"
+        },
+        {
+            "activities": [
+                {
+                    "count": 4,
+                    "total_value": 559329,
+                    "activity": "Sécurité publique"
+                },
+                {
+                    "count": 5,
+                    "total_value": 1263648,
+                    "activity": "Immeubles et terrains"
+                },
+                {
+                    "count": 2,
+                    "total_value": 596875,
+                    "activity": "Ressources matérielles et services"
+                },
+                {
+                    "count": 1,
+                    "total_value": 215227,
+                    "activity": "Environnement"
+                },
+                {
+                    "count": 4,
+                    "total_value": 337409,
+                    "activity": "Sports, loisirs, culture et développement social"
+                },
+                {
+                    "count": 1,
+                    "total_value": 99000,
+                    "activity": "Ressources humaines"
+                },
+                {
+                    "count": 1,
+                    "total_value": 358898,
+                    "activity": "Infrastructures"
+                },
+                {
+                    "count": 1,
+                    "total_value": 155820,
+                    "activity": "Arrondissements"
+                },
+                {
+                    "count": 1,
+                    "total_value": 193429,
+                    "activity": "Gestion de l'information"
+                }
+            ],
+            "month": "2014-09"
+        },
+        {
+            "activities": [
+                {
+                    "count": 10,
+                    "total_value": 8159252,
+                    "activity": "Arrondissements"
+                },
+                {
+                    "count": 2,
+                    "total_value": 477608,
+                    "activity": "Urbanisme et habitation"
+                },
+                {
+                    "count": 1,
+                    "total_value": 743000,
+                    "activity": "Ressources humaines"
+                },
+                {
+                    "count": 1,
+                    "total_value": 274380,
+                    "activity": "Organisation et administration"
+                },
+                {
+                    "count": 3,
+                    "total_value": 733716,
+                    "activity": "Gestion de l'information"
+                },
+                {
+                    "count": 21,
+                    "total_value": 36114049,
+                    "activity": "Infrastructures"
+                },
+                {
+                    "count": 1,
+                    "total_value": 695047,
+                    "activity": "Ressources financières"
+                },
+                {
+                    "count": 2,
+                    "total_value": 1524143,
+                    "activity": "Ressources matérielles et services"
+                },
+                {
+                    "count": 1,
+                    "total_value": 86231,
+                    "activity": "Développement économique"
+                },
+                {
+                    "count": 15,
+                    "total_value": 15368298,
+                    "activity": "Immeubles et terrains"
+                },
+                {
+                    "count": 9,
+                    "total_value": 11673112,
+                    "activity": "Sports, loisirs, culture et développement social"
+                },
+                {
+                    "count": 2,
+                    "total_value": 498508,
+                    "activity": "Sécurité publique"
+                }
+            ],
+            "month": "2014-08"
+        },
+        {
+            "activities": [
+                {
+                    "count": 1,
+                    "total_value": 235584,
+                    "activity": "Sécurité publique"
+                },
+                {
+                    "count": 6,
+                    "total_value": 1162440,
+                    "activity": "Infrastructures"
+                },
+                {
+                    "count": 5,
+                    "total_value": 845111,
+                    "activity": "Immeubles et terrains"
+                },
+                {
+                    "count": 3,
+                    "total_value": 862473,
+                    "activity": "Ressources matérielles et services"
+                },
+                {
+                    "count": 3,
+                    "total_value": 559989,
+                    "activity": "Sports, loisirs, culture et développement social"
+                }
+            ],
+            "month": "2014-07"
+        },
+        {
+            "activities": [
+                {
+                    "count": 23,
+                    "total_value": 34077547,
+                    "activity": "Infrastructures"
+                },
+                {
+                    "count": 7,
+                    "total_value": 2258021,
+                    "activity": "Sécurité publique"
+                },
+                {
+                    "count": 2,
+                    "total_value": 1599370,
+                    "activity": "Ressources financières"
+                },
+                {
+                    "count": 2,
+                    "total_value": 475697,
+                    "activity": "Environnement"
+                },
+                {
+                    "count": 1,
+                    "total_value": 95000,
+                    "activity": "Juridique"
+                },
+                {
+                    "count": 1,
+                    "total_value": 240000,
+                    "activity": "Urbanisme et habitation"
+                },
+                {
+                    "count": 17,
+                    "total_value": 24162217,
+                    "activity": "Immeubles et terrains"
+                },
+                {
+                    "count": 8,
+                    "total_value": 20301309,
+                    "activity": "Arrondissements"
+                },
+                {
+                    "count": 1,
+                    "total_value": 1857830,
+                    "activity": "Gestion de l'information"
+                },
+                {
+                    "count": 7,
+                    "total_value": 6707895,
+                    "activity": "Ressources matérielles et services"
+                },
+                {
+                    "count": 20,
+                    "total_value": 13548575,
+                    "activity": "Sports, loisirs, culture et développement social"
+                },
+                {
+                    "count": 1,
+                    "total_value": 72285,
+                    "activity": "Organisation et administration"
+                }
+            ],
+            "month": "2014-06"
+        },
+        {
+            "activities": [
+                {
+                    "count": 2,
+                    "total_value": 189938,
+                    "activity": "Sécurité publique"
+                },
+                {
+                    "count": 5,
+                    "total_value": 2524809,
+                    "activity": "Gestion de l'information"
+                },
+                {
+                    "count": 6,
+                    "total_value": 12694229,
+                    "activity": "Arrondissements"
+                },
+                {
+                    "count": 8,
+                    "total_value": 4570947,
+                    "activity": "Ressources matérielles et services"
+                },
+                {
+                    "count": 1,
+                    "total_value": 73024,
+                    "activity": "Urbanisme et habitation"
+                },
+                {
+                    "count": 35,
+                    "total_value": 118681410,
+                    "activity": "Infrastructures"
+                },
+                {
+                    "count": 19,
+                    "total_value": 14321714.95,
+                    "activity": "Sports, loisirs, culture et développement social"
+                },
+                {
+                    "count": 8,
+                    "total_value": 25160213.27,
+                    "activity": "Immeubles et terrains"
+                },
+                {
+                    "count": 2,
+                    "total_value": 4817369,
+                    "activity": "Organisation et administration"
+                }
+            ],
+            "month": "2014-05"
+        },
+        {
+            "activities": [
+                {
+                    "count": 4,
+                    "total_value": 4003865,
+                    "activity": "Ressources matérielles et services"
+                },
+                {
+                    "count": 3,
+                    "total_value": 1662958,
+                    "activity": "Arrondissements"
+                },
+                {
+                    "count": 1,
+                    "total_value": 114974,
+                    "activity": "Sécurité publique"
+                },
+                {
+                    "count": 2,
+                    "total_value": 430984,
+                    "activity": "Gestion de l'information"
+                },
+                {
+                    "count": 2,
+                    "total_value": 537393,
+                    "activity": "Environnement"
+                },
+                {
+                    "count": 16,
+                    "total_value": 16586099,
+                    "activity": "Infrastructures"
+                },
+                {
+                    "count": 1,
+                    "total_value": 75000,
+                    "activity": "Juridique"
+                },
+                {
+                    "count": 4,
+                    "total_value": 464307,
+                    "activity": "Sports, loisirs, culture et développement social"
+                },
+                {
+                    "count": 2,
+                    "total_value": 7163470,
+                    "activity": "Immeubles et terrains"
+                }
+            ],
+            "month": "2014-04"
+        },
+        {
+            "activities": [
+                {
+                    "count": 7,
+                    "total_value": 6270887,
+                    "activity": "Ressources matérielles et services"
+                },
+                {
+                    "count": 28,
+                    "total_value": 18699928,
+                    "activity": "Organisation et administration"
+                },
+                {
+                    "count": 6,
+                    "total_value": 11768124,
+                    "activity": "Urbanisme et habitation"
+                },
+                {
+                    "count": 3,
+                    "total_value": 3254968,
+                    "activity": "Sécurité publique"
+                },
+                {
+                    "count": 14,
+                    "total_value": 30432172,
+                    "activity": "Transport"
+                },
+                {
+                    "count": 2,
+                    "total_value": 400000,
+                    "activity": "Juridique"
+                },
+                {
+                    "count": 11,
+                    "total_value": 4531528,
+                    "activity": "Sports, loisirs, culture et développement social"
+                },
+                {
+                    "count": 26,
+                    "total_value": 100391910,
+                    "activity": "Infrastructures"
+                },
+                {
+                    "count": 3,
+                    "total_value": 6428123,
+                    "activity": "Arrondissements"
+                },
+                {
+                    "count": 5,
+                    "total_value": 11787770,
+                    "activity": "Immeubles et terrains"
+                },
+                {
+                    "count": 2,
+                    "total_value": 971088,
+                    "activity": "Gestion de l'information"
+                }
+            ],
+            "month": "2014-03"
+        },
+        {
+            "activities": [
+                {
+                    "count": 6,
+                    "total_value": 6698121,
+                    "activity": "Transport"
+                },
+                {
+                    "count": 8,
+                    "total_value": 4785883,
+                    "activity": "Organisation et administration"
+                },
+                {
+                    "count": 2,
+                    "total_value": 151140,
+                    "activity": "Gestion de l'information"
+                },
+                {
+                    "count": 1,
+                    "total_value": 70037,
+                    "activity": "Urbanisme et habitation"
+                },
+                {
+                    "count": 1,
+                    "total_value": 4484,
+                    "activity": "Ressources financières"
+                },
+                {
+                    "count": 7,
+                    "total_value": 70625139,
+                    "activity": "Infrastructures"
+                },
+                {
+                    "count": 1,
+                    "total_value": 438859,
+                    "activity": "Sports, loisirs, culture et développement social"
+                },
+                {
+                    "count": 1,
+                    "total_value": 66667,
+                    "activity": "Sécurité publique"
+                }
+            ],
+            "month": "2014-02"
+        },
+        {
+            "activities": [
+                {
+                    "count": 2,
+                    "total_value": 615396,
+                    "activity": "Sports, loisirs, culture et développement social"
+                },
+                {
+                    "count": 1,
+                    "total_value": 568240,
+                    "activity": "Transport"
+                },
+                {
+                    "count": 3,
+                    "total_value": 803404,
+                    "activity": "Sécurité publique"
+                },
+                {
+                    "count": 3,
+                    "total_value": 9731359,
+                    "activity": "Arrondissements"
+                },
+                {
+                    "count": 4,
+                    "total_value": 805853,
+                    "activity": "Organisation et administration"
+                },
+                {
+                    "count": 1,
+                    "total_value": 75743,
+                    "activity": "Urbanisme et habitation"
+                },
+                {
+                    "count": 1,
+                    "total_value": 194042,
+                    "activity": "Gestion de l'information"
+                },
+                {
+                    "count": 6,
+                    "total_value": 3694822,
+                    "activity": "Infrastructures"
+                }
+            ],
+            "month": "2014-01"
+        },
+        {
+            "activities": [
+                {
+                    "count": 1,
+                    "total_value": 900000,
+                    "activity": "Sécurité publique"
+                },
+                {
+                    "count": 5,
+                    "total_value": 21476171,
+                    "activity": "Immeubles et terrains"
+                },
+                {
+                    "count": 3,
+                    "total_value": 1512292,
+                    "activity": "Infrastructures"
+                },
+                {
+                    "count": 2,
+                    "total_value": 327655,
+                    "activity": "Ressources matérielles et services"
+                },
+                {
+                    "count": 1,
+                    "total_value": 100000,
+                    "activity": "Développement économique"
+                },
+                {
+                    "count": 4,
+                    "total_value": 325916,
+                    "activity": "Sports, loisirs, culture et développement social"
+                }
+            ],
+            "month": "2015-01"
+        },
+        {
+            "activities": [
+                {
+                    "count": 8,
+                    "total_value": 4533554,
+                    "activity": "Immeubles et terrains"
+                },
+                {
+                    "count": 1,
+                    "total_value": 52313,
+                    "activity": "Développement économique"
+                },
+                {
+                    "count": 1,
+                    "total_value": 0,
+                    "activity": "Juridique"
+                },
+                {
+                    "count": 1,
+                    "total_value": 307975,
+                    "activity": "Gestion de l'information"
+                },
+                {
+                    "count": 2,
+                    "total_value": 3948759,
+                    "activity": "Sports, loisirs, culture et développement social"
+                },
+                {
+                    "count": 14,
+                    "total_value": 52524425,
+                    "activity": "Infrastructures"
+                },
+                {
+                    "count": 6,
+                    "total_value": 4511360,
+                    "activity": "Ressources matérielles et services"
+                },
+                {
+                    "count": 1,
+                    "total_value": 271915,
+                    "activity": "Environnement"
+                }
+            ],
+            "month": "2015-02"
+        },
+        {
+            "activities": [
+                {
+                    "count": 5,
+                    "total_value": 3966340,
+                    "activity": "Organisation et administration"
+                },
+                {
+                    "count": 1,
+                    "total_value": 955000,
+                    "activity": "Sports, loisirs, culture et développement social"
+                },
+                {
+                    "count": 3,
+                    "total_value": 8861635,
+                    "activity": "Gestion de l'information"
+                }
+            ],
+            "month": "2012-12"
+        },
+        {
+            "activities": [
+                {
+                    "count": 1,
+                    "total_value": 157071,
+                    "activity": "Sports, loisirs, culture et développement social"
+                },
+                {
+                    "count": 11,
+                    "total_value": 29308138,
+                    "activity": "Infrastructures"
+                },
+                {
+                    "count": 1,
+                    "total_value": 1222503,
+                    "activity": "Arrondissements"
+                },
+                {
+                    "count": 7,
+                    "total_value": 5915149,
+                    "activity": "Sécurité publique"
+                },
+                {
+                    "count": 3,
+                    "total_value": 4919947,
+                    "activity": "Gestion de l'information"
+                },
+                {
+                    "count": 1,
+                    "total_value": 3500000,
+                    "activity": "Ressources humaines"
+                },
+                {
+                    "count": 1,
+                    "total_value": 660048,
+                    "activity": "Juridique"
+                },
+                {
+                    "count": 6,
+                    "total_value": 8577011,
+                    "activity": "Transport"
+                },
+                {
+                    "count": 16,
+                    "total_value": 24662023,
+                    "activity": "Organisation et administration"
+                },
+                {
+                    "count": 1,
+                    "total_value": 632307,
+                    "activity": "Urbanisme et habitation"
+                },
+                {
+                    "count": 1,
+                    "total_value": 1000000,
+                    "activity": "Ressources financières"
+                }
+            ],
+            "month": "2012-10"
+        },
+        {
+            "activities": [
+                {
+                    "count": 1,
+                    "total_value": 3539390,
+                    "activity": "Gestion de l'information"
+                },
+                {
+                    "count": 1,
+                    "total_value": 84724,
+                    "activity": "Sports, loisirs, culture et développement social"
+                },
+                {
+                    "count": 4,
+                    "total_value": 3181336,
+                    "activity": "Organisation et administration"
+                }
+            ],
+            "month": "2012-11"
+        },
+        {
+            "activities": [
+                {
+                    "count": 1,
+                    "total_value": 1,
+                    "activity": "Transport"
+                },
+                {
+                    "count": 1,
+                    "total_value": 81103,
+                    "activity": "Infrastructures"
+                },
+                {
+                    "count": 3,
+                    "total_value": 761620,
+                    "activity": "Organisation et administration"
+                },
+                {
+                    "count": 1,
+                    "total_value": 362337,
+                    "activity": "Sécurité publique"
+                }
+            ],
+            "month": "2013-11"
+        },
+        {
+            "activities": [
+                {
+                    "count": 2,
+                    "total_value": 288529,
+                    "activity": "Ressources humaines"
+                },
+                {
+                    "count": 8,
+                    "total_value": 886872,
+                    "activity": "Sports, loisirs, culture et développement social"
+                },
+                {
+                    "count": 5,
+                    "total_value": 5370723,
+                    "activity": "Transport"
+                },
+                {
+                    "count": 1,
+                    "total_value": 171944,
+                    "activity": "Arrondissements"
+                },
+                {
+                    "count": 4,
+                    "total_value": 1252418,
+                    "activity": "Infrastructures"
+                },
+                {
+                    "count": 5,
+                    "total_value": 754918,
+                    "activity": "Organisation et administration"
+                },
+                {
+                    "count": 3,
+                    "total_value": 7863506,
+                    "activity": "Sécurité publique"
+                }
+            ],
+            "month": "2013-10"
+        },
+        {
+            "activities": [
+                {
+                    "count": 2,
+                    "total_value": 197826,
+                    "activity": "Ressources humaines"
+                },
+                {
+                    "count": 5,
+                    "total_value": 6435050,
+                    "activity": "Infrastructures"
+                },
+                {
+                    "count": 3,
+                    "total_value": 702965,
+                    "activity": "Sécurité publique"
+                },
+                {
+                    "count": 28,
+                    "total_value": 68924324,
+                    "activity": "Organisation et administration"
+                },
+                {
+                    "count": 3,
+                    "total_value": 2238052,
+                    "activity": "Transport"
+                },
+                {
+                    "count": 2,
+                    "total_value": 6872325,
+                    "activity": "Sports, loisirs, culture et développement social"
+                },
+                {
+                    "count": 3,
+                    "total_value": 629856,
+                    "activity": "Gestion de l'information"
+                }
+            ],
+            "month": "2013-12"
+        },
+        {
+            "activities": [
+                {
+                    "count": 2,
+                    "total_value": 435569,
+                    "activity": "Sports, loisirs, culture et développement social"
+                },
+                {
+                    "count": 3,
+                    "total_value": 474797,
+                    "activity": "Ressources humaines"
+                },
+                {
+                    "count": 4,
+                    "total_value": 636094,
+                    "activity": "Infrastructures"
+                },
+                {
+                    "count": 2,
+                    "total_value": 126472,
+                    "activity": "Urbanisme et habitation"
+                },
+                {
+                    "count": 1,
+                    "total_value": 440039,
+                    "activity": "Organisation et administration"
+                },
+                {
+                    "count": 1,
+                    "total_value": 59844,
+                    "activity": "Sécurité publique"
+                },
+                {
+                    "count": 6,
+                    "total_value": 654711,
+                    "activity": "Ressources matérielles et services"
+                },
+                {
+                    "count": 2,
+                    "total_value": 264668,
+                    "activity": "Immeubles et terrains"
+                },
+                {
+                    "count": 2,
+                    "total_value": 215075,
+                    "activity": "Environnement"
+                }
+            ],
+            "month": "2014-10"
+        },
+        {
+            "activities": [
+                {
+                    "count": 2,
+                    "total_value": 658376,
+                    "activity": "Infrastructures"
+                },
+                {
+                    "count": 1,
+                    "total_value": 232250,
+                    "activity": "Immeubles et terrains"
+                },
+                {
+                    "count": 1,
+                    "total_value": 52443,
+                    "activity": "Sécurité publique"
+                },
+                {
+                    "count": 1,
+                    "total_value": 91018,
+                    "activity": "Environnement"
+                }
+            ],
+            "month": "2014-11"
+        },
+        {
+            "activities": [
+                {
+                    "count": 1,
+                    "total_value": 64000,
+                    "activity": "Ressources humaines"
+                },
+                {
+                    "count": 2,
+                    "total_value": 321928,
+                    "activity": "Organisation et administration"
+                },
+                {
+                    "count": 1,
+                    "total_value": 1,
+                    "activity": "Ressources financières"
+                },
+                {
+                    "count": 1,
+                    "total_value": 730000,
+                    "activity": "Juridique"
+                },
+                {
+                    "count": 2,
+                    "total_value": 281186,
+                    "activity": "Sécurité publique"
+                },
+                {
+                    "count": 1,
+                    "total_value": 277043,
+                    "activity": "Ressources matérielles et services"
+                },
+                {
+                    "count": 4,
+                    "total_value": 789720,
+                    "activity": "Immeubles et terrains"
+                },
+                {
+                    "count": 4,
+                    "total_value": 329937,
+                    "activity": "Infrastructures"
+                },
+                {
+                    "count": 1,
+                    "total_value": 89830,
+                    "activity": "Urbanisme et habitation"
+                },
+                {
+                    "count": 1,
+                    "total_value": 182092,
+                    "activity": "Environnement"
+                }
+            ],
+            "month": "2014-12"
+        }
+    ]
+}

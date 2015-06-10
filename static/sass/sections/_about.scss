@@ -1,0 +1,46 @@
+/* ABOUT US */
+.toplink{
+	margin-top: 60px;
+	background-color: #fff;
+	.row{
+		margin: 0px 15px 0 15px;
+		
+			
+		position: relative;
+		height:60px;
+		div{
+			margin-top: 16px;
+			a{
+				font-size: 1.35em;
+				font-weight: 600;
+				color: #428BCA;
+				vertical-align: middle;
+			}
+		}
+				
+	}
+}
+
+.contentpage{
+	
+	.row{
+		margin: 0px -30px 0 -30px;
+		padding: 0px 45px;
+		margin-bottom: 0;
+
+		.textcontainer{
+			h3{
+			font-weight: 600;
+			padding-bottom: 15px;
+			
+			}
+			text-justify: auto;
+			min-height: 1000px;
+			p{
+				text-align: justify;
+				text-justify: inter-word;				
+			}
+		}
+	}
+}
+

@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="description" content="Outils de consultation des contrats de la ville de Montréal">
+  <meta name="keywords" content="Contrats,ville de montreal" />
+  <meta property="og:title" content="Vue sur les contrats de la Ville de Montréal" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="http://ville.montreal.qc.ca/vuesurlescontrats/img/mtl_share.jpg" />
+  <meta property="og:description" content="Vue sur les contrats est un outil de visualisation qui permet de consulter les contrats et les subventions octroyés par la Ville de façon simple et conviviale." />
+  <title>Ville de Montréal - Vue sur les contrats</title>
+
+  <link href="css/style.css" rel="stylesheet">
+  <script type="text/javascript" src="js/config.js"></script>
+  <script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-25478931-15']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+  </script>
+  </head>
+  <body>
+  <script>
+  </script>
+  <!-- loading -->
+    <div class="loading"><img src="img/loader_mtl_black.svg" alt="loading-img"></div>
+  <!-- end loading -->
+  
+  <!-- start header -->
+  <div id="top" class="clearfix">
+      <div class="row toprow">
+          <div class="col-md-6">
+            <!-- Start App Logo -->
+            <div class="logo-container">
+                <a class="home" href="/vuesurlescontrats/"><img class="logo" alt="Logo de la ville de Montréal" src="img/logo_montreal.svg"></a>
+                <a class="home" href="/vuesurlescontrats/" ><img class="logomobile" alt="Logo de la ville de Montréal" src="img/loader-logo.svg"></a>
+            </div>
+            <div class="title-container">
+                <h5 class="title">VUE SUR LES CONTRATS</h5>
+            </div>
+        </div>
+        <div class="col-md-6 hidden-sm hidden-xs">
+            <ul class="top-right">
+            <li class="link">
+              <a href="apropos.html" class="about">À propos</a>
+            </li>
+            <li class="link">
+              <a target="_BLANK" href="//www.twitter.com/mtl_ville" class="socialmedia btn circle icon">&#xf099;</a>
+            </li>
+            <li class="link">
+              <a target="_BLANK" href="//www.facebook.com/mtlville" class="socialmedia btn circle icon">&#xf09a;</a>
+            </li>
+            <li class="link">
+              <a  target="_BLANK" href="//www.linkedin.com/company/ville-de-montr-al" class="socialmedia btn circle icon">&#xf0e1;</a>
+            </li>
+            </ul>
+        </div>
+        <div class="col-md-6 visible-sm  visible-xs text-right">
+
+          <a class="btnmenu" href="#" onclick="return false;">
+            <i class="fa fa-bars"></i>
+          </a>
+        </div>
+      </div>
+</div>
+<!-- end header -->
+
+
+<!-- start content -->
+<div class="main-content">
+  
+  <!-- start searchbar -->
+  <div class="toolbars searchbar">
+    
+    <div class="row searchform" style="">
+      <form id="ovcForm"  style="">
+        
+    
+        <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12">
+          <label>Dates</label><br>
+          <span class="calendar-cont">
+            <input class="void" id="date_gt_view" name="date_gt_view" value="2012-01" readonly>
+              <input class="" type="hidden" id="date_gt" name="date_gt" value="2012-01-01" >
+              <span class="calendar"><i class="fa fa-calendar"></i></span>
+          </span>
+            <span class="aspacer">à</span>
+          <span class="calendar-cont">
+            <input class="void" id="date_lt_view" name="date_lt_view" value="" readonly>
+              <input class="" type="hidden" id="date_lt" name="date_lt" value="" >
+              <span class="calendar"><i class="fa fa-calendar"></i></span>
+          </span>
+        </div>
+  
+  
+        <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12">
+          <label>Montants</label><br>
+          <input class="money" id="value_gt" name="value_gt" value="0">
+          <span class="aspacer">à</span>
+          <input class="money" id="value_lt" name="value_lt" value="1000000000">
+        </div>
+  
+        <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12 typeelm">
+          <label>Type</label><br>
+            <div class="btn-group" data-toggle="buttons">
+                <label class="btn white active">
+                    <input type="radio" name="type" id="contract" value="contract">Contrat
+                </label>
+                <label class="btn white">
+                    <input type="radio" name="type" id="subvention" value="subvention">Subvention
+                </label>
+          </div>
+        </div>
+  
+        <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12 overflow">
+          <label>Autorisé par</label><br>
+          <select id="procuring_entity" name="procuring_entity" class="selectpicker"  data-selected-text-format="count"  data-actions-box='true' multiple >
+          </select>
+        </div>
+  
+        <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12 overflow">
+          <label>Domaine d'activité</label><br>
+          <select id="activity" name="activity" class="selectpicker" data-selected-text-format="count"  data-actions-box='true' multiple>
+          </select>
+        </div>
+  
+        <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12">
+          <label class="searchboxLabel">Mots clés</label><br>
+          <input type="text" class="searchboxhidden" id="searchbox" placeholder="Recherche" name='q' >
+        </div>
+  
+  
+          <input type="hidden" class="" id="offset" name="offset" value="0">
+          <input type="hidden" id="limit" name="limit" value="20">
+          <input type="hidden" id="order_by" name="order_by" value="value">
+          <input type="hidden" id="order_dir" name="order_dir" value="desc">
+  
+          <input type="hidden" id="buyer" name="buyer" value="">
+          <input type="hidden" id="supplier" name="supplier" value="">
+  
+  
+  
+      </form>
+    </div>
+  </div>
+  <!-- end searchbar -->
+  
+<!-- start no results -->
+<div class="content noResults">
+  <div class="row">
+      <div class="col-md-12 text-center">
+      <h1>Désolé, aucun résultat ne semble correspondre à cette recherche</h1>
+      <p>Essayer à nouveau avec une nouvelle requête</p>
+      </div>    
+  </div>
+</div>
+<!-- end no results -->
+
+<!-- start graphic -->
+  <div class="content graph-container">
+    <div class="row title">
+      
+      <div class="col-md-12">
+        <h4 class="graphTitle">Montant total des contrats par mois</h4>
+      </div>
+      <div class="col-md-12  text-center switchgraph">
+        <span class="value">Voir nombre de contrats par mois</span>
+      </div>
+    </div>
+
+    <div class="row graph">
+      
+        <!-- start flowchart -->
+        <div class="col-sm-offset-1 col-sm-10 col-xs-offset-0 col-xs-12"> 
+          <div class="panel-body">
+            <div class="flotchart-container" >
+              <div id="stacked" class="flotchart-placeholder" style=""></div>
+            </div>
+          </div>
+        </div>
+        <!-- end flowchart-->
+        
+        
+        <!-- start legend -->
+        <div class="col-md-offset-1 col-md-10 col-sm-offset-0 col-sm-12">
+            <div class="panel-body">
+              <h5 class="legendLabel">Légende</h5>
+              <div id="legend" style="" class="horizontal">
+                <span class=""></span>
+                
+              </div>
+    
+            </div>
+        </div>
+      <!-- end legend -->
+  
+    </div>
+  
+      <!-- start btn scrolldown -->
+      <div class="row">
+        <div class="col-md-12 text-center">
+          <button type="button" class="btn circle white icon scrolldown"><i class="fa fa-angle-down"></i></button>
+        </div>
+      </div>
+    <!-- end btn scrolldown -->
+    
+  </div>
+  
+  <!-- start filters -->
+  <div class="toolbars filters">
+    <div class="row">
+          <!-- Start Chart -->
+        <div class="col-md-12 full-width">
+          <div class="panel panel-default">
+                <div class="panel-body">
+                      <div class="col-md-6 col-sm-6 col-xs-12 text-left">
+                          <h5 id="labelitems"></h5>
+                      </div>
+                      <div class="col-md-5 col-sm-6 col-xs-12 text-right ">
+                          <div class="order-by-container">
+                              <label id="orderby">Trier par</label>
+                              <div class="btn-group" role="group" aria-label="orderby">
+                                  <button type="button" id="ob_value" class="btn white orderby active" title="Montant"><i class="fa fa-dollar"></i></button>
+                                  <button type="button" id="ob_date" class="btn white orderby" title="Date"><i class="fa fa-calendar"></i></button>
+                                  <button type="button" id="od_supplier" class="btn white orderby" title="Ordre alphabéthique"><i class="fa fa-sort-alpha-asc"></i></button>
+                              </div>
+                              <a href="#" class="btn white exportbtn"  data-toggle="modal" data-target="#modalexport"><i class="fa fa-download"></i><span class="">Exporter</span></a>
+                          </div>
+                      </div>
+                      <div class="col-md-1 hidden-sm hidden-xs upbtn-container" id="toggleGraph" style="">
+                        <div class="order-by-container">
+                          <div class="btn-group" role="group" aria-label="orderby">
+                            <button type="button" id="toggle" class="btn white "><i class="fa fa fa-angle-double-up"></i></button>
+                          </div>
+                        </div>  
+                      </div>
+                </div>
+          </div>
+        </div>
+  
+  
+    </div>
+  </div>
+  <!-- end filters -->
+
+<div class="content mainContent">  
+  <div class="container-padding">
+
+
+
+  <!-- Start Pagination-->
+  <div class="row">
+      <div class="col-md-12 pagination-container">
+          <ul class="pagination pages">
+
+          </ul>
+      </div>
+  </div>
+  <!-- End Pagination -->
+</div>
+
+
+
+<!-- start listing -->    
+<div id="listdisplay" class="row">
+
+</div>
+<!-- end listing -->    
+
+  <!-- Start Pagination-->
+  <div class="row">
+      <div class="col-md-12 pagination-container">
+          <ul class="pagination pages">
+
+          </ul>
+      </div>
+      
+      <!-- up btn-->    
+      <div class="col-md-12 pagination-container">
+          <ul class="pagination up">
+            <li class="scrolltop">
+              <h5>Haut</h5><span class=""><i class="fa fa-angle-up"></i></span>
+            </li>
+          </ul>
+      </div>
+  </div>
+  
+  <!-- End Pagination -->
+<div class="row">
+
+      <div class="col-md-offset-1 col-md-10 template listing">
+          <div class="panel panel-default">
+              <div class="panel-body">
+                  <div class="col-md-8">
+                  <a href="#"><h1 class="supplier"></h1></a>
+                  <span>Octroyé par&nbsp;:</span>
+                  <a href="#"><h5 class="buyer"></h5></a>
+                  <p class="description"></p>
+                  </div>
+                  <div class="col-md-4 details-container">
+                      <div  class="col-md-12 text-center amount" >
+                        <h5 class="value"></h5>
+                      </div>
+                      <div  class="col-md-12 text-center details" >
+                        <div class="col-lg-6 col-md-12 col-sm-12" id="details_date" >
+                          <span class="data"></span><br>
+                          <span class="label"></span>
+                        </div>
+                        <div class="col-lg-6 col-md-12 col-sm-12" id="details_record">
+                          <span class="data"></span><br>
+                          <span class="label"></span>
+                        </div>
+                        <div class="col-lg-6 col-md-12 col-sm-12" id="details_dispatch" >
+                          <span class="data"></span><br>
+                          <span class="label"></span>
+                        </div>
+                        <div class="col-lg-6 col-md-12 col-sm-12" id="details_decision">
+                          <span class="data"></span><br>
+                          <span class="label"></span>
+                        </div>
+                      </div>
+                      <div  class="col-md-12 share-container" >
+                          <a class="btn blue btn-block share"><span><i class="fa fa-share"></i>Partager</span></a>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+
+  </div>
+</div>
+
+
+
+    <!-- Start Footer -->
+    <div class="row footer">
+      <div class="col-sm-6 text-left col-xs-12">
+      © Ville de Montréal
+      </div>
+      <div class="col-sm-6 text-right col-xs-12">
+          <a href="http://ville.montreal.qc.ca/portal/page?_pageid=5798,42727558&_dad=portal&_schema=PORTAL" target="_BLANK" title="Politique de confidentialité et conditions d'utilisations">Politique de confidentialité et conditions d'utilisations</a> | 
+          <a href="apropos.html" class="about">À&nbsp;propos</a> | 
+          <a target="_BLANK" href="//www.twitter.com/mtl_ville" class="">Twitter</a> |
+          <a target="_BLANK" href="//www.facebook.com/mtlville" class="">Facebook</a> |
+          <a target="_BLANK" href="//www.linkedin.com/company/ville-de-montr-al" class="">Linkedin</a>
+        </div>
+      </div>
+    </div>
+  
+  <!-- End Footer -->
+
+
+
+
+<!-- start modal - welcome -->
+            <div class="modal fade" id="modalwelcome" tabindex="-1" role="dialog" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header woborder">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="welcome-logo-container"><img alt="Logo de la ville de Montréal" src="img/rosette.jpg" class="welcomelogo"></div>
+                    <h1>Vue sur les contrats</h1>
+                    <p>
+                      Le site Vue sur les contrats  est un outil de visualisation qui permet de consulter les contrats et les subventions octroyés par la Ville de Montréal.  
+                    </p>
+                    <p>
+                      Il donne accès à tous les contrats autorisés par le comité exécutif et par le conseil municipal depuis janvier 2012.
+                    </p>
+                    <p class="btn-container"><a class="btn blue" onclick="return false;" data-dismiss="modal"><span><i class="fa"></i>Consulter les contrats</span></a></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+<!-- end modal - welcome -->
+
+<!-- start modal - social media-->
+            <div class="modal fade" id="modalsocialmedia" tabindex="-1" role="dialog" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-body">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h1>Partager cette fiche</h1>
+                    <ul class="">
+                      <li class="link">
+                        <a href="#" class="socialmedia btn circle icon sharetwitter">&#xf099;</a>
+                      </li>
+                      <li class="link">
+                        <a href="#" class="socialmedia btn circle icon sharefacebook">&#xf09a;</a>
+                      </li>
+                      <li class="link">
+                        <a href="#" class="socialmedia btn circle icon sharelinkedin">&#xf0e1;</a>
+                      </li>
+                      <li class="link">
+                        <a href="#" class="socialmedia btn circle icon shareemail">&#xf0e0;</a>
+                      </li>
+                    </ul>
+                    <span class="calltoaction">Copier l'URL</span><br>
+                    <input type="text" value="" class="sharelink"  onClick="this.setSelectionRange(0, this.value.length)">
+                  </div>
+                  <div class="modal-footer woborder">
+                    <button type="button" class="btn white" data-dismiss="modal" >Fermer</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+<!-- end modal - social media-->
+
+
+<!-- start modal - export -->
+            <div class="modal fade" id="modalexport" tabindex="-1" role="dialog" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header woborder">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                  </div>
+                  <div class="modal-body">
+                    <h1>Exporter le résultat de de recherche</h1>
+                    <ul class="">
+                      <li class="link">
+                        <a href="javascript:void(0);" class="export csv btn circle icon" target="_BLANK">CSV</a>
+                      </li>
+                      <li class="link">
+                        <a href="javascript:void(0);" class="export json btn circle icon" target="_BLANK">JSON</a>
+                      </li>
+                      <li class="link">
+                        <a href="javascript:void(0);" class="export pdf btn circle icon" target="_BLANK">PDF</a>
+                      </li>
+                      <li class="link">
+                        <a href="javascript:void(0);" class="export xlsx btn circle icon" target="_BLANK">Excel</a>
+                      </li>
+                    </ul>
+
+                  </div>
+                  <div class="modal-footer woborder">
+                    <button type="button" class="btn white" data-dismiss="modal" >Fermer</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+<!-- end modal - export -->
+
+
+
+<!-- jquery -->
+<script type="text/javascript" src="js/jquery.min.js"></script>
+
+<!-- cookies handler -->
+<script type="text/javascript" src="js/js-cookie/js.cookie.js"></script>
+<!-- jquery mask -->
+<script type="text/javascript" src="js/jquery-mask/jquery.mask.min.js"></script>
+
+<!-- Bootstrap -->
+<script src="js/bootstrap/bootstrap.min.js"></script>
+<!-- Bootstrap input tags -->
+<script type="text/javascript" src="js/bootstrap/bootstrap-tagsinput.min.js"></script>
+<!-- Bootstrap datepicker -->
+<script src="js/bootstrap-datepicker/bootstrap-datepicker.js"></script>
+<script src="js/bootstrap-datepicker/bootstrap-datepicker.fr.js"></script>
+<!-- Bootstrap select -->
+<script type="text/javascript" src="js/bootstrap-select/bootstrap-select.js"></script>
+<script type="text/javascript" src="js/ovc-selectpicker.js"></script>
+<!-- sticky -->
+<script type="text/javascript" src="js/garand-sticky/jquery.sticky.js"></script>
+<!-- Pagination -->
+<script type="text/javascript" src="js/simplePagination/jquery.simplePagination.js"></script>
+
+
+<!-- Flot Chart -->
+<script type="text/javascript" src="js/flot-chart/flot-chart.js"></script>
+<!-- time.js -->
+<script type="text/javascript" src="js/flot-chart/flot-chart-time.js"></script>
+<!-- stack.js -->
+<script type="text/javascript" src="js/flot-chart/flot-chart-stack.js"></script>
+<!-- animator -->
+<!-- script type="text/javascript" src="js/growraf/jquery.flot.growraf.js"></script -->
+
+<!-- Custom extensions -->
+
+<script type="text/javascript" src="js/number.extend.js"></script>
+<script type="text/javascript" src="js/date.extend.js"></script>
+
+<!-- ovc -->
+
+<script type="text/javascript" src="js/ovc.js"></script>
+<script type="text/javascript" src="js/ovc-flotcharts.js"></script>
+
+
+<!-- plug ovc simplepagination and flotcharts together-->
+
+<script type="text/javascript" src="js/main.js"></script>
+
+<script type="text/javascript" src="js/popup.js"></script>
+
+<script src="js/basehref.js"></script>
+</body>
+</html>
