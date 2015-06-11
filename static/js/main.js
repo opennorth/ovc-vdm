@@ -11,7 +11,7 @@ FB.init({
 (function(d, debug){var js, id = 'facebook-jssdk', ref = d.getElementsByTagName('script')[0];
     if(d.getElementById(id)) {return;}
     js = d.createElement('script'); js.id = id; 
-    js.async = true;js.src = "//connect.facebook.net/en_US/all" + (debug ? "/debug" : "") + ".js";
+    js.async = true;js.src = "//connect.facebook.net/fr_CA/all" + (debug ? "/debug" : "") + ".js";
     ref.parentNode.insertBefore(js, ref);}(document, /*debug*/ false));
 function postToFeed(title, desc, url, image){
     desc = desc +  url;
@@ -262,9 +262,14 @@ function countFormatter(num) {
 
 function plotWithOptions(formatedData,options) {
     if (formatedData.length > 0) {
-        $.plot("#stacked", formatedData, options);
+        window.plot = $.plot("#stacked", formatedData, options);
         $("#stacked").UseTooltip();
     }
+}
+
+function resizedw(){
+    resizegraph();
+    plotWithOptions(wg(formatedData), options);
 }
 
 function wgcheck() {
@@ -289,14 +294,12 @@ function wg(data) {
 
 var options = {
         series: {
-        /*
           grow: {
             active: true,
             duration: 400,
             reanimate: false,
             valueIndex: 1
           },
-        */
           stack: true,
           lines: {
             show: false,
@@ -416,7 +419,9 @@ $(".noResults").hide();
 
 
     ovc = new OvcMtlApi();
+    if (ovc_api_url) {
     ovc.base_url = ovc_api_url;
+    }
     ovc.init();
     
     var pages = $(ovc.paginationSelector).pagination({
@@ -440,10 +445,10 @@ $(".noResults").hide();
                         if(links[l].enabled){
                            $(".export."+l).attr('href',links[l].link_to);
                            $(".export."+l).css('cursor','pointer');
-                           $(".export."+l).attr('title','Export limité à '+links[l].limit +' fiches');
+                           $(".export."+l).attr('title','Exportation limitée à '+links[l].limit +' fiches');
                         }else{
                            $(".export."+l).css('cursor','not-allowed');
-                           $(".export."+l).attr('title','Export limité à '+links[l].limit +' fiches');
+                           $(".export."+l).attr('title','Exportation limitée à '+links[l].limit +' fiches');
                         }
                     }
             
@@ -456,9 +461,14 @@ $(".noResults").hide();
         }
     }
 
+
+    var doit;
     $( window ).resize(function() {
-            resizegraph();
-            plotWithOptions(wg(formatedData), options);
+        if (window.plot) {
+            window.plot.shutdown();
+            clearTimeout(doit);
+            doit = setTimeout(resizedw, 1000);
+        }    
     });
 
     $('#procuring_entity').selectpicker('render');
@@ -483,10 +493,10 @@ $(".noResults").hide();
                         if(links[l].enabled){
                            $(".export."+l).attr('href',links[l].link_to);
                            $(".export."+l).css('cursor','pointer');
-                           $(".export."+l).attr('title','Export limité à '+links[l].limit +' fiches');
+                           $(".export."+l).attr('title','Exportation limitée à '+links[l].limit +' fiches');
                         }else{
                            $(".export."+l).css('cursor','not-allowed');
-                           $(".export."+l).attr('title','Export limité à '+links[l].limit +' fiches');
+                           $(".export."+l).attr('title','Exportation limitée à '+links[l].limit +' fiches');
                         }
                     }
             
@@ -546,10 +556,10 @@ $(".noResults").hide();
                         if(links[l].enabled){
                            $(".export."+l).attr('href',links[l].link_to);
                            $(".export."+l).css('cursor','pointer');
-                           $(".export."+l).attr('title','Export limité à '+links[l].limit +' fiches');
+                           $(".export."+l).attr('title','Exportation limitée à '+links[l].limit +' fiches');
                         }else{
                            $(".export."+l).css('cursor','not-allowed');
-                           $(".export."+l).attr('title','Export limité à '+links[l].limit +' fiches');
+                           $(".export."+l).attr('title','Exportation limitée à '+links[l].limit +' fiches');
                         }
                     }
             
@@ -614,10 +624,10 @@ $(".noResults").hide();
                         if(links[l].enabled){
                            $(".export."+l).attr('href',links[l].link_to);
                            $(".export."+l).css('cursor','pointer');
-                           $(".export."+l).attr('title','Export limité à '+links[l].limit +' fiches');
+                           $(".export."+l).attr('title','Exportation limitée à '+links[l].limit +' fiches');
                         }else{
                            $(".export."+l).css('cursor','not-allowed');
-                           $(".export."+l).attr('title','Export limité à '+links[l].limit +' fiches');
+                           $(".export."+l).attr('title','Exportation limitée à '+links[l].limit +' fiches');
                         }
                     }
                 }
@@ -659,10 +669,10 @@ $(".noResults").hide();
                         if(links[l].enabled){
                            $(".export."+l).attr('href',links[l].link_to);
                            $(".export."+l).css('cursor','pointer');
-                           $(".export."+l).attr('title','Export limité à '+links[l].limit +' fiches');
+                           $(".export."+l).attr('title','Exportation limitée à '+links[l].limit +' fiches');
                         }else{
                            $(".export."+l).css('cursor','not-allowed');
-                           $(".export."+l).attr('title','Export limité à '+links[l].limit +' fiches');
+                           $(".export."+l).attr('title','Exportation limitée à '+links[l].limit +' fiches');
                         }
                     }
             
@@ -898,6 +908,18 @@ $(".btnmenu").on('click', function(){
     });
     
     $("[name=type]").on('change', function(){renameLabels()});
+    
+     $(".export").hover(
+        function() // on mouseover
+        {
+            $(".exportInfo").html($(this).attr('title'));
+        }, 
+
+        function() // on mouseout
+        {
+            $(".exportInfo").html('');
+
+        });
     
 });
 

@@ -10,7 +10,7 @@ jQuery.support.cors = true;
 
 function OvcMtlApi() {
     
-    this.base_url = "api/"
+    this.base_url = "/api/"
     this.form =  "#ovcForm";
     this.activityList = {};
     this.procuringEntity = {};
