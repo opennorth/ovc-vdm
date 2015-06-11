@@ -18,7 +18,7 @@ class Config(object):
     EMAIL_SENDER = 'ovc@opennorth.ca'
     ADMINS = ['stephane@opennorth.ca']
 
-    URL_ROOT = 'http://localhost'
+    URL_ROOT = 'http//localhost'
     OCID_PREFIX = 'ocds-a1234567-mt-'
 
     CACHE_DURATION = 86400
@@ -158,7 +158,7 @@ class Config(object):
         "SERVICE DU CAPITAL HUMAIN ET DES COMMUNICATIONS" : ["Ressources humaines", "Communications et relations publiques"],
         "SERVICE DU CONTRÔLEUR GÉNÉRAL" : ["Organisation et administration"],
         "SERVICE DU GREFFE" : ["Gestion de l'information"],
-        "SERVICE DES INFRASTRUCTURES, DE LA VOIRIE ET DES TRANSPORTS" : ["Infrastructures", "Transport"],
+        "SERVICE DES INFRASTRUCTURES, DE LA VOIRIE ET DES TRANSPORTS" : ["Infrastructures, Transport"],
         "SERVICE DE LA CONCERTATION DES ARRONDISSEMENTS ET RESSOURCES MATÉRIELLES": ["Organisation et administration"],
         "SOCIÉTÉ DU PARC JEAN-DRAPEAU" : ["Sports, loisirs, culture et développement social"],
     }
@@ -227,12 +227,12 @@ class Config(object):
 class ProductionConfig(Config):
     DEBUG = False
     SENDMAIL = True
-    URL_ROOT = 'http://ovc-prod.herokuapp.com'
+    URL_ROOT = 'https://ovc-prod.herokuapp.com'
     ADMINS = ['stephane@opennorth.ca']
     FTS_LANG = 'fr'
 
 class StagingConfig(Config):
-    URL_ROOT = 'http://ovc-stage.herokuapp.com'
+    URL_ROOT = 'https://ovc-stage.herokuapp.com'
     SENDMAIL = True
     DEVELOPMENT = False
     DEBUG = False
