@@ -73,20 +73,29 @@ function OvcMtlApi() {
             }
 
             
+            
             if (qd.activity) {
                 var splitActivity = qd.activity[0].replace(/\+/g, ' ');
-                $.each(splitActivity.split(";"), function(i,e){
-                    $('#activity option[value="' + e + '"]').prop("selected", true);
-                });
+                if (splitActivity != '') {
+                    $.each(splitActivity.split(";"), function(i,e){
+                        $('#activity option[value="' + e + '"]').prop("selected", true);
+                    });   
+                }else{
+                    $('#activity option').prop("selected",false);
+                }
             }else{
                 $('#activity option').prop("selected",true);
             }
             
             if (qd.procuring_entity) {
                 var splitEntities = qd.procuring_entity[0].replace(/\+/g, ' ');
-                $.each(splitEntities.split(";"), function(i,e){
-                    $('#procuring_entity option[value="' + e + '"]').prop("selected", true);
-                });
+                if (splitEntities != '') {
+                    $.each(splitEntities.split(";"), function(i,e){
+                        $('#procuring_entity option[value="' + e + '"]').prop("selected", true);
+                    });
+                }else{
+                    $('#procuring_entity option').prop("selected", false);
+                }
             }else{
                  $('#procuring_entity option').prop("selected", true);
             }
