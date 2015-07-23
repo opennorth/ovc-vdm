@@ -327,7 +327,7 @@ class ListReleases(CustomResource):
         
             args = self.parse_arg()
 
-            if args['limit'] and  args['limit'] > 10000 or (args['format'] and args['format'] == 'csv' and  args['limit'] > 100):
+            if (args['limit'] and  args['limit'] > 10000) or (args['format'] and args['format'] == 'pdf' and  args['limit'] > 100):
                 print "Trop de résultats"
                 abort(400, message="Too many records requested. Set parameter LIMIT lower") 
 

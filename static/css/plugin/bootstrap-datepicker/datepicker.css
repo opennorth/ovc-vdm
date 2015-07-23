@@ -98,6 +98,7 @@
 }
 .datepicker td span:hover {
   background: #eeeeee;
+  -webkit-tap-highlight-color: #eeeeee;
 }
 .datepicker td span.active {
   color: #ffffff;
@@ -118,7 +119,7 @@
 }
 .datepicker td span.active:active,
 .datepicker td span.active.active {
-  background-color: #003399 \9;
+  background-color: #003399;
 }
 .datepicker td span.old {
   color: #999999;

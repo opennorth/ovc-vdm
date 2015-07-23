@@ -770,14 +770,15 @@ Top
   color: #fff;
   line-height: 60px;
   font-size: 32px;
+  z-index: 9999;
 }
-/* line 20, ../sass/_header.scss */
+/* line 21, ../sass/_header.scss */
 #top .toprow .btnrefresh {
   color: green;
   line-height: 60px;
   font-size: 32px;
 }
-/* line 26, ../sass/_header.scss */
+/* line 27, ../sass/_header.scss */
 #top .toprow .logo-container {
   width: auto;
   height: 60px;
@@ -788,11 +789,11 @@ Top
   vertical-align: middle;
   z-index: 9999;
 }
-/* line 36, ../sass/_header.scss */
+/* line 37, ../sass/_header.scss */
 #top .toprow .logo-container .logo {
   height: 50px;
 }
-/* line 40, ../sass/_header.scss */
+/* line 41, ../sass/_header.scss */
 #top .toprow .logo-container .logomobile {
   display: none;
   width: 40px;
@@ -800,7 +801,7 @@ Top
   margin-top: 5px;
   line-height: 45px;
 }
-/* line 49, ../sass/_header.scss */
+/* line 50, ../sass/_header.scss */
 #top .toprow .title-container {
   height: 60px;
   color: #fff;
@@ -810,7 +811,7 @@ Top
   vertical-align: middle;
   line-height: 12px;
 }
-/* line 60, ../sass/_header.scss */
+/* line 61, ../sass/_header.scss */
 #top .toprow .title-container h5.title {
   padding-left: 15px;
   border-left: 1px solid #636363;
@@ -818,7 +819,7 @@ Top
   text-transform: uppercase;
   font-weight: 600;
 }
-/* line 69, ../sass/_header.scss */
+/* line 70, ../sass/_header.scss */
 #top .toprow .top-right {
   line-height: 1.8em;
   float: right;
@@ -831,44 +832,44 @@ Top
   /* notifications */
   /* hd button */
 }
-/* line 78, ../sass/_header.scss */
+/* line 79, ../sass/_header.scss */
 #top .toprow .top-right .about {
   border-right: 1px solid #636363;
   padding-right: 20px;
   padding-right: 15px;
 }
-/* line 83, ../sass/_header.scss */
+/* line 84, ../sass/_header.scss */
 #top .toprow .top-right .link {
   display: inline-block;
   padding-left: 8px;
   height: 30px;
 }
-/* line 87, ../sass/_header.scss */
+/* line 88, ../sass/_header.scss */
 #top .toprow .top-right .link a {
   display: block;
 }
-/* line 90, ../sass/_header.scss */
+/* line 91, ../sass/_header.scss */
 #top .toprow .top-right .dropdown-menu {
   min-width: 135px;
 }
-/* line 92, ../sass/_header.scss */
+/* line 93, ../sass/_header.scss */
 #top .toprow .top-right .dropdown-menu .list-title {
   text-align: center;
 }
-/* line 95, ../sass/_header.scss */
+/* line 96, ../sass/_header.scss */
 #top .toprow .top-right .dropdown-menu li {
   position: relative;
   display: block;
 }
-/* line 103, ../sass/_header.scss */
+/* line 104, ../sass/_header.scss */
 #top .toprow .top-right a {
   color: #fff;
 }
-/* line 107, ../sass/_header.scss */
+/* line 108, ../sass/_header.scss */
 #top .toprow .top-right .profilebox {
   color: rgba(255, 255, 255, 0.95);
 }
-/* line 109, ../sass/_header.scss */
+/* line 110, ../sass/_header.scss */
 #top .toprow .top-right .profilebox img {
   width: 32px;
   height: 31px;
@@ -877,16 +878,16 @@ Top
   margin-right: 7px;
   margin-top: -4px;
 }
-/* line 117, ../sass/_header.scss */
+/* line 118, ../sass/_header.scss */
 #top .toprow .top-right .profilebox .caret {
   margin-left: 5px;
   color: rgba(255, 255, 255, 0.5);
 }
-/* line 123, ../sass/_header.scss */
+/* line 124, ../sass/_header.scss */
 #top .toprow .top-right .profilebox:hover {
   color: #fff;
 }
-/* line 129, ../sass/_header.scss */
+/* line 130, ../sass/_header.scss */
 #top .toprow .top-right .notifications {
   color: #fff;
   padding: 4px 12px;
@@ -894,11 +895,11 @@ Top
   background: rgba(0, 0, 0, 0.4);
   border-radius: 999px;
 }
-/* line 136, ../sass/_header.scss */
+/* line 137, ../sass/_header.scss */
 #top .toprow .top-right .notifications:hover {
   background: rgba(0, 0, 0, 0.5);
 }
-/* line 141, ../sass/_header.scss */
+/* line 142, ../sass/_header.scss */
 #top .toprow .top-right .socialmedia {
   color: #fff;
   background: #424242;
@@ -906,18 +907,18 @@ Top
   font-size: .975em;
   width: 32px;
 }
-/* line 148, ../sass/_header.scss */
+/* line 149, ../sass/_header.scss */
 #top .toprow .top-right .socialmedia:hover {
   background: #428BCA;
 }
-/* line 153, ../sass/_header.scss */
+/* line 154, ../sass/_header.scss */
 #top .toprow .top-right .hdbutton {
   background: #fff;
   color: #404B5F;
   padding: 4px 16px;
   border-radius: 999px;
 }
-/* line 159, ../sass/_header.scss */
+/* line 160, ../sass/_header.scss */
 #top .toprow .top-right .hdbutton:hover {
   background: rgba(255, 255, 255, 0.95);
 }

@@ -8,12 +8,18 @@ async: false
 });
 jQuery.support.cors = true;
 
+/*
+ * API - Vue sur les contrats
+ * ref: http://donnees.ville.montreal.qc.ca/dataset/contrats-et-subventions-api
+ * @constructor
+*/
 function OvcMtlApi() {
     
     this.base_url = "/api/"
     this.form =  "#ovcForm";
     this.activityList = {};
     this.procuringEntity = {};
+    
     //pagination
     this.paginationSelector = "ul.pagination.pages";
     this.items = 0;
@@ -46,7 +52,10 @@ function OvcMtlApi() {
             this.loadPage();
     }
 
-    
+    /* *
+     * @return {{ void }}
+     * Refresh the form and bind elements to actions
+     */
     this.refresh = function(){
             //Fetch and populate activities
             this.populateActivities(this.getActivitiesList());
@@ -188,7 +197,6 @@ function OvcMtlApi() {
             
             $.each(data['releases'], function(i,d){
 
-                
                 if (d.procuring_entity_slug) {
                     d.procuring_entity = (d.procuring_entity);
                     if ($("[name='procuring_entity']").val() == d.procuring_entity_slug) {
@@ -213,7 +221,7 @@ function OvcMtlApi() {
      * @param {object} data
      * @param {string} outputSelector - A jQuery selector 
      * @return {{ boolean }}
-     * Populate the list
+     * Populate the list from API data
      */    
     this.createListFromTemplate = function (templateSelector, data, outputSelector ){
 
@@ -241,7 +249,6 @@ function OvcMtlApi() {
                 template.find('.value').html((d.awards[0].value.amount).formatMoney(2, ',', ' ')+' $');
                 
                 template.find('.description').html(d.awards[0].items[0].description);
-                
                 
                 var vardetails = {
                    date: {
@@ -275,11 +282,8 @@ function OvcMtlApi() {
                     }
                 }
                 
-                
-                
                 output.append(template);
 
-                
             });
             
             return true;
@@ -291,7 +295,7 @@ function OvcMtlApi() {
 
     /**
      * @return {{ object }}
-     * Extract params from url
+     * Extract parameters from url
      */    
     this.paramsExtract = function(){
         var qd = {};
@@ -330,7 +334,7 @@ function OvcMtlApi() {
      * @param {string} endpoint - API endpoint
      * @param {string} params - url encoded
      * @return {{ object }}
-     * Make a call to API
+     * Make a call to the API
      */    
     this.call = function(endpoint, params){
         var response ={};
@@ -388,7 +392,7 @@ function OvcMtlApi() {
 
     /**
      * @return {{ boolean }}
-     * update url
+     * URL state
      */        
     this.historyState = function(init){
         if (!init) {
@@ -431,9 +435,7 @@ function OvcMtlApi() {
             if(multipleCSV){
                 query += '&' + multipleCSV;
             }
-        
             
-
             if (this.detectIE() > 9 || !this.detectIE()) {
                 history.pushState({}, "Ville de Montréal - Vue sur les contrats",
                 window.location.protocol +
@@ -450,14 +452,17 @@ function OvcMtlApi() {
         return true;
     }
     
-    
+    /**
+     * @return {{ void }}
+     * Set the count of data in the DOM
+     */          
     this.countLabel = function (items,type){
        if(type == 'contract'){
         type = 'contrat';
        }
        var s = (items == 1) ? " "+type : " "+type+'s';
        $(this.countSelector).html('<span id="countReleases">'+items+'</span> ' + s );
-       } 
+    } 
     
     /**
      * @return {{ int }}
@@ -479,7 +484,7 @@ function OvcMtlApi() {
     
     /**
      * @return {{ object }}
-     * A list of the activities
+     * list of the activities
      */    
     this.getActivitiesList = function(){
         var params = $.param( {'order_by':'value' ,'order_dir':'desc' });
@@ -497,7 +502,7 @@ function OvcMtlApi() {
     
     /**
      * @return {{ object }}
-     * A list of the procuring entities
+     * list of the procuring entities
      */    
     this.getProcuringEntities = function(){
         var params = $.param( {'order_by':'procuring_entity' ,'order_dir':'asc' });
@@ -510,7 +515,7 @@ function OvcMtlApi() {
     /**
      * @param {object} endpoint - API endpoint
      * @return {{ object }}
-     * Decode values of an object
+     * Decode object
      */    
     this.decode = function(qd){
         
@@ -522,8 +527,8 @@ function OvcMtlApi() {
     }
     
     /**
-     * @return {{ object }}
-     * Decode values of an object
+     * @return {{ object }} - results
+     * Queries to the API to fetch data about releases by month/activity
      */        
         
     this.byMonthActivity = function(aggregate){
@@ -590,7 +595,7 @@ function OvcMtlApi() {
     }
     /**
      * @return {{ object }}
-     * A list of links by format
+     * list of links by format
      */     
     this.export = function(){
         var links = {
@@ -625,8 +630,8 @@ function OvcMtlApi() {
             };
             
         var qd = this.paramsExtract();
-        qd.offset = 0;
-
+        delete qd.offset;
+        delete qd.limit;
         var params_export = $.param(this.decode(qd));
         var limit = this.getFormatList();
         var limitByFormat = limit['formats'];

@@ -1,8 +1,14 @@
+
+/*
+ *Resize the graph container
+ */
 function resizegraph(){
     var windowHeight = $( window ).innerHeight();
     $("#stacked").css('min-height',(windowHeight * 0.35) );
 }
 
+
+//From facebook
 window.fbAsyncInit = function(){
 
 FB.init({
@@ -20,6 +26,13 @@ function postToFeed(title, desc, url, image){
     FB.ui(obj, callback);
 }
 
+/*
+ * Sharing functions
+ * @param {string} url - An url
+ * @param {string} desc - A small description
+ * @param {int} winWidth - Width of the popup
+ * @param {int} winHeight - height of the popup
+ */
 function twittershare(url, descr, winWidth, winHeight) {
     var winTop = (screen.height / 2) - (winHeight / 2);
     var winLeft = (screen.width / 2) - (winWidth / 2);
@@ -36,6 +49,11 @@ function linkedinshare(url, title, descr, winWidth, winHeight) {
     window.open('http://www.linkedin.com/shareArticle?mini=true&url=' + url + '&title='+ title + '&summary='+ descr , 'Partage', 'top=' + winTop + ',left=' + winLeft + ',toolbar=0,status=0,width='+winWidth+',height='+winHeight);
 }
 
+/*
+ * Sharing functions
+ * @param {string} url - An url
+ * Set sharing functions to contracts by ID
+ */
 
 function setSocialMedia(contractId){
     var base_url = window.location.protocol + '//' + window.location.hostname + location.pathname;
@@ -63,16 +81,11 @@ function setSocialMedia(contractId){
     
 }
 
-function renameLabels(){
-         if ($( ".switchgraph span" ).hasClass('value')) {
-             $( ".switchgraph span" ).html('Voir nombre de '+defTypeName()+'s par mois');
-             $(".graphTitle").html('Montant total des '+defTypeName()+'s par mois');
-         }else if($( ".switchgraph span" ).hasClass('count')) {
-             $( ".switchgraph span" ).html('Voir montant des '+defTypeName()+'s par mois');
-             $(".graphTitle").html('Nombre total de '+defTypeName()+'s par mois');
-         }
-       
-    }
+/*
+ * @param {string} result - object from the API
+ * @return {{ boolean }}
+ * Define if data was received
+*/
 function results_accepted(results) {
     
     if (results && results.meta) {
@@ -101,6 +114,13 @@ function results_accepted(results) {
     
 }
 
+
+/*
+ * @param {string} text
+ * @param {int} length
+ * @return {{ text }}
+ * add an ellipsis if needed
+ */
 function TextAbstract(text, length) {
     if (text == null) {
         return "";
@@ -112,6 +132,9 @@ function TextAbstract(text, length) {
     return text + "...";
 }
 
+/*
+ *bootstrap-selectpicker init
+ */
 $.fn.selectpicker.defaults = {
     mobile : false,
     selectAllText: "Tout sélectionner",
@@ -127,6 +150,9 @@ $.fn.selectpicker.defaults = {
     },
 }
  
+/*
+ * Clear the form
+ */ 
 function clearForm()
 {
     $(':input').not(':button, :submit, :reset, :checkbox, :radio, [name="limit"]').val('');
@@ -134,6 +160,22 @@ function clearForm()
     $("#offset").val('0');
 }
 
+function renameLabels(){
+
+    if ($( ".switchgraph span" ).hasClass('value')) {
+        $( ".switchgraph span" ).html('Voir nombre de '+defTypeName()+'s par mois');
+        $(".graphTitle").html('Montant total des '+defTypeName()+'s par mois');
+    }else if($( ".switchgraph span" ).hasClass('count')) {
+        $( ".switchgraph span" ).html('Voir montant des '+defTypeName()+'s par mois');
+        $(".graphTitle").html('Nombre total de '+defTypeName()+'s par mois');
+    }
+
+}
+
+
+/*
+ * Add a buyer ID to the request
+ */ 
 function bybuyer(buyerid, reset) {
     init = true;
     $('.searchboxLabel').html("Octroyé par");
@@ -144,7 +186,9 @@ function bybuyer(buyerid, reset) {
     $('.searchboxhidden').tagsinput('add', buyerid);
     $(".bootstrap-tagsinput").find('.tag').addClass('buyer');
 }
-
+/*
+ * Add a supplier ID to the request
+ */ 
 function bysupplier(supplierid, reset) {
     init = true;
         $('.searchboxLabel').html("Fournisseur");
@@ -160,7 +204,9 @@ function bysupplier(supplierid, reset) {
 var previousPoint = null, previousLabel = null;
 var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-
+/*
+ * Tooltip
+ */ 
 $.fn.UseTooltip = function () {
     if($(window).width() > 768){
     $(this).bind("plothover", function (event, pos, item) {
@@ -228,7 +274,11 @@ function getTemplateForToolip(item){
         .replace('{count}', count);
 }
 
-//from http://stackoverflow.com/a/14994860
+
+/*
+ * from http://stackoverflow.com/a/14994860
+ * Transform Y labels - money
+ */ 
 function valueFormatter(num) {
      if (num >= 1000000000) {
         return (num / 1000000000).toFixed(1).replace(/\.0$/, '') + ' G $';
@@ -241,6 +291,11 @@ function valueFormatter(num) {
      }
      return num + ' $';
 }
+
+/*
+ * from http://stackoverflow.com/a/14994860
+ * Transform Y labels
+ */ 
 function countFormatter(num) {
      if (num >= 1000000000) {
         return (num / 1000000000).toFixed(1).replace(/\.0$/, '') + ' G';
@@ -260,6 +315,9 @@ function countFormatter(num) {
      return num;
 }
 
+/*
+ * Init plot
+ */ 
 function plotWithOptions(formatedData,options) {
     if (formatedData.length > 0) {
         window.plot = $.plot("#stacked", formatedData, options);
@@ -267,11 +325,17 @@ function plotWithOptions(formatedData,options) {
     }
 }
 
+/*
+ * Refresh the plot with a new width
+ */ 
 function resizedw(){
     resizegraph();
     plotWithOptions(wg(formatedData), options);
 }
 
+/*
+ * define which graph is currently displayed
+ */ 
 function wgcheck() {
 
     if ($(".switchgraph span").hasClass('value')) {
@@ -281,6 +345,11 @@ function wgcheck() {
     }
 }
 
+
+/*
+ * define which graph is currently displayed
+ * return the good dataset
+ */ 
 function wg(data) {
     if (data) {
         if ($(".switchgraph span").hasClass('value')) {
@@ -291,7 +360,9 @@ function wg(data) {
     }return {};
 }
 
-
+/*
+ * Plot configuration
+*/
 var options = {
         series: {
           grow: {
@@ -338,7 +409,11 @@ var options = {
         }
 };
 
-//linked with simplepagination
+
+/* 
+ * Launch a query with the selected page
+ * linked with simplepagination
+*/
 function page(num) {
     $('html, body').animate({ scrollTop: $(".filters").offset().top  - 150 }, 600);
     var limit = $("#limit").val();
@@ -348,6 +423,10 @@ function page(num) {
 
 }
 
+/* 
+ * Launch a query with the selected page
+ * Linked with simplepagination
+*/
 function calculHeight() {
 
     if ($(window).width() > 1200) {
@@ -373,6 +452,10 @@ function calculHeight() {
     }
     
 }
+
+/* 
+ * Return the french translation of the current type
+*/
 function defTypeName(){
     if ($("input[type='radio'][name=type]:checked").val() == 'contract') {
         return 'contrat';
@@ -381,8 +464,11 @@ function defTypeName(){
     }
 }
 
-var dataSet = 'amount';
 
+/*
+ *Global variables
+*/
+var dataSet = 'amount';
 var formatedData;
 var ovc;
 var init = true;
@@ -398,8 +484,9 @@ $(".noResults").hide();
       responsiveWidth: true,
       topSpacing: 0,
       })
-
-/*
+    
+    /*
+    //Uncomment if you want to have the "filters bar" sticky
     $(".filters").sticky({
       responsiveWidth: true,
       topSpacing: 0,
@@ -417,13 +504,15 @@ $(".noResults").hide();
     */
 
 
-
+    // Init API client
     ovc = new OvcMtlApi();
     if (ovc_api_url) {
     ovc.base_url = ovc_api_url;
     }
     ovc.init();
     
+    
+    // Init pagination
     var pages = $(ovc.paginationSelector).pagination({
             displayedPages : 3,
             edges: 1,
@@ -434,6 +523,7 @@ $(".noResults").hide();
         });
         
     
+    // the default request 
     if(ovc.historyState()){
         var apiData = ovc.byMonthActivity();
         if (results_accepted(apiData.stats)) {
@@ -462,6 +552,7 @@ $(".noResults").hide();
     }
 
 
+    //Needed - Growraf is not enough fast to calculate on each screen resize, Y axis bug
     var doit;
     $( window ).resize(function() {
         if (window.plot) {
@@ -472,12 +563,16 @@ $(".noResults").hide();
     });
 
     $('#procuring_entity').selectpicker('render');
-    $('#activity').selectpicker('render');    
+    $('#activity').selectpicker('render');
     if( /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent) ) {
                     $('#procuring_entity').selectpicker('mobile');
                     $('#activity').selectpicker('mobile');    
-        }        
+    }        
     
+    
+    /*
+    * On each request
+    */
     if (ovc.detectIE() > 9 || !ovc.detectIE()) {
         $(window).bind('popstate', function(event){
             init = false
@@ -608,6 +703,7 @@ $(".noResults").hide();
     }   
 
 
+
     $("input, select, textarea").not('[name=q]').not("[type=hidden]").not('.loading').change(function(event){
         //offset to zero, it is a new search
         if (!$(event.currentTarget).hasClass('loading')) {
@@ -651,7 +747,7 @@ $(".noResults").hide();
     $("input[type='hidden']").not(".buyer").not(".supplier").change(function(event){
         
         
-        if(event.currentTarget.name == 'date_lt' || event.currentTarget.name == 'date_gt'){
+        if(event.currentTarget.name == 'date_lt' || event.currentTarget.name == 'date_gt' || event.currentTarget.name == 'order_by'){
             $(ovc.currOffsetFieldSelector).val(0);
             pages.pagination('selectPage', '1');            
         }
@@ -685,31 +781,6 @@ $(".noResults").hide();
         
     });
     
-    
-/*
-    $(".buyer, .supplier").change(function(){
-        
-        //offset to zero, it is a new search
-        $(ovc.currOffsetFieldSelector).val(0);
-
-        if(ovc.historyState()){
-            var apiData = ovc.byMonthActivity();
-            if (results_accepted(apiData.stats)) {
-                formatedData = ovc.flotChartsFormat(apiData.stats);
-                var links = ovc.export();
-                for (var link in links) {
-                   $(".export."+link).attr('href',links[link]);
-               }
-            }
-        }
-        
-        pages.pagination('updateItems', ovc.items);
-        pages.pagination('selectPage', ovc.currentPageByOffset());
-        plotWithOptions(wg(formatedData), options);
-
-        });
-*/
-
 
     plotWithOptions(wg(formatedData), options);
 
@@ -787,39 +858,24 @@ $(".noResults").hide();
                 }
                 $(".filters").sticky('update');
         });
-        //$(window).scrollTop(0);
     });
-/*
-    $("#stacked").animate( {tabIndex: 0}, {
-         duration: 1000,
-         step: function ( now, fx ) {
 
-               var r = $.map( init.data, function ( o ) {
-                     return [[ o[0], o[1] * fx.pos ]];
-                  });
-
-               plot.setData( [{ data: r }] );
-               plot.draw();
-
-            }
-   });
-*/
 
 $(".btnmenu").on('click', function(){
-        
-        $(".searchbar").toggle(function(){
-        
-        if ($(this).is(':visible')) {
-             $(".btnmenu i").removeClass('fa-bars');
-             $(".btnmenu i").addClass('fa-close');
+
+    if (!$(".searchbar").is(':visible')) {
+            $(".searchbar").show();
+            $(".btnmenu i").removeClass('fa-bars');
+            $(".btnmenu i").addClass('fa-close');
              
-        } else {
-             $(".btnmenu i").removeClass('fa-close');
-             $(".btnmenu i").addClass('fa-bars');
-        }     
-        });
+        }else {
+            $(".searchbar").hide();
+            $(".btnmenu i").removeClass('fa-close');
+            $(".btnmenu i").addClass('fa-bars');
+   }     
+        
       return false;
-    }); 
+}); 
 
     $('.money').mask('00000000000000', {reverse: true});
     
@@ -922,7 +978,6 @@ $(".btnmenu").on('click', function(){
         });
     
 });
-
 
 $(window).load(function() {
     $(".loading").fadeOut(500);
