@@ -16,7 +16,7 @@ class Config(object):
     
     SMTP_SERVER = 'smtp.sendgrid.net'
     EMAIL_SENDER = 'ovc@opennorth.ca'
-    ADMINS = ['stephane@opennorth.ca']
+    ADMINS = ['donneesouvertes@ville.montreal.qc.ca']
 
     URL_ROOT = 'http//localhost'
     OCID_PREFIX = 'ocds-a1234567-mt-'
@@ -62,7 +62,7 @@ class Config(object):
         {
             'name': 'Conseil d\'agglomération',
             'mapper': 'field_mapper_subvention_mtl',
-            'url': 'http://donnees.ville.montreal.qc.ca/dataset/067c3bf6-0ec0-4159-a582-b0d58b44491f/resource/bc862025-9735-4a10-8d29-a5ee6621277c/download/subventionsconseilagglomeration.csv',
+            'url': 'http://donnees.ville.montreal.qc.ca/dataset/c792de47-9cc2-4d91-ba66-ca8d2b8d74ab/resource/81d15b7e-df33-47ec-9515-bb0eff10b0a7/download/subventionsconseilagglomeration.csv',
             'type': 'subvention'
         },                
         {
@@ -158,7 +158,7 @@ class Config(object):
         "SERVICE DU CAPITAL HUMAIN ET DES COMMUNICATIONS" : ["Ressources humaines", "Communications et relations publiques"],
         "SERVICE DU CONTRÔLEUR GÉNÉRAL" : ["Organisation et administration"],
         "SERVICE DU GREFFE" : ["Gestion de l'information"],
-        "SERVICE DES INFRASTRUCTURES, DE LA VOIRIE ET DES TRANSPORTS" : ["Infrastructures", "Transport"],
+        "SERVICE DES INFRASTRUCTURES, DE LA VOIRIE ET DES TRANSPORTS" : ["Infrastructures"],
         "SERVICE DE LA CONCERTATION DES ARRONDISSEMENTS ET RESSOURCES MATÉRIELLES": ["Organisation et administration"],
         "SOCIÉTÉ DU PARC JEAN-DRAPEAU" : ["Sports, loisirs, culture et développement social"],
     }
