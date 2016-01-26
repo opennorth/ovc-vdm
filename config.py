@@ -32,31 +32,31 @@ class Config(object):
         {
             'name': 'Fonctionnaires',
             'mapper': 'field_mapper_fonc_mtl',
-            'url': 'http://donnees.ville.montreal.qc.ca/dataset/74efbfc7-b1bd-488f-be6f-ad122f1ebe8d/resource/a7c221f7-7472-4b01-9783-ed9e847ee8c1/download/contratsfonctionnaires.csv',
+            'url': 'http://donnees.ville.montreal.qc.ca/dataset/0b7955a7-8523-4254-8f95-81a59684866d/resource/e4b758ab-3edb-4b6a-8764-2a443b6b9404/download/contratsfonctionnaires.csv',
             'type': 'contract'
         }, 
         {
             'name': 'Conseil municipal',
             'mapper': 'field_mapper_pol_mtl',
-            'url': 'http://donnees.ville.montreal.qc.ca/dataset/6df93670-af44-492e-a644-72643bf58bc0/resource/a6869244-1a4d-4080-9577-b73e09d95ed5/download/contratsconseilmunicipal.csv',
+            'url': 'http://donnees.ville.montreal.qc.ca/dataset/5cf0220b-c149-43c4-ac23-758c55648584/resource/1e5ab066-f560-4b4f-8f12-991de39df134/download/contratsconseilmunicipal.csv',
             'type': 'contract'
         },
         {
             'name': 'Comité exécutif',
             'mapper': 'field_mapper_pol_mtl',
-            'url': 'http://donnees.ville.montreal.qc.ca/dataset/505f2f9e-8cec-43f9-a83a-465717ef73a5/resource/87a6e535-3a6e-4964-91f5-836cd31099f7/download/contratscomiteexecutif.csv',
+            'url': 'http://donnees.ville.montreal.qc.ca/dataset/72083af8-83f8-41c1-823b-1cae5e76ff9a/resource/4b2d8744-a257-4102-8897-95a30a20de34/download/contratscomiteexecutif.csv',
             'type': 'contract'
         },        
         {
             'name': 'Conseil d\'agglomération',
             'mapper': 'field_mapper_pol_mtl',
-            'url': 'http://donnees.ville.montreal.qc.ca/dataset/6df93670-af44-492e-a644-72643bf58bc0/resource/35e636c1-9f99-4adf-8898-67c2ea4f8c47/download/contratsconseilagglomeration.csv',
+            'url': 'http://donnees.ville.montreal.qc.ca/dataset/5cf0220b-c149-43c4-ac23-758c55648584/resource/7cf955d0-a3e6-4e94-8c24-9b0a4f7c0408/download/contratsconseilagglomeration.csv',
             'type': 'contract'
         },
         {
             'name': 'Conseil municipal',
             'mapper': 'field_mapper_subvention_mtl',
-            'url': 'http://donnees.ville.montreal.qc.ca/dataset/067c3bf6-0ec0-4159-a582-b0d58b44491f/resource/3abb3596-45fb-4c80-8d6f-1633db5427d4/download/subventionsconseilmunicipal.csv',
+            'url': 'http://donnees.ville.montreal.qc.ca/dataset/c792de47-9cc2-4d91-ba66-ca8d2b8d74ab/resource/ee49851f-0e05-4311-be89-93dca5202f0f/download/subventionsconseilmunicipal.csv',
             'type': 'subvention'
         },
         {
@@ -68,7 +68,7 @@ class Config(object):
         {
             'name': 'Comité exécutif',
             'mapper': 'field_mapper_subvention_mtl',
-            'url': 'http://donnees.ville.montreal.qc.ca/dataset/4900f199-445f-4a89-a4e1-a02ee2391d26/resource/96c66e8d-f217-4249-8ff5-42ebac8045b9/download/subventionscomiteexecutif.csv',
+            'url': 'http://donnees.ville.montreal.qc.ca/dataset/f85037d6-e443-436c-9411-4c9fc41409ab/resource/2a8befdf-57c5-40ef-a0a6-ba38777ed131/download/subventionscomiteexecutif.csv',
             'type': 'subvention'
         },        
     ]
