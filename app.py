@@ -132,10 +132,10 @@ class CustomResource(Resource):
 
         #Check if etag verified
         #print (str(request.headers.get('If-None-Match')),  g.etag) 
-        if request.headers.get('If-None-Match') == g.etag :
-            resp = app.make_response('')
-            resp.status_code = 304
-            return resp
+        #if request.headers.get('If-None-Match') == g.etag :
+        #    resp = app.make_response('')
+        #    resp.status_code = 304
+        #    return resp
         
         return super(CustomResource, self).dispatch_request(*args, **kwargs)
 
