@@ -228,7 +228,7 @@ class ProductionConfig(Config):
     DEBUG = False
     SENDMAIL = True
     URL_ROOT = 'https://ovc-prod.herokuapp.com'
-    ADMINS = ['stephane@opennorth.ca']
+    ADMINS = ['donneesouvertes@ville.montreal.qc.ca']
     FTS_LANG = 'fr'
 
 class StagingConfig(Config):
