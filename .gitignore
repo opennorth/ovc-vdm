@@ -9,3 +9,4 @@ ruby
 log.out.tmp
 log.out
 mapping_OVC
+.coverage

@@ -15,40 +15,25 @@ class unaccent(ReturnTypeFromArgs):
     pass
 
 
-def send_mail2(subject, msg, to=app.config['ADMINS'], sender=app.config['EMAIL_SENDER']):
-    sg = sendgrid.SendGridClient(app.config['EMAIL_CREDENTIALS'][0], app.config['EMAIL_CREDENTIALS'][1], )
-    message = sendgrid.Mail()
-
-    message.add_to(to)
-    message.set_from(sender)
-    message.set_subject(subject)
-    message.set_text(msg)
-
-    try:
-        sg.send(message)
-    except SendGridClientError as e:
-        app.logger.error("SendGridClientError error: %s" %  repr(e))
-    except SendGridServerError as e:
-        app.logger.error("SendGridServerError error: %s" %  repr(e))
-
 def send_mail(subject, msg, to=app.config['ADMINS'], sender=app.config['EMAIL_SENDER']):
 
-    try:
-        mandrill_client = mandrill.Mandrill(app.config['EMAIL_CREDENTIALS'])
+    if app.config['SENDMAIL'] == True:
+        try:
+            mandrill_client = mandrill.Mandrill(app.config['EMAIL_CREDENTIALS'])
 
-        message = {
-            'from_email': sender,
-            'from_name': 'Vue sur les contrats',
-            'to': [{'email': app.config['ADMINS'][0],
-                     'type': 'to'}],
-            'subject': subject,
-            'signing_domain': 'ville.montreal.qc.ca',
-            'text': msg
+            message = {
+                'from_email': sender,
+                'from_name': 'Vue sur les contrats',
+                'to': [{'email': app.config['ADMINS'][0],
+                         'type': 'to'}],
+                'subject': subject,
+                'signing_domain': 'ville.montreal.qc.ca',
+                'text': msg
 
-        }
+            }
 
-        result = mandrill_client.messages.send(message=message, async=False)
-        print result    
+            result = mandrill_client.messages.send(message=message, async=False)
+            print result    
 
-    except mandrill.Error, e:
-        app.logger.error("Mandrill error: %s" %  repr(e))
+        except mandrill.Error, e:
+            app.logger.error("Mandrill error: %s" %  repr(e))
