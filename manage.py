@@ -31,31 +31,6 @@ migrate = Migrate(app, db)
 manager = Manager(app)
 
 
-if app.config['SENDMAIL']:
-    import logging
-    from logging.handlers import SMTPHandler
-    mail_handler = SMTPHandler(
-        app.config['SMTP_SERVER'],
-        app.config['EMAIL_SENDER'],
-        app.config['ADMINS'], 
-        "Outil de visualisation des contrats" , 
-        credentials=app.config['EMAIL_CREDENTIALS']
-    )
-    mail_handler.setLevel(logging.INFO)
-    mail_handler.setFormatter(logging.Formatter('''
-    Message type:       %(levelname)s
-    Location:           %(pathname)s:%(lineno)d
-    Module:             %(module)s
-    Function:           %(funcName)s
-    Time:               %(asctime)s
-
-    Message:
-
-    %(message)s
-    '''))
-
-    app.logger.addHandler(mail_handler)
-
 
 manager.add_command('db', MigrateCommand)
 
@@ -68,14 +43,13 @@ def flush_releases():
         db.session.commit()
     except exc.SQLAlchemyError as e:
         db.session.rollback()
-        app.logger.error("SQLAlchemyError error: %s" %  repr(e))
+        send_mail("SQLAlchemy error during operation flush_releases", repr(e))
 
 
 @manager.command
 def test_emails():
 
-
-    app.logger.error('This is a test message to check emails will be sent in case of an error')
+    send_mail("Test send mail function", "This is a test!")
 
 @manager.command
 def update_sources():
@@ -102,7 +76,7 @@ def update_sources():
 
     except exc.SQLAlchemyError as e:  
         db.session.rollback()
-        app.logger.error("SQLAlchemyError error: %s" %  repr(e))
+        send_mail("SQLAlchemy error during operation update_sources", repr(e))
 
 
 def compute_supplier_size():
@@ -182,9 +156,12 @@ def load_source(source, action='load'):
     if len(error_hash) > 0:
         message = "Erreurs lors du chargement du fichier %s \n\n" % (source.url)
         message += "\n".join(["Erreur: %s pour les lignes: %s" % (error_type, lines) for error_type, lines in error_hash.items()])
-        app.logger.error(message)
+
+        send_mail("Vue sur les contrats - Error when loading file", message)    
+
     else: 
-        app.logger.info("Succès du chargement du fichier : %s" % (source.url))
+
+        send_mail("Vue sur les contrats - Succès du chargement du fichier : %s" % (source.url), "")
 
     source.last_retrieve = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     db.session.commit()
@@ -226,7 +203,7 @@ def load_ocds(release, type='path', source=None):
     except exc.SQLAlchemyError as e:  
         #If we have a SQLAlchemy error here, we can assume it's serious so we rollback...
         db.session.rollback()
-        app.logger.error("File import cancelled - SQLAlchemyError error: %s" %  repr(e))
+        send_mail("SQLAlchemy error during operation load_ocds", repr(e))
 
 
 @manager.command
@@ -287,7 +264,8 @@ def generate_stats():
         db.session.commit()
     except exc.SQLAlchemyError as e:  
         db.session.rollback()
-        app.logger.error("SQLAlchemyError error: %s" %  repr(e))
+        send_mail("SQLAlchemy error during operation generate_stats", repr(e))        
+
 
 
 @manager.command
@@ -299,8 +277,6 @@ def send_stats(delta_days = 31):
         msg += "%s\t%s\t%s\n" % (stat.date, stat.total_counts, stat.counts_app)
 
     send_mail("OVC - Statistiques API", msg)
-    sg = sendgrid.SendGridClient(app.config['EMAIL_CREDENTIALS'][0], app.config['EMAIL_CREDENTIALS'][1])
-    message = sendgrid.Mail()
 
 
  

@@ -12,10 +12,10 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
 
     if 'EMAIL_CREDENTIALS' in os.environ:
-        EMAIL_CREDENTIALS = tuple(os.environ['EMAIL_CREDENTIALS'].split('@'))
+        EMAIL_CREDENTIALS = os.environ['EMAIL_CREDENTIALS']
     
     SMTP_SERVER = 'smtp.sendgrid.net'
-    EMAIL_SENDER = 'ovc@opennorth.ca'
+    EMAIL_SENDER = 'envoidemasse@ville.montreal.qc.ca'
     ADMINS = ['donneesouvertes@ville.montreal.qc.ca']
 
     URL_ROOT = 'http//localhost'
