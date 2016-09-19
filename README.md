@@ -1,5 +1,7 @@
 [![Build Status](https://travis-ci.org/opennorth/ovc-vdm.svg?branch=master)](https://travis-ci.org/opennorth/ovc-vdm)
 
+Autres langues: [English](README.en.md)
+
 #Outil de visualisation des contracts (OVC) réalisé pour la Ville de Montréal
 
 L'OVC consolide les fichiers de contrats et de subventions de la Ville de Montréal hébergés sur le portail de [données ouvertes](http://donnees.ville.montreal.qc.ca/) pour produire:
@@ -19,13 +21,13 @@ Le projet a été développé en vue d'être déployé sur la plateforme [Heroku
 
 ## Documentation de l'API
 
-Le fonctionnement de l'API est documenté [ici](doc/api.doc.fr.md) 
+Le fonctionnement de l'API est documenté [ici](doc/api.doc.fr.md)
 
 ##Installation
 
 Il est recommandé d'executer les commandes ci-dessous à l'intérieur d'un environnement virtuel à l'aide de [virtualenv/virtualenvwrapper](http://docs.python-guide.org/en/latest/dev/virtualenvs/).
 
-Par exemple 
+Par exemple
 
 ```
 virtualenv /path/to/project
@@ -94,4 +96,3 @@ L'application utilise `nose` réaliser des tests unitaires:
 ```
 ./run_test.sh
 ```
-
